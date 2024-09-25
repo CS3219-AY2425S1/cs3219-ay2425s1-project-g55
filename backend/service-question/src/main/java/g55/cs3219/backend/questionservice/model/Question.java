@@ -1,4 +1,4 @@
-package g55.cs3219.backend.questionService.model;
+package g55.cs3219.backend.questionservice.model;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -6,7 +6,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 
 @Entity
-public class HelloUser {
+public class Question {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
