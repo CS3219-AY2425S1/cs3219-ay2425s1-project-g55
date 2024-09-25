@@ -8,7 +8,8 @@ import java.util.List;
 
 @Repository
 public interface QuestionRepository extends JpaRepository<Question, Long> {
-    Question getQuestionById(Long id);
+    Question save(Question question);
     List<Question> findAll();
     List<Question> findByDifficulty(String difficulty);
+
 }
