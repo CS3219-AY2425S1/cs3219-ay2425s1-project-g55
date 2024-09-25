@@ -11,13 +11,18 @@ import java.util.List;
 public class QuestionService {
 
     @Autowired
-    private QuestionRepository helloRepository;
+    private QuestionRepository questionRepository;
 
-    public List<Question> getAllUsers() {
-        return helloRepository.findAll();
+    public List<Question> getAllQuestions() {
+        return questionRepository.findAll();
     }
 
-    public Question saveUser(Question user) {
-        return helloRepository.save(user);
+    public Question getQuestionById(Long id) {
+        return questionRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Question not found"));
+    }
+
+    public List<Question> getQuestionsByDifficulty(String difficulty) {
+        return questionRepository.findByDifficulty(difficulty);
     }
 }
