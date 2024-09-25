@@ -35,4 +35,18 @@ public class QuestionController {
         Question addedQuestion = questionService.addQuestion(question);
         return ResponseEntity.ok(addedQuestion);
     }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<String> updateQuestion(@PathVariable Long id, @RequestBody Question updatedQuestion) {
+        if (!id.equals(updatedQuestion.getId())) {
+            return ResponseEntity.badRequest().body("The ID in the path does not match the ID in the request body.");
+        }
+
+        try {
+            Question question = questionService.updateQuestion(id, updatedQuestion);
+            return ResponseEntity.ok("Question updated successfully.");
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
 }

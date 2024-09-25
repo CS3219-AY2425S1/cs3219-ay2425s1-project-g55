@@ -29,4 +29,14 @@ public class QuestionService {
     public Question addQuestion(Question question) {
         return questionRepository.save(question);
     }
+
+    public Question updateQuestion(Long id, Question updatedQuestion) {
+        return questionRepository.findById(id).map(question -> {
+            question.setTitle(updatedQuestion.getTitle());
+            question.setDescription(updatedQuestion.getDescription());
+            question.setCategory(updatedQuestion.getCategory());
+            question.setDifficulty(updatedQuestion.getDifficulty());
+            return questionRepository.save(question);
+        }).orElseThrow(() -> new RuntimeException("Question not found with id " + id));
+    }
 }
