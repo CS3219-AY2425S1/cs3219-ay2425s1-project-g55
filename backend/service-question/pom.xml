@@ -11,6 +11,14 @@
 
 	<artifactId>service-question</artifactId>
 
+	<dependencies>
+		<!-- MongoDB Dependency -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-data-mongodb</artifactId>
+		</dependency>
+	</dependencies>
+
 	<url/>
 	<licenses>
 		<license/>
