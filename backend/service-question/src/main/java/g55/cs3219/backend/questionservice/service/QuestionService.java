@@ -4,6 +4,7 @@ import static org.springframework.data.mongodb.core.query.Query.query;
 import static org.springframework.data.mongodb.core.query.Criteria.where;
 import static org.springframework.data.mongodb.core.FindAndModifyOptions.options;
 
+import g55.cs3219.backend.questionservice.dto.QuestionDto;
 import g55.cs3219.backend.questionservice.exception.InvalidQuestionException;
 import g55.cs3219.backend.questionservice.exception.QuestionNotFoundException;
 import g55.cs3219.backend.questionservice.model.DatabaseSequence;
@@ -28,21 +29,23 @@ public class QuestionService {
     @Autowired
     private MongoOperations mongoOperations;
 
-    public List<Question> getAllQuestions() {
+    public List<QuestionDto> getAllQuestions() {
         List<Question> questions = questionRepository.findAll();
         if (questions.isEmpty()) {
             throw new QuestionNotFoundException("No questions found.");
         }
         questions.sort((q1, q2) -> (int) (q1.getId() - q2.getId()));
-        return questions;
+        return questions.stream().map(this::convertToDTO).collect(Collectors.toList());
     }
 
-    public Question getQuestionById(Integer id) {
-        return questionRepository.findById(id)
+    public QuestionDto getQuestionById(Integer id) {
+        Question question = questionRepository.findById(id)
                 .orElseThrow(() -> new QuestionNotFoundException("Question with ID " + id + " not found."));
+
+        return convertToDTO(question);
     }
 
-    public List<Question> getQuestionsByFilters(String category, String difficulty) {
+    public List<QuestionDto> getQuestionsByFilters(String category, String difficulty) {
         if (category != null && difficulty != null) {
             throw new InvalidQuestionException("Cannot filter by both category and difficulty.");
         } else if (category != null) {
@@ -54,39 +57,34 @@ public class QuestionService {
         }
     }
 
-    public List<Question> getQuestionsByDifficulty(String difficulty) {
+    public List<QuestionDto> getQuestionsByDifficulty(String difficulty) {
         List<Question> questions = questionRepository.findByDifficulty(difficulty);
         if (questions.isEmpty()) {
             throw new QuestionNotFoundException("No questions found with difficulty: " + difficulty);
         }
-        return questions;
+        return questions.stream().map(this::convertToDTO).collect(Collectors.toList());
     }
 
-    public List<Question> getQuestionsByCategory(String category) {
+    public List<QuestionDto> getQuestionsByCategory(String category) {
         List<Question> questions = questionRepository.findByCategoriesContaining(category);
         if (questions.isEmpty()) {
             throw new QuestionNotFoundException("No questions found with category: " + category);
         }
-        return questions;
+        return questions.stream().map(this::convertToDTO).collect(Collectors.toList());
     }
 
-    public Question createQuestion(Question question) {
-        validateQuestion(question);
+    public QuestionDto createQuestion(QuestionDto questionDto) {
+        validateQuestion(questionDto);
 
-        Question newQuestion = new Question();
+        Question newQuestion = convertToDocument(questionDto);
         newQuestion.setId(generateSequence(Question.SEQUENCE_NAME));
-        newQuestion.setTitle(question.getTitle());
-        newQuestion.setDescription(question.getDescription());
-        newQuestion.setDifficulty(question.getDifficulty());
-        newQuestion.setCategories(question.getCategories());
-        newQuestion.setExamples(question.getExamples());
-        newQuestion.setConstraints(question.getConstraints());
-        newQuestion.setLink(question.getLink());
 
-        return questionRepository.save(newQuestion);
+        Question createdQuestion = questionRepository.save(newQuestion);
+
+        return convertToDTO(createdQuestion);
     }
 
-    private void validateQuestion(Question question) {
+    private void validateQuestion(QuestionDto question) {
         List<String> missingFields = Stream.of(
                 question.getTitle() == null ? "title" : null,
                 question.getDescription() == null ? "description" : null,
@@ -102,20 +100,35 @@ public class QuestionService {
         }
     }
 
-    public Question updateQuestion(Integer id, Question updatedQuestion) {
-        if (updatedQuestion.getId() == null) {
-            throw new InvalidQuestionException("Question ID is required for update.");
-        }
-
+    public QuestionDto updateQuestion(Integer id, QuestionDto updatedQuestionDto) {
         Question existingQuestion = questionRepository.findById(id)
                 .orElseThrow(() -> new QuestionNotFoundException("Question with ID " + id + " not found."));
 
-        existingQuestion.setTitle(updatedQuestion.getTitle());
-        existingQuestion.setDescription(updatedQuestion.getDescription());
-        existingQuestion.setDifficulty(updatedQuestion.getDifficulty());
-        existingQuestion.setCategories(updatedQuestion.getCategories());
+        if (updatedQuestionDto.getTitle() != null) {
+            existingQuestion.setTitle(updatedQuestionDto.getTitle());
+        }
+        if (updatedQuestionDto.getDescription() != null) {
+            existingQuestion.setDescription(updatedQuestionDto.getDescription());
+        }
+        if (updatedQuestionDto.getDifficulty() != null) {
+            existingQuestion.setDifficulty(updatedQuestionDto.getDifficulty());
+        }
+        if (updatedQuestionDto.getCategories() != null) {
+            existingQuestion.setCategories(updatedQuestionDto.getCategories());
+        }
+        if (updatedQuestionDto.getExamples() != null) {
+            existingQuestion.setExamples(updatedQuestionDto.getExamples());
+        }
+        if (updatedQuestionDto.getConstraints() != null) {
+            existingQuestion.setConstraints(updatedQuestionDto.getConstraints());
+        }
+        if (updatedQuestionDto.getLink() != null) {
+            existingQuestion.setLink(updatedQuestionDto.getLink());
+        }
 
-        return questionRepository.save(existingQuestion);
+        Question updatedQuestion = questionRepository.save(existingQuestion);
+
+        return convertToDTO(updatedQuestion);
     }
 
     public String deleteQuestion(Integer id) {
@@ -136,6 +149,35 @@ public class QuestionService {
                 new Update().inc("seq",1), options().returnNew(true).upsert(true),
                 DatabaseSequence.class);
         return !Objects.isNull(counter) ? (int) counter.getSeq() : 1;
+    }
+
+    private QuestionDto convertToDTO(Question question) {
+
+        QuestionDto questionDto = new QuestionDto();
+        questionDto.setId(question.getId());
+        questionDto.setTitle(question.getTitle());
+        questionDto.setDescription(question.getDescription());
+        questionDto.setDifficulty(question.getDifficulty());
+        questionDto.setCategories(question.getCategories());
+        questionDto.setExamples(question.getExamples());
+        questionDto.setConstraints(question.getConstraints());
+        questionDto.setLink(question.getLink());
+
+        return questionDto;
+    }
+
+    private Question convertToDocument(QuestionDto questionDto) {
+
+        Question question = new Question();
+        question.setTitle(questionDto.getTitle());
+        question.setDescription(questionDto.getDescription());
+        question.setDifficulty(questionDto.getDifficulty());
+        question.setCategories(questionDto.getCategories());
+        question.setExamples(questionDto.getExamples());
+        question.setConstraints(questionDto.getConstraints());
+        question.setLink(questionDto.getLink());
+
+        return question;
     }
 
 }

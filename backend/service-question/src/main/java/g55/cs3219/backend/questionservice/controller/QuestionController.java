@@ -1,6 +1,6 @@
 package g55.cs3219.backend.questionservice.controller;
 
-import g55.cs3219.backend.questionservice.model.Question;
+import g55.cs3219.backend.questionservice.dto.QuestionDto;
 import g55.cs3219.backend.questionservice.service.QuestionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -29,17 +29,17 @@ public class QuestionController {
     private QuestionService questionService;
 
     @GetMapping("/questions")
-    public List<Question> getAllQuestions() {
+    public List<QuestionDto> getAllQuestions() {
        return questionService.getAllQuestions();
     }
 
     @GetMapping("/{id}")
-    public Question getQuestionById(@PathVariable Integer id) {
+    public QuestionDto getQuestionById(@PathVariable Integer id) {
         return questionService.getQuestionById(id);
     }
 
     @GetMapping("/filter")
-    public List<Question> getQuestionsByFilters(
+    public List<QuestionDto> getQuestionsByFilters(
             @RequestParam(name = "category", required = false) String category,
             @RequestParam(name = "difficulty", required = false) String difficulty
     ) {
@@ -47,13 +47,13 @@ public class QuestionController {
     }
 
     @PostMapping()
-    public Question createQuestion(@RequestBody Question question) {
+    public QuestionDto createQuestion(@RequestBody QuestionDto question) {
         return questionService.createQuestion(question);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Question> updateQuestion(@PathVariable Integer id, @RequestBody Question updatedQuestion) {
-        Question question = questionService.updateQuestion(id, updatedQuestion);
+    public ResponseEntity<QuestionDto> updateQuestion(@PathVariable Integer id, @RequestBody QuestionDto updatedQuestionDto) {
+        QuestionDto question = questionService.updateQuestion(id, updatedQuestionDto);
         return ResponseEntity.ok(question);
     }
 

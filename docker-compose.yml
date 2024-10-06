@@ -1,0 +1,78 @@
+services:
+  frontend:
+    build:
+      context: ./frontend
+    container_name: frontend
+    ports:
+      - '5173:5173'
+    networks:
+      - app-network
+    depends_on:
+      - backend-service-question
+      - backend-service-user
+
+  backend-service-question:
+    build:
+      context: ./backend/service-question
+    container_name: backend-service-question
+    ports:
+      - '8080:8080'
+    networks:
+      - app-network
+    environment:
+      - SPRING_DATA_MONGODB_URI=mongodb://mongodb:27017/
+      - SPRING_DATA_MONGODB_DATABASE=question_db
+    depends_on:
+      - mongodb
+
+  mongodb:
+    image: mongo:latest
+    container_name: mongodb
+    ports:
+      - '27017:27017'
+    networks:
+      - app-network
+    environment:
+      MONGO_INITDB_DATABASE: question_db
+      MONGODB_ENABLE_LOGGING: 1
+    volumes:
+      - ./backend/mongoDB/init-mongo.js:/docker-entrypoint-initdb.d/init-mongo.js:ro
+      - mongodb_data:/data/db
+
+  backend-service-user:
+    build:
+      context: ./backend/service-user
+    container_name: backend-service-user
+    ports:
+      - '8081:8081'
+    networks:
+      - app-network
+    depends_on:
+      - backend-service-user-db
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://backend-service-user-db:5432/postgres
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: password
+
+  backend-service-user-db:
+    image: postgres:16-alpine
+    container_name: backend-service-user-db
+    ports:
+      - '5433:5432'
+    networks:
+      - app-network
+    environment:
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: postgres
+      POSTGRES_USER: postgres
+    volumes:
+      - ./backend/service-user/seed/init.sql:/docker-entrypoint-initdb.d/init.sql
+      - postgres_data:/var/lib/postgresql/data
+
+networks:
+  app-network:
+    driver: bridge
+
+volumes:
+  mongodb_data:
+  postgres_data:
