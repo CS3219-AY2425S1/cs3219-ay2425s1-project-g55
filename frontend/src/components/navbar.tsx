@@ -1,8 +1,19 @@
 import { Button } from '@/components/ui/button';
 import { CodeXml } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 
 export default function Navbar() {
+  const location = useLocation();
+
+  const isActive = (path: string) => location.pathname === path;
+
+  const linkClass = (path: string) =>
+    `inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium transition ${
+      isActive(path)
+        ? 'border-primary text-foreground font-bold'
+        : 'border-transparent text-muted-foreground hover:border-muted-foreground hover:text-foreground'
+    }`;
+
   return (
     <nav className='col-span-12 bg-background shadow-sm h-16'>
       <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'>
@@ -16,13 +27,13 @@ export default function Navbar() {
             <div className='hidden sm:ml-6 sm:flex sm:space-x-8'>
               <Link
                 to='/problems'
-                className='border-primary text-foreground font-bold inline-flex items-center px-1 pt-1 border-b-2 text-sm'
+                className={linkClass('/problems')}
               >
                 Problems
               </Link>
               <Link
                 to='/discuss'
-                className='border-transparent text-muted-foreground hover:border-muted-foreground hover:text-foreground inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium transition'
+                className={linkClass('/discuss')}
               >
                 Discuss
               </Link>
