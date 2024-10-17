@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import java.util.Set;
 
 @Service
 public class QuestionService {
@@ -178,6 +179,13 @@ public class QuestionService {
         question.setLink(questionDto.getLink());
 
         return question;
+    }
+
+    public Set<String> getDistinctCategories() {
+        List<Question> questions = questionRepository.findDistinctCategories();
+        return questions.stream()
+                .flatMap(question -> question.getCategories().stream())
+                .collect(Collectors.toSet());
     }
 
 }
