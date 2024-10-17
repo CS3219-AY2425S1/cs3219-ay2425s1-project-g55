@@ -46,15 +46,22 @@ public class QuestionService {
     }
 
     public List<QuestionDto> getQuestionsByFilters(String category, String difficulty) {
+        List<Question> questions;
         if (category != null && difficulty != null) {
-            throw new InvalidQuestionException("Cannot filter by both category and difficulty.");
+            questions = questionRepository.findByCategoriesContainingAndDifficulty(category, difficulty);
         } else if (category != null) {
-            return getQuestionsByCategory(category);
+            questions = questionRepository.findByCategoriesContaining(category);
         } else if (difficulty != null) {
-            return getQuestionsByDifficulty(difficulty);
+            questions = questionRepository.findByDifficulty(difficulty);
         } else {
             throw new InvalidQuestionException("At least one filter is required.");
         }
+    
+        if (questions.isEmpty()) {
+            throw new QuestionNotFoundException("No questions found with the given filters.");
+        }
+    
+        return questions.stream().map(this::convertToDTO).collect(Collectors.toList());
     }
 
     public List<QuestionDto> getQuestionsByDifficulty(String difficulty) {
