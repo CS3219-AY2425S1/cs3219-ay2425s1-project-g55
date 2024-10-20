@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import java.util.Set;
 
 @Service
 public class QuestionService {
@@ -46,15 +47,22 @@ public class QuestionService {
     }
 
     public List<QuestionDto> getQuestionsByFilters(String category, String difficulty) {
+        List<Question> questions;
         if (category != null && difficulty != null) {
-            throw new InvalidQuestionException("Cannot filter by both category and difficulty.");
+            questions = questionRepository.findByCategoriesContainingAndDifficulty(category, difficulty);
         } else if (category != null) {
-            return getQuestionsByCategory(category);
+            questions = questionRepository.findByCategoriesContaining(category);
         } else if (difficulty != null) {
-            return getQuestionsByDifficulty(difficulty);
+            questions = questionRepository.findByDifficulty(difficulty);
         } else {
             throw new InvalidQuestionException("At least one filter is required.");
         }
+    
+        if (questions.isEmpty()) {
+            throw new QuestionNotFoundException("No questions found with the given filters.");
+        }
+    
+        return questions.stream().map(this::convertToDTO).collect(Collectors.toList());
     }
 
     public List<QuestionDto> getQuestionsByDifficulty(String difficulty) {
@@ -178,6 +186,13 @@ public class QuestionService {
         question.setLink(questionDto.getLink());
 
         return question;
+    }
+
+    public Set<String> getDistinctCategories() {
+        List<Question> questions = questionRepository.findDistinctCategories();
+        return questions.stream()
+                .flatMap(question -> question.getCategories().stream())
+                .collect(Collectors.toSet());
     }
 
 }

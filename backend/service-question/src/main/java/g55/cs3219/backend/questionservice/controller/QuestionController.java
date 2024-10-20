@@ -7,6 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Set;
 
 @CrossOrigin(
         origins = {
@@ -61,6 +62,12 @@ public class QuestionController {
     public ResponseEntity<String > deleteQuestion(@PathVariable Integer id) {
         String message = questionService.deleteQuestion(id);
         return ResponseEntity.ok(message);
+    }
+
+    @GetMapping("/categories")
+    public ResponseEntity<Set<String>> getCategories() {
+        Set<String> categories = questionService.getDistinctCategories();
+        return ResponseEntity.ok(categories);
     }
 
 }

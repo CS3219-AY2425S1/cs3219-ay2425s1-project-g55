@@ -9,10 +9,12 @@ public class UserResponse {
     private Long id;
     private String email;
     private String username;
+    private boolean isAdmin;
 
-    public UserResponse(Long id, String username, String email) {
+    public UserResponse(Long id, String email, String username, boolean isAdmin) {
         this.id = id;
-        this.username = username;
         this.email = email;
+        this.username = username;
+        this.isAdmin = isAdmin;
     }
 }

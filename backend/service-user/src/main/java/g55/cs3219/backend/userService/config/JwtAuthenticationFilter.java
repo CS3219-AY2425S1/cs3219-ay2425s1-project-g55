@@ -1,5 +1,6 @@
 package g55.cs3219.backend.userService.config;
 
+import g55.cs3219.backend.userService.responses.JwtTokenValidationResponse;
 import g55.cs3219.backend.userService.service.JwtService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -50,22 +51,22 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
             if (userEmail != null && authentication == null) {
                 UserDetails userDetails = this.userDetailsService.loadUserByUsername(userEmail);
+                JwtTokenValidationResponse validationResponse = jwtService.isTokenValid(jwt, userDetails);
 
-                if (jwtService.isTokenValid(jwt, userDetails)){
-                    System.out.println("JWT Filter: JWT token is valid. Setting authentication context.");
+                if (validationResponse.isValid()){
                     UsernamePasswordAuthenticationToken authToken =
                             new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
 
                     authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                     SecurityContextHolder.getContext().setAuthentication(authToken);
                 } else {
-                    System.out.println("JWT Filter: JWT token is invalid.");
+                    System.out.println("JWT Filter: " + validationResponse.getMessage());
                 }
             }
 
             filterChain.doFilter(request, response);
         } catch (Exception e) {
-            System.out.println("JWT Filter: Exception occurred during JWT processing: " + e.getMessage());
+            System.out.println("JWT Filter: An error occurred while processing the JWT token - " + e.getMessage());
             SecurityContextHolder.clearContext();
             response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Invalid or missing JWT token");
             handlerExceptionResolver.resolveException(request, response, null, e);

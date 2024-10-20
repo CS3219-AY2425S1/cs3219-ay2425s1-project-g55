@@ -1,10 +1,14 @@
 package g55.cs3219.backend.userService.service;
 
+import g55.cs3219.backend.userService.responses.JwtTokenValidationResponse;
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.MalformedJwtException;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
+import lombok.Getter;
+import lombok.Setter;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
@@ -19,13 +23,15 @@ import java.util.Map;
 import java.util.function.Function;
 
 @Service
+@Setter
+@Getter
 public class JwtService {
     @Value("${security.jwt.secretKey}")
     private String secretKey;
     @Value("${security.jwt.expirationTime}")
     private Long jwtExpiration;
 
-    public String extractUsername(String token){
+    public String extractUsername(String token) throws MalformedJwtException {
         return extractClaim(token, Claims::getSubject);
     }
 
@@ -58,17 +64,18 @@ public class JwtService {
                 .compact();
     }
 
-    public boolean isTokenValid(String token, UserDetails userDetails) {
-        final String username = extractUsername(token);
-        return (username.equals(userDetails.getUsername()) && !isTokenExpired(token));
-    }
-
-    private boolean isTokenExpired(String token) {
-        return extractExpiration(token).before(new Date());
-    }
-
-    private Date extractExpiration(String token) {
-        return extractClaim(token, Claims::getExpiration);
+    public JwtTokenValidationResponse isTokenValid(String token, UserDetails userDetails) {
+        try {
+            final String username = extractUsername(token);
+            if (!username.equals(userDetails.getUsername())) {
+                return new JwtTokenValidationResponse(false, "Username does not match.");
+            }
+            return new JwtTokenValidationResponse(true, "Token is valid.");
+        } catch (ExpiredJwtException e) {
+            return new JwtTokenValidationResponse(false, "Token is expired.");
+        } catch (Exception e) {
+            return new JwtTokenValidationResponse(false, "Token validation failed.");
+        }
     }
 
     private Claims extractAllClaims(String token) {

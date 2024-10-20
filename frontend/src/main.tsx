@@ -6,6 +6,7 @@ import './index.css';
 import ErrorPage from '@/error-page';
 import ProblemsRoute from '@/routes/problems';
 import QuestionRoute from '@/routes/question';
+import DiscussRoute from '@/routes/discuss';
 
 const router = createBrowserRouter([
   {
@@ -20,6 +21,10 @@ const router = createBrowserRouter([
       {
         path: 'problems/:questionId',
         element: <QuestionRoute />,
+      },
+      {
+        path: 'discuss',
+        element: <DiscussRoute />,
       },
     ],
   },

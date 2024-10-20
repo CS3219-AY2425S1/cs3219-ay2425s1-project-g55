@@ -34,22 +34,22 @@ public class SecurityConfiguration {
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(authorize -> authorize
                         // Allow registration and login for all users
-                        .requestMatchers("/auth/**", "/users").permitAll()
+                        .requestMatchers("/api/auth/**", "/api/users").permitAll()
 
                         // Get all users - restricted to admin only
-                        .requestMatchers(HttpMethod.GET, "/users").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/api/users").hasRole("ADMIN")
 
                         // Get user by ID - admins can access any, non-admins can only access their own (handled in service)
-                        .requestMatchers(HttpMethod.GET, "/users/{userId}").authenticated()
+                        .requestMatchers(HttpMethod.GET, "/api/users/{userId}").authenticated()
 
                         // Update user - admins can update any, non-admins can only update their own (handled in service)
-                        .requestMatchers(HttpMethod.PUT, "/users/{userId}").authenticated()
+                        .requestMatchers(HttpMethod.PUT, "/api/users/{userId}").authenticated()
 
                         // Delete user - admins can delete any, non-admins can only delete their own (handled in service)
-                        .requestMatchers(HttpMethod.DELETE, "/users/{userId}").authenticated()
+                        .requestMatchers(HttpMethod.DELETE, "/api/users/{userId}").authenticated()
 
                         // Allow only authenticated users to verify the token
-                        .requestMatchers(HttpMethod.GET, "/auth/verify-token").authenticated()
+                        .requestMatchers(HttpMethod.GET, "/api/auth/verify-token").authenticated()
 
                         // All other requests require authentication
                         .anyRequest().authenticated()
@@ -68,7 +68,8 @@ public class SecurityConfiguration {
                         })
                 )
                 .authenticationProvider(authenticationProvider)
-                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()));
 
         return http.build();
     }
@@ -76,8 +77,8 @@ public class SecurityConfiguration {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOrigins(List.of("https://backend.com", "http://localhost:8080"));
-        config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE"));
+        config.setAllowedOrigins(List.of("https://backend.com", "http://localhost:8080", "http://localhost:5173"));
+        config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("Authorization", "Content-Type"));
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();

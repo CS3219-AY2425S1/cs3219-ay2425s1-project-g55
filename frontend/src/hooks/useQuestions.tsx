@@ -19,3 +19,20 @@ export function useQuestions() {
     queryFn: fetchQuestions,
   });
 };
+
+async function fetchQuestionCategories(): Promise<string[]> {
+  const response = await fetch("http://localhost:8080/api/question/categories");
+  if (!response.ok) {
+    throw new Error("Network response was not ok");
+  }
+  const data = await response.json();
+
+  return data;
+}
+
+export function useQuestionCategories() {
+  return useQuery<string[], Error>({
+    queryKey: ["questionCategories"],
+    queryFn: fetchQuestionCategories,
+  });
+};

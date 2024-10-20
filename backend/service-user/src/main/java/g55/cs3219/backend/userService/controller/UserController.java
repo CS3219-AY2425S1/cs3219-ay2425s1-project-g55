@@ -24,7 +24,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-@RequestMapping("/users")
+@RequestMapping("/api/users")
 @RestController
 public class UserController {
     private final UserService userService;
@@ -53,7 +53,8 @@ public class UserController {
         try {
             User currentUser = (User) authentication.getPrincipal();
             User fetchedUser = userService.getUserById(Long.parseLong(userId), currentUser);
-            return ResponseEntity.ok(new UserResponse(fetchedUser.getId(), fetchedUser.getName(), fetchedUser.getEmail()));
+            return ResponseEntity.ok(new UserResponse(fetchedUser.getId(), fetchedUser.getEmail(),
+                    fetchedUser.getName(), fetchedUser.isAdmin()));
         } catch (RuntimeException e) {
             if (e.getMessage().equals("Forbidden")) {
                 return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Access denied.");
@@ -85,7 +86,7 @@ public class UserController {
             } else if (e.getMessage().contains("User not found")) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
             }
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred while updating the user information.");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred while updating the user information: " + e.getMessage());
         }
     }
 
@@ -93,7 +94,8 @@ public class UserController {
     public ResponseEntity<?> createUser(@Valid @RequestBody RegisterUserDto registerUserDto) {
         try {
             User createdUser = authenticationService.signup(registerUserDto);
-            return new ResponseEntity<>(new UserResponse(createdUser.getId(), createdUser.getName(), createdUser.getEmail()), HttpStatus.CREATED);
+            return new ResponseEntity<>(new UserResponse(createdUser.getId(), createdUser.getEmail(),
+                    createdUser.getName(), createdUser.isAdmin()), HttpStatus.CREATED);
         } catch (RuntimeException e) {
             // Handle duplicate username or email
             if (e.getMessage().contains("exists")) {
@@ -101,9 +103,6 @@ public class UserController {
             }
             // Handle other server errors
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
-        } catch (Exception e) {
-            // Handle generic errors (e.g., missing fields)
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid input: " + e.getMessage());
         }
     }
 
