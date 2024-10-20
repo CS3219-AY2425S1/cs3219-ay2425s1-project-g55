@@ -1,0 +1,76 @@
+name: CI
+
+on:
+  push:
+    branches: [ main, dev ]
+  pull_request:
+    branches: [ main, dev ]
+
+jobs:
+  build-and-test-backend:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Set up JDK 21
+      uses: actions/setup-java@v3
+      with:
+        java-version: '21'
+        distribution: 'temurin'
+        cache: maven
+        
+    - name: Build and test service-question
+      run: |
+        cd backend/service-question
+        mvn clean verify
+        
+    - name: Create .env file
+      run: |
+        cd backend/service-user/src/main/resources
+        echo "JWT_SECRET_KEY=${{ secrets.JWT_SECRET_KEY }}" >> .env
+        echo "SPRING_DATASOURCE_URL=${{ secrets.SPRING_DATASOURCE_URL }}" >> .env
+        echo "SPRING_DATASOURCE_USERNAME=${{ secrets.SPRING_DATASOURCE_USERNAME }}" >> .env
+        echo "SPRING_DATASOURCE_PASSWORD=${{ secrets.SPRING_DATASOURCE_PASSWORD }}" >> .env
+        echo "SUPPORT_EMAIL=${{ secrets.SUPPORT_EMAIL }}" >> .env
+        echo "APP_PASSWORD=${{ secrets.APP_PASSWORD }}" >> .env
+
+    - name: Build and test service-user
+      run: |
+        cd backend/service-user
+        mvn clean verify
+    
+    - name: Clean up .env file
+      if: always()
+      run: |
+        cd backend/service-user/src/main/resources
+        rm -f .env
+
+  build-and-test-frontend:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Use Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '22'
+      
+    - name: Install pnpm
+      run: npm install -g pnpm
+
+    - name: Install dependencies
+      run: |
+        cd frontend
+        pnpm install
+        
+    - name: Build frontend
+      run: |
+        cd frontend
+        pnpm run build
+        
+    # - name: Run frontend tests
+    #   run: |
+    #     cd frontend
+    #     npm test
