@@ -42,18 +42,8 @@ export default function Navbar() {
               </Link>
             </div>
             <div className='hidden sm:ml-6 sm:flex sm:space-x-8'>
-              <Link
-                to='/problems'
-                className='border-primary text-foreground font-bold inline-flex items-center px-1 pt-1 border-b-2 text-sm'
-              >
-                Problems
-              </Link>
-              <Link
-                to='/discuss'
-                className='border-transparent text-muted-foreground hover:border-muted-foreground hover:text-foreground inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium transition'
-              >
-                Discuss
-              </Link>
+              <NavbarLink to='/problems'>Problems</NavbarLink>
+              <NavbarLink to='/discuss'>Discuss</NavbarLink>
             </div>
           </div>
           <div className='hidden sm:ml-6 sm:flex sm:items-center'>
