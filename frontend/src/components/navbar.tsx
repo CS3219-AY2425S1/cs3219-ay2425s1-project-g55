@@ -17,7 +17,7 @@ export function NavbarLink({
     <Link
       to={to}
       className={cn(
-        'border-transparent text-muted-foreground  hover:text-foreground inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium transition',
+        'border-transparent text-muted-foreground  hover:text-foreground inline-flex items-center px-1 pt-2 border-b-2 text-sm font-medium transition h-12',
         pathname === to
           ? 'border-primary text-foreground border-b-2'
           : 'hover:border-muted-foreground'
@@ -32,9 +32,9 @@ export default function Navbar() {
   const user = useAuth();
 
   return (
-    <nav className='col-span-12 bg-background shadow-sm h-16'>
-      <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'>
-        <div className='flex justify-between h-16'>
+    <nav className='col-span-12 bg-background h-14'>
+      <div className='mx-auto px-4 sm:px-6 lg:px-8'>
+        <div className='flex justify-between h-14'>
           <div className='flex'>
             <div className='flex-shrink-0 flex items-center'>
               <Link to='/'>
