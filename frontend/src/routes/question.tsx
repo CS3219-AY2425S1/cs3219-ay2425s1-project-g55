@@ -1,13 +1,10 @@
-import { Badge } from '@/components/ui/badge';
-import { Button, buttonVariants } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { QuestionDialog } from '@/components/forms/question';
 import {
-  useDeleteQuestion,
-  useQuestion,
-  useUpdateQuestion,
-} from '@/hooks/useQuestion';
-import { Edit, Loader2, Trash2 } from 'lucide-react';
-import { useNavigate, useParams } from 'react-router-dom';
+  ResizableHandle,
+  ResizablePanel,
+  ResizablePanelGroup,
+} from '@/components/ui/resizable';
+
 import {
   AlertDialog,
   AlertDialogAction,
@@ -19,13 +16,82 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
-import { toast } from 'sonner';
-import { QuestionDialog } from '@/components/forms/question';
-import { useState } from 'react';
+import { Badge } from '@/components/ui/badge';
+import { Button, buttonVariants } from '@/components/ui/button';
+import {
+  useDeleteQuestion,
+  useQuestion,
+  useUpdateQuestion,
+} from '@/hooks/useQuestion';
 import { CreateQuestionData, UpdateQuestionData } from '@/types/question';
+import { Edit, Loader2, Trash2 } from 'lucide-react';
+import { useState } from 'react';
 import { SubmitHandler } from 'react-hook-form';
+import { useNavigate, useParams } from 'react-router-dom';
+import { toast } from 'sonner';
 
-export default function QuestionRoute() {
+type QuestionActionsProps = {
+  open: boolean;
+  setOpen: (open: boolean) => void;
+  dataForForm: CreateQuestionData | undefined;
+  onEdit: SubmitHandler<CreateQuestionData>;
+  onDelete: () => void;
+};
+
+function QuestionActions({
+  open,
+  setOpen,
+  dataForForm,
+  onEdit,
+  onDelete,
+}: QuestionActionsProps) {
+  return (
+    <div className='absolute top-1 right-6'>
+      <QuestionDialog
+        action='edit'
+        open={open}
+        onClose={() => setOpen(false)}
+        onSubmit={onEdit}
+        defaultValues={dataForForm}
+      />
+
+      <div className='flex gap-4'>
+        <Button size='icon' variant='secondary' onClick={() => setOpen(true)}>
+          <Edit className='w-4 h-4' />
+        </Button>
+
+        {/* Delete question dialog */}
+        <AlertDialog>
+          <AlertDialogTrigger asChild>
+            <Button size='icon' variant='secondary'>
+              <Trash2 className='w-4 h-4' />
+            </Button>
+          </AlertDialogTrigger>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+              <AlertDialogDescription>
+                This action cannot be undone. This will permanently delete the
+                question.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction
+                className={buttonVariants({ variant: 'destructive' })}
+                onClick={onDelete}
+              >
+                Continue
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+      </div>
+    </div>
+  );
+}
+
+function Question() {
   const { questionId: questionIdString } = useParams<{ questionId: string }>();
   const questionId = Number(questionIdString);
   const { data: question, isLoading } = useQuestion(Number(questionId));
@@ -94,103 +160,88 @@ export default function QuestionRoute() {
   }
 
   return (
-    <Card className='relative w-full max-w-3xl'>
-      <CardHeader>
-        <CardTitle className='mb-2'>{question.title}</CardTitle>
-        <div className=''>
-          <Badge
-            difficulty={
-              question.difficulty.toLowerCase() as 'easy' | 'medium' | 'hard'
-            }
-          >
-            {question.difficulty}
+    <div className='relative w-full max-w-3xl p-4 space-y-4 h-full overflow-y-auto'>
+      <div className='mb-2 text-2xl font-bold'>
+        {question.id + 1}. {question.title}
+      </div>
+      <div className=''>
+        <Badge
+          difficulty={
+            question.difficulty.toLowerCase() as 'easy' | 'medium' | 'hard'
+          }
+        >
+          {question.difficulty}
+        </Badge>
+        {question.categories.map((category, index) => (
+          <Badge key={index} variant='outline' className='ml-2'>
+            {category}
           </Badge>
-          {question.categories.map((category, index) => (
-            <Badge key={index} variant='outline' className='ml-2'>
-              {category}
-            </Badge>
-          ))}
-        </div>
-      </CardHeader>
-      <CardContent>
-        <h3 className='text-lg font-semibold mb-2'>Description</h3>
-        <p>{question.description}</p>
+        ))}
+      </div>
 
-        <h3 className='text-lg font-semibold mt-4 mb-2'>Examples</h3>
+      <br />
+
+      <p>{question.description}</p>
+
+      <br />
+
+      <section className='space-y-6'>
         {question.examples.map((example, index) => (
           <div key={index} className='mb-2'>
-            <p>
-              <strong>Input:</strong> {example.input}
-            </p>
-            <p>
-              <strong>Output:</strong> {example.output}
-            </p>
+            <p className='font-bold'>Example {index + 1}</p>
+            <blockquote className='mt-2 border-l-2 pl-6'>
+              <p>
+                <span className='mr-2'>Input:</span>
+                <span className='font-mono text-sm'>{example.input}</span>
+              </p>
+              <p>
+                <span className='mr-2'>Output:</span>
+                <span className='font-mono text-sm'>{example.output}</span>
+              </p>
+            </blockquote>
           </div>
         ))}
+      </section>
 
-        <h3 className='text-lg font-semibold mt-4 mb-2'>Constraints</h3>
-        <ul className='list-disc pl-5'>
-          {question.constraints.map((constraint, index) => (
-            <li key={index}>{constraint}</li>
-          ))}
-        </ul>
+      <br />
 
+      <div className='text font-bold mt-4 mb-2'>Constraints:</div>
+      <ul className='list-disc pl-5'>
+        {question.constraints.map((constraint, index) => (
+          <li key={index}>{constraint}</li>
+        ))}
+      </ul>
+
+      <div className='w-full text-right'>
         <a
           href={question.link}
           target='_blank'
           rel='noopener noreferrer'
-          className='mt-4 inline-block text-blue-600 hover:underline'
+          className='inline-block text-blue-600 hover:underline'
         >
           View on LeetCode
         </a>
+      </div>
 
-        <div className='absolute bottom-4 right-4'>
-          <QuestionDialog
-            action='edit'
-            open={open}
-            onClose={() => setOpen(false)}
-            onSubmit={onEdit}
-            defaultValues={dataForForm}
-          />
+      <QuestionActions
+        open={open}
+        setOpen={setOpen}
+        dataForForm={dataForForm}
+        onEdit={onEdit}
+        onDelete={onDelete}
+      />
+    </div>
+  );
+}
 
-          <div className='flex gap-4'>
-            <Button
-              size='icon'
-              variant='secondary'
-              onClick={() => setOpen(true)}
-            >
-              <Edit className='w-4 h-4' />
-            </Button>
-
-            {/* Delete question dialog */}
-            <AlertDialog>
-              <AlertDialogTrigger asChild>
-                <Button size='icon' variant='secondary'>
-                  <Trash2 className='w-4 h-4' />
-                </Button>
-              </AlertDialogTrigger>
-              <AlertDialogContent>
-                <AlertDialogHeader>
-                  <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-                  <AlertDialogDescription>
-                    This action cannot be undone. This will permanently delete
-                    the question.
-                  </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                  <AlertDialogCancel>Cancel</AlertDialogCancel>
-                  <AlertDialogAction
-                    className={buttonVariants({ variant: 'destructive' })}
-                    onClick={onDelete}
-                  >
-                    Continue
-                  </AlertDialogAction>
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
-          </div>
-        </div>
-      </CardContent>
-    </Card>
+export default function QuestionRoute() {
+  return (
+    <ResizablePanelGroup direction='horizontal'>
+      <ResizablePanel defaultSize={40}>
+        <Question />
+      </ResizablePanel>
+      <ResizableHandle withHandle />
+      <ResizablePanel>Two</ResizablePanel>
+    </ResizablePanelGroup>
   );
 }
