@@ -1,4 +1,4 @@
-import { LOCAL_STORAGE_KEYS } from '@/types/auth';
+import { LOCAL_STORAGE_KEYS, LoginResponseSchema } from '@/types/auth';
 import { jwtDecode } from 'jwt-decode';
 import { useEffect, useState } from 'react';
 
@@ -18,9 +18,7 @@ type AuthenticatedUser = {
 };
 
 function clearAuthData() {
-  localStorage.removeItem(LOCAL_STORAGE_KEYS.TOKEN);
-  localStorage.removeItem(LOCAL_STORAGE_KEYS.USER_ID);
-  localStorage.removeItem(LOCAL_STORAGE_KEYS.EXPIRES_IN);
+  localStorage.removeItem(LOCAL_STORAGE_KEYS.USER);
 }
 
 export function useAuth(): AuthenticatedUser | null {
@@ -28,17 +26,22 @@ export function useAuth(): AuthenticatedUser | null {
 
   useEffect(() => {
     const checkAuth = () => {
-      const token = localStorage.getItem(LOCAL_STORAGE_KEYS.TOKEN);
-      if (!token) {
+      const loginResponse = LoginResponseSchema.safeParse(
+        JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEYS.USER) || '{}')
+      );
+
+      if (!loginResponse.success) {
         clearAuthData();
         setUserRole(null);
         return;
       }
 
+      const user = loginResponse.data;
+
       try {
-        const decodedToken = jwtDecode<DecodedToken>(token);
+        const decodedToken = jwtDecode<DecodedToken>(user.token);
         if (decodedToken.exp * 1000 > Date.now()) {
-          setUserRole(USER_ROLES.user);
+          setUserRole(user.admin ? USER_ROLES.admin : USER_ROLES.user);
         } else {
           // Token has expired
           clearAuthData();

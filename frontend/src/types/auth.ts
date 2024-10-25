@@ -30,7 +30,9 @@ export type LoginUser = z.infer<typeof LoginUserSchema>;
 export const LoginResponseSchema = z.object({
   id: z.number(),
   token: z.string(),
-  expiresIn: z.number(),
+  email: z.string().email(),
+  username: z.string(),
+  admin: z.boolean(),
 });
 
 export type LoginResponse = z.infer<typeof LoginResponseSchema>;
@@ -51,7 +53,5 @@ export type VerifyUserCode = z.infer<typeof VerifyUserCodeSchema>;
  * Keys for auth related data in local storage
  */
 export const LOCAL_STORAGE_KEYS = {
-  TOKEN: 'token',
-  USER_ID: 'userId',
-  EXPIRES_IN: 'expiresIn',
+  USER: 'user',
 } as const;
