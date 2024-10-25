@@ -5,6 +5,7 @@ import {
   ResizablePanelGroup,
 } from '@/components/ui/resizable';
 
+import CodeEditor from '@/components/code-editor';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -162,7 +163,8 @@ function Question() {
   return (
     <div className='relative w-full max-w-3xl p-4 space-y-4 h-full overflow-y-auto'>
       <div className='mb-2 text-2xl font-bold'>
-        {question.id + 1}. {question.title}
+        <span className='mr-2'>{question.id + 1}.</span>
+        <span>{question.title}</span>
       </div>
       <div className=''>
         <Badge
@@ -236,12 +238,16 @@ function Question() {
 
 export default function QuestionRoute() {
   return (
-    <ResizablePanelGroup direction='horizontal'>
-      <ResizablePanel defaultSize={40}>
-        <Question />
-      </ResizablePanel>
-      <ResizableHandle withHandle />
-      <ResizablePanel>Two</ResizablePanel>
-    </ResizablePanelGroup>
+    <div className='mx-4 mb-4 border rounded-lg overflow-hidden h-full'>
+      <ResizablePanelGroup direction='horizontal'>
+        <ResizablePanel defaultSize={40}>
+          <Question />
+        </ResizablePanel>
+        <ResizableHandle withHandle />
+        <ResizablePanel>
+          <CodeEditor />
+        </ResizablePanel>
+      </ResizablePanelGroup>
+    </div>
   );
 }
