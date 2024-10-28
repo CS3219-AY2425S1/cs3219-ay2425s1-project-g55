@@ -25,9 +25,14 @@ public class ApiGatewayApplication {
                 .route("question-service", r -> r.path("/api/question/**")
                         // .filters(f -> f.filter(authFilter))
                         .uri("lb://QUESTION-SERVICE"))
-                .route("user-service", r -> r.path("/users/**")
-                        // .filters(f -> f.filter(authFilter))
-                        .uri("lb://SERVICE-USER"))
+                .route("user-service-auth", r -> r
+                        .path("/api/auth/**")
+                        .and()
+                        .method("POST", "GET", "PUT", "DELETE")  // explicitly allow these methods
+                        .uri("lb://USER-SERVICE"))
+                // .route("user-service", r -> r.path("/api/auth/**")
+                //         // .filters(f -> f.filter(authFilter))
+                //         .uri("lb://SERVICE-USER"))
                 .route("matching-service", r -> r.path("/matching/**")
                         // .filters(f -> f.filter(authFilter))
                         .uri("lb://SERVICE-MATCHING"))
