@@ -14,14 +14,14 @@ import jakarta.persistence.Id;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 
-@Document(collection = "question_attempts")
+@Document(collection = "history")
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @ToString
 @Builder
-public class QuestionAttempt {
+public class History {
     
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
