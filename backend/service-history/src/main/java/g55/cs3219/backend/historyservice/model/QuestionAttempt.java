@@ -25,9 +25,10 @@ public class QuestionAttempt {
     
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
+    private String id;
 
-    private Integer questionId;
+    private String questionId;
+    private String userId;
     private String attemptedCode;
     private LocalDateTime attemptDateTime;
 }
