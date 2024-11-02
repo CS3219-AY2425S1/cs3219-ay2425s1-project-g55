@@ -26,23 +26,25 @@ function SubmitButton({
   const userId = auth?.user?.userId;
 
   const createSubmission = useCreateSubmission();
+  
+    if (!userId) {
+      return <LoginPromptView />;
+    }
 
-  if (!userId) {
-    return <LoginPromptView />;
-  }
+  const handleSubmit = () => {    
+    createSubmission.mutate({
+      id: 0,
+      userId: userId.toString(),
+      questionId: questionId.toString(),
+      code: code,
+      attemptedAt: new Date().toISOString(),
+    });
+  };
 
   return (
     <Button 
       className="absolute bottom-4 right-4 z-10"
-      onClick={() => {
-        createSubmission.mutate({
-          id: 0,
-          userId: userId.toString(),
-          questionId: questionId.toString(),
-          code: code,
-          attemptedAt: new Date().toISOString(),
-        });
-      }}
+      onClick={handleSubmit}
     >
       Submit
     </Button>
