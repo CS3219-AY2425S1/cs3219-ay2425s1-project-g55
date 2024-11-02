@@ -34,8 +34,8 @@ function SubmitButton({
   const handleSubmit = () => {    
     createSubmission.mutate({
       id: 0,
-      userId: userId.toString(),
-      questionId: questionId.toString(),
+      userId: userId,
+      questionId: questionId,
       code: code,
       attemptedAt: new Date().toISOString(),
     });

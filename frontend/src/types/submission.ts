@@ -2,8 +2,8 @@ import { z } from 'zod';
 
 export const SubmissionSchema = z.object({
   id: z.number(),
-  questionId: z.string(),
-  userId: z.string(),
+  questionId: z.number(),
+  userId: z.number(),
   code: z.string(),
   attemptedAt: z.string().transform((str) => {
     return new Date(str).toLocaleString();
