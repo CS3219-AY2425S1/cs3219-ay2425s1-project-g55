@@ -6,7 +6,7 @@ const CodeEditor = ({
   onChange,
 }: {
   initialValue?: string;
-  value: string;
+  value?: string;
   onChange: (value: string) => void;
 }) => {
   return (
