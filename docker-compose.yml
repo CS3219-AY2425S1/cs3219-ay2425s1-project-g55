@@ -119,7 +119,6 @@ services:
       - room_postgres_data:/var/lib/postgresql/data
       - ./backend/service-room/seed/init.sql:/docker-entrypoint-initdb.d/init.sql
 
-
   rabbitmq:
     image: rabbitmq:4.0-management
     container_name: rabbitmq
@@ -132,6 +131,34 @@ services:
       RABBITMQ_DEFAULT_USER: guest
       RABBITMQ_DEFAULT_PASS: guest
 
+  backend-service-history:
+    build:
+      context: ./backend/service-history
+    container_name: backend-service-history
+    ports:
+      - '8084:8080'
+    networks:
+      - app-network
+    environment:
+      SPRING_DATA_MONGODB_URI: mongodb://backend-service-history-db:27017/
+      SPRING_DATA_MONGODB_DATABASE: history_db
+    depends_on:
+      - backend-service-history-db
+
+  backend-service-history-db:
+    image: mongo:latest
+    container_name: backend-service-history-db
+    ports:
+      - '27018:27017'
+    networks:
+      - app-network
+    environment:
+      MONGO_INITDB_DATABASE: history_db
+      MONGODB_ENABLE_LOGGING: 1
+    volumes:
+      - ./backend/service-history/seed/init-mongo.js:/docker-entrypoint-initdb.d/init-mongo.js:ro
+      - history_mongodb_data:/data/db
+
 networks:
   app-network:
     driver: bridge
@@ -139,4 +166,5 @@ networks:
 volumes:
   mongodb_data:
   postgres_data:
+  history_mongodb_data:
   room_postgres_data:

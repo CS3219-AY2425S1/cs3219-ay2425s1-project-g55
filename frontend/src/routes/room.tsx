@@ -6,17 +6,18 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 import useParticipantWebsocket from '@/hooks/useParticipantWebsocket';
-import { useCallback } from 'react';
+import { useCallback, useState } from 'react';
 
-import CodeEditor from '@/components/code-editor';
 import ParticipantView from '@/components/ParticipantView';
-import Question from '@/components/question';
+import QuestionView from '@/components/QuestionView';
 import { useAuth } from '@/hooks/auth/useAuth';
 import { useRoom } from '@/hooks/useRoom';
 import { useParams } from 'react-router-dom';
 import { toast } from 'sonner';
+import MonacoEditor from '@/components/code-editor/MonacoEditor';
 
 export default function RoomRoute() {
+  const [editorCode, setEditorCode] = useState<string>('// Write your code here\n');
   const { roomId } = useParams<{ roomId: string }>();
   const { isLoading, data, error } = useRoom(roomId);
   const auth = useAuth();
@@ -77,13 +78,17 @@ export default function RoomRoute() {
               />
             </TabsContent>
             <TabsContent value='question'>
-              <Question id={questionId} />
+              <QuestionView id={questionId} />
             </TabsContent>
           </Tabs>
         </ResizablePanel>
         <ResizableHandle withHandle />
         <ResizablePanel>
-          <CodeEditor />
+          <MonacoEditor
+            questionId={questionId}
+            value={editorCode}
+            onChange={(value: string | undefined) => setEditorCode(value ?? '')}
+          />
         </ResizablePanel>
       </ResizablePanelGroup>
     </div>

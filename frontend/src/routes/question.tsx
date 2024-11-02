@@ -2,13 +2,16 @@ import {
   ResizableHandle,
   ResizablePanel,
   ResizablePanelGroup,
-} from "@/components/ui/resizable";
+} from '@/components/ui/resizable';
 
-import CodeEditor from "@/components/code-editor";
-import Question from "@/components/question";
-import { useParams } from "react-router-dom";
-import { LoginPromptView } from "@/components/discuss/views/LoginPromptView";
-import { useAuth } from "@/hooks/auth/useAuth";
+import QuestionView from '@/components/QuestionView';
+import { useParams } from 'react-router-dom';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import SubmissionView from '@/components/SubmissionView';
+import { useState } from 'react';
+import { useAuth } from '@/hooks/auth/useAuth';
+import { LoginPromptView } from '@/components/discuss/views/LoginPromptView';
+import MonacoEditor from '@/components/code-editor/MonacoEditor';
 
 export default function QuestionRoute() {
   const { questionId: questionIdString } = useParams<{ questionId: string }>();
@@ -16,6 +19,8 @@ export default function QuestionRoute() {
 
   const auth = useAuth();
   const userId = auth?.user?.userId;
+
+  const [editorCode, setEditorCode] = useState<string>('// Write your code here\n');
 
   if (isNaN(questionId)) {
     return <div>Invalid question ID</div>;
@@ -37,11 +42,33 @@ export default function QuestionRoute() {
     <div className="mx-4 mb-4 border rounded-lg overflow-hidden w-full h-full">
       <ResizablePanelGroup direction="horizontal">
         <ResizablePanel defaultSize={40}>
-          <Question id={questionId} />
+          <Tabs defaultValue="question">
+            <TabsList className="w-full">
+              <TabsTrigger value="question" className="flex-1">
+                Question
+              </TabsTrigger>
+              <TabsTrigger value="submissions" className="flex-1">
+                Submissions
+              </TabsTrigger>
+            </TabsList>
+            <TabsContent value="question">
+              <QuestionView id={questionId} />
+            </TabsContent>
+            <TabsContent value="submissions">
+              <SubmissionView
+                id={questionId}
+                onViewSubmission={setEditorCode}
+              />
+            </TabsContent>
+          </Tabs>
         </ResizablePanel>
         <ResizableHandle withHandle />
         <ResizablePanel>
-          <CodeEditor />
+          <MonacoEditor
+            questionId={questionId}
+            value={editorCode}
+            onChange={(value: string | undefined) => setEditorCode(value ?? '')}
+          />
         </ResizablePanel>
       </ResizablePanelGroup>
     </div>
