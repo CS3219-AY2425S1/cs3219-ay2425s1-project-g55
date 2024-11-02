@@ -65,6 +65,7 @@ export const updateQuestionSchema = z.object({
   title: z.string().min(1, 'Title is required'),
   description: z.string().min(1, 'Description is required'),
   examples: z.array(z.string()).min(1, 'At least one example is required'),
+  constraints: z.array(z.string()).min(1, 'At least one constraint is required'),
   categories: z.array(z.string()).min(1, 'At least one category is required'),
   difficulty: z.enum(DIFFICULTY_ENUM),
 });
