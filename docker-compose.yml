@@ -136,11 +136,11 @@ services:
       context: ./backend/service-history
     container_name: backend-service-history
     ports:
-      - '8083:8083'
+      - '8084:8080'
     networks:
       - app-network
     environment:
-      SPRING_DATA_MONGODB_URI: mongodb://mongodb:27018/
+      SPRING_DATA_MONGODB_URI: mongodb://backend-service-history-db:27017/
       SPRING_DATA_MONGODB_DATABASE: history_db
     depends_on:
       - backend-service-history-db
@@ -149,7 +149,7 @@ services:
     image: mongo:latest
     container_name: backend-service-history-db
     ports:
-      - '27018:27018'
+      - '27018:27017'
     networks:
       - app-network
     environment:
