@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
 export const SubmissionSchema = z.object({
-  id: z.string(),
+  id: z.number(),
   questionId: z.string(),
   userId: z.string(),
   attemptedCode: z.string(),
