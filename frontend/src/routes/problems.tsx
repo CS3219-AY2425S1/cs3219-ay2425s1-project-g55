@@ -33,7 +33,10 @@ export default function ProblemsRoute() {
       toast.success("Question created successfully");
     } catch (error) {
       console.error(error);
-      toast.error("Error creating question");
+      const errorMessage = error instanceof Error ? error.message : "Unknown error";
+      toast.error(`${errorMessage}`, {
+        style: { backgroundColor: '#FFCCCB', color: 'black' },
+      });
     }
   };
 
