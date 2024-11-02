@@ -5,7 +5,9 @@ export const SubmissionSchema = z.object({
   questionId: z.string(),
   userId: z.string(),
   code: z.string(),
-  attemptedAt: z.string(),
+  attemptedAt: z.string().transform((str) => {
+    return new Date(str).toLocaleString();
+  }),
 });
 
 export type Submission = z.infer<typeof SubmissionSchema>;
