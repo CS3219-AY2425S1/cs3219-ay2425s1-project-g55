@@ -13,6 +13,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import { Badge } from '@/components/ui/badge';
 import { Button, buttonVariants } from '@/components/ui/button';
+import { useAuth } from '@/hooks/auth/useAuth';
 import {
   useDeleteQuestion,
   useQuestion,
@@ -97,6 +98,9 @@ export default function QuestionView({ id }: QuestionViewProps) {
   const [open, setOpen] = useState(false);
   const navigate = useNavigate();
 
+  const auth = useAuth();
+  const role = auth?.user?.role || '';
+
   const dataForForm = (
     question
       ? {
@@ -136,6 +140,8 @@ export default function QuestionView({ id }: QuestionViewProps) {
       description: data.description,
       categories: data.categories.map((category) => category.category),
       difficulty: data.difficulty,
+      examples: data.examples.map((example) => example.example),
+      constraints: data.constraints.map((constraint) => constraint.constraint),
     } satisfies UpdateQuestionData;
 
     try {
@@ -143,7 +149,10 @@ export default function QuestionView({ id }: QuestionViewProps) {
       toast.success('Question updated successfully');
     } catch (error) {
       console.error(error);
-      toast.error('Error updating question');
+      const errorMessage = error instanceof Error ? error.message : "Unknown error";
+      toast.error(`${errorMessage}`, {
+        style: { backgroundColor: '#FFCCCB', color: 'black' },
+      });
     }
   };
 
@@ -218,13 +227,15 @@ export default function QuestionView({ id }: QuestionViewProps) {
         </a>
       </div>
 
-      <QuestionActions
-        open={open}
-        setOpen={setOpen}
-        dataForForm={dataForForm}
-        onEdit={onEdit}
-        onDelete={onDelete}
-      />
+      {role == 'admin' &&
+        <QuestionActions
+          open={open}
+          setOpen={setOpen}
+          dataForForm={dataForForm}
+          onEdit={onEdit}
+          onDelete={onDelete}
+        />
+      }
     </div>
   );
 }

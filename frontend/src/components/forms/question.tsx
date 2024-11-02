@@ -146,7 +146,7 @@ export function QuestionForm({
                         placeholder={`Enter example, e.g.\nInput: [1, 2, 3]\nOutput: 6`}
                         className='w-full'
                         disabled={
-                          form.formState.isSubmitting || action === 'edit'
+                          form.formState.isSubmitting
                         }
                         {...field}
                       />
@@ -161,7 +161,7 @@ export function QuestionForm({
                 type='button'
                 onClick={() => examplesControl.remove(index)}
                 className='flex-shrink-0'
-                disabled={form.formState.isSubmitting || action === 'edit'}
+                disabled={form.formState.isSubmitting}
               >
                 <Trash className='w-4 h-4' />
               </Button>
@@ -174,7 +174,7 @@ export function QuestionForm({
           size='sm'
           type='button'
           onClick={() => examplesControl.append({ example: '' })}
-          disabled={form.formState.isSubmitting || action === 'edit'}
+          disabled={form.formState.isSubmitting}
         >
           Add Example
         </Button>
@@ -201,7 +201,7 @@ export function QuestionForm({
                         placeholder='Input'
                         className='w-full'
                         disabled={
-                          form.formState.isSubmitting || action === 'edit'
+                          form.formState.isSubmitting
                         }
                         {...field}
                       />
@@ -216,7 +216,7 @@ export function QuestionForm({
                 type='button'
                 className='flex-shrink-0'
                 onClick={() => constraintsControl.remove(index)}
-                disabled={form.formState.isSubmitting || action === 'edit'}
+                disabled={form.formState.isSubmitting}
               >
                 <Trash className='w-4 h-4' />
               </Button>
@@ -229,7 +229,7 @@ export function QuestionForm({
           size='sm'
           type='button'
           onClick={() => constraintsControl.append({ constraint: '' })}
-          disabled={form.formState.isSubmitting || action === 'edit'}
+          disabled={form.formState.isSubmitting}
         >
           Add Constraint
         </Button>
