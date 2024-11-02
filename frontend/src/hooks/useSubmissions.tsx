@@ -1,6 +1,6 @@
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { HISTORY_API_BASE_URL } from '@/lib/consts';
-import { Submission, SubmissionsArraySchema } from '@/types/submission';
+import { Submission, SubmissionsArraySchema, SubmissionSchema } from '@/types/submission';
 
 export const useSubmissions = (userId: number, questionId: number) => {
   return useQuery({
@@ -26,3 +26,28 @@ async function fetchSubmissions(
   return SubmissionsArraySchema.parse(data);
 }
 
+export function useCreateSubmission() {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: async (data: Submission) => {
+      const response = await fetch(HISTORY_API_BASE_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to create submission');
+      }
+
+      const submission = await response.json();
+      return SubmissionSchema.parse(submission);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['submissions'] });
+    },
+  });
+}
