@@ -5,7 +5,7 @@ import {
 } from '@/components/ui/resizable';
 
 import CodeEditor from '@/components/code-editor';
-import Question from '@/components/question';
+import QuestionView from '@/components/QuestionView';
 import { useParams } from 'react-router-dom';
 
 export default function QuestionRoute() {
@@ -17,10 +17,10 @@ export default function QuestionRoute() {
   }
 
   return (
-    <div className='mx-4 mb-4 border rounded-lg overflow-hidden w-full h-full'>
-      <ResizablePanelGroup direction='horizontal'>
+    <div className="mx-4 mb-4 border rounded-lg overflow-hidden w-full h-full">
+      <ResizablePanelGroup direction="horizontal">
         <ResizablePanel defaultSize={40}>
-          <Question id={questionId} />
+          <QuestionView id={questionId} />
         </ResizablePanel>
         <ResizableHandle withHandle />
         <ResizablePanel>

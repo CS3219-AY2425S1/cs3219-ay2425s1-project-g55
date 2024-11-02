@@ -41,25 +41,25 @@ function QuestionActions({
   onDelete,
 }: QuestionActionsProps) {
   return (
-    <div className='absolute top-1 right-6'>
+    <div className="absolute top-1 right-6">
       <QuestionDialog
-        action='edit'
+        action="edit"
         open={open}
         onClose={() => setOpen(false)}
         onSubmit={onEdit}
         defaultValues={dataForForm}
       />
 
-      <div className='flex gap-4'>
-        <Button size='icon' variant='secondary' onClick={() => setOpen(true)}>
-          <Edit className='w-4 h-4' />
+      <div className="flex gap-4">
+        <Button size="icon" variant="secondary" onClick={() => setOpen(true)}>
+          <Edit className="w-4 h-4" />
         </Button>
 
         {/* Delete question dialog */}
         <AlertDialog>
           <AlertDialogTrigger asChild>
-            <Button size='icon' variant='secondary'>
-              <Trash2 className='w-4 h-4' />
+            <Button size="icon" variant="secondary">
+              <Trash2 className="w-4 h-4" />
             </Button>
           </AlertDialogTrigger>
           <AlertDialogContent>
@@ -86,11 +86,11 @@ function QuestionActions({
   );
 }
 
-type QuestionProps = {
+type QuestionViewProps = {
   id: number;
 };
 
-export default function Question({ id }: QuestionProps) {
+export default function QuestionView({ id }: QuestionViewProps) {
   const { data: question, isLoading } = useQuestion(id);
   const { mutateAsync: deleteQuestion } = useDeleteQuestion();
   const { mutateAsync: updateQuestion } = useUpdateQuestion();
@@ -149,20 +149,20 @@ export default function Question({ id }: QuestionProps) {
 
   if (isLoading || !question) {
     return (
-      <div className='flex flex-col items-center justify-center h-full'>
-        <Loader2 className='w-8 h-8 animate-spin' />
-        <p className='mt-2'>Loading...</p>
+      <div className="flex flex-col items-center justify-center h-full">
+        <Loader2 className="w-8 h-8 animate-spin" />
+        <p className="mt-2">Loading...</p>
       </div>
     );
   }
 
   return (
-    <div className='relative w-full max-w-3xl p-4 space-y-4 h-full overflow-y-auto'>
-      <div className='mb-2 text-2xl font-bold'>
-        <span className='mr-2'>{question.id + 1}.</span>
+    <div className="relative w-full max-w-3xl p-4 space-y-4 h-full overflow-y-auto">
+      <div className="mb-2 text-2xl font-bold">
+        <span className="mr-2">{question.id + 1}.</span>
         <span>{question.title}</span>
       </div>
-      <div className=''>
+      <div className="">
         <Badge
           difficulty={
             question.difficulty.toLowerCase() as 'easy' | 'medium' | 'hard'
@@ -171,7 +171,7 @@ export default function Question({ id }: QuestionProps) {
           {question.difficulty}
         </Badge>
         {question.categories.map((category, index) => (
-          <Badge key={index} variant='outline' className='ml-2'>
+          <Badge key={index} variant="outline" className="ml-2">
             {category}
           </Badge>
         ))}
@@ -183,12 +183,12 @@ export default function Question({ id }: QuestionProps) {
 
       <br />
 
-      <section className='space-y-6'>
+      <section className="space-y-6">
         {question.examples.map((example, index) => (
-          <div key={index} className='mb-2'>
-            <p className='font-bold'>Example {index + 1}</p>
-            <blockquote className='mt-2 border-l-2 pl-6'>
-              <p className='font-mono text-sm whitespace-pre'>{example}</p>
+          <div key={index} className="mb-2">
+            <p className="font-bold">Example {index + 1}</p>
+            <blockquote className="mt-2 border-l-2 pl-6">
+              <p className="font-mono text-sm whitespace-pre">{example}</p>
             </blockquote>
           </div>
         ))}
@@ -198,8 +198,8 @@ export default function Question({ id }: QuestionProps) {
 
       {question.constraints && question.constraints.length > 0 && (
         <>
-          <div className='text font-bold mt-4 mb-2'>Constraints:</div>
-          <ul className='list-disc pl-5'>
+          <div className="text font-bold mt-4 mb-2">Constraints:</div>
+          <ul className="list-disc pl-5">
             {question.constraints.map((constraint, index) => (
               <li key={index}>{constraint}</li>
             ))}
@@ -207,12 +207,12 @@ export default function Question({ id }: QuestionProps) {
         </>
       )}
 
-      <div className='w-full text-right'>
+      <div className="w-full text-right">
         <a
           href={question.link}
-          target='_blank'
-          rel='noopener noreferrer'
-          className='inline-block text-blue-600 hover:underline'
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-block text-blue-600 hover:underline"
         >
           View on LeetCode
         </a>
