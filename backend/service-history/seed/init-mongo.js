@@ -8,8 +8,8 @@ console.log(
 const seedHistory = [
   {
     questionId: '1',
-    userId: '123',
-    attemptedCode: 'print("Hello, World!")',
+    userId: '1',
+    attemptedCode: 'console.log("Hello, World!")',
     attemptDateTime: new Date(),
     _id: 1,
   },
