@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { HISTORY_API_BASE_URL } from '@/lib/consts';
+import { BACKEND_URL_HISTORY } from '@/lib/common';
 import { Submission, SubmissionsArraySchema, SubmissionSchema } from '@/types/submission';
 
 export const useSubmissions = (userId: number, questionId: number) => {
@@ -14,7 +14,7 @@ async function fetchSubmissions(
   questionId: number,
 ): Promise<Submission[]> {
   const response = await fetch(
-    `${HISTORY_API_BASE_URL}/users/${userId}/questions/${questionId}`,
+    `${BACKEND_URL_HISTORY}/users/${userId}/questions/${questionId}`,
   );
 
   if (!response.ok) {
@@ -31,7 +31,7 @@ export function useCreateSubmission() {
   
   return useMutation({
     mutationFn: async (data: Submission) => {
-      const response = await fetch(HISTORY_API_BASE_URL, {
+      const response = await fetch(`${BACKEND_URL_HISTORY}/users/${data.userId}/questions/${data.questionId}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
