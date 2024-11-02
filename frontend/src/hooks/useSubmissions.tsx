@@ -1,6 +1,11 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { BACKEND_URL_HISTORY } from '@/lib/common';
-import { Submission, SubmissionsArraySchema, SubmissionSchema } from '@/types/submission';
+import { 
+  Submission, 
+  SubmissionsArraySchema, 
+  SubmissionSchema,
+  CreateSubmissionData 
+} from '@/types/submission';
 
 export const useSubmissions = (userId: number, questionId: number) => {
   return useQuery({
@@ -30,7 +35,7 @@ export function useCreateSubmission() {
   const queryClient = useQueryClient();
   
   return useMutation({
-    mutationFn: async (data: Submission) => {
+    mutationFn: async (data: CreateSubmissionData) => {
       const response = await fetch(`${BACKEND_URL_HISTORY}`, {
         method: 'POST',
         headers: {
@@ -46,8 +51,10 @@ export function useCreateSubmission() {
       const submission = await response.json();
       return SubmissionSchema.parse(submission);
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['submissions'] });
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ 
+        queryKey: ['submissions', data.userId, data.questionId] 
+      });
     },
   });
 }
