@@ -9,3 +9,5 @@ export const SubmissionSchema = z.object({
 });
 
 export type Submission = z.infer<typeof SubmissionSchema>;
+
+export const SubmissionsArraySchema = z.array(SubmissionSchema);
