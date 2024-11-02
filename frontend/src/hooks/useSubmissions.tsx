@@ -23,8 +23,6 @@ async function fetchSubmissions(
 
   const data = await response.json();
 
-  console.log(data);
-
   return SubmissionsArraySchema.parse(data);
 }
 
