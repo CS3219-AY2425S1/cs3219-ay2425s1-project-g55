@@ -3,7 +3,7 @@
 # Variables
 DOCKER_USERNAME="your_docker_username"
 NAMESPACE="g55"
-IMAGE_NAMES=("user_service" "question_service" "matching_service" "mongodb","room_service")
+IMAGE_NAMES=("user_service" "question_service" "matching_service" "mongodb" "room_service")
 
 # Clean up Kubernetes resources
 kubectl delete all --all -n $NAMESPACE
