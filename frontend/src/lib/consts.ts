@@ -8,6 +8,3 @@ export const MATCH_IDLE_STATUS = 'idle';
 export const MATCH_WAITING_STATUS = 'waiting';
 
 export const MATCH_FOUND_SOUND_PATH = '/sounds/match-found.mp3';
-
-export const QUESTION_API_BASE_URL = 'http://localhost:8080/api/questions';
-export const HISTORY_API_BASE_URL = 'http://localhost:8084/api/history';
