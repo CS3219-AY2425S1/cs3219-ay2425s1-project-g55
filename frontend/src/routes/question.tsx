@@ -46,8 +46,8 @@ export default function QuestionRoute() {
         </ResizablePanel>
         <ResizableHandle withHandle />
         <ResizablePanel>
-          <CodeEditor 
-            initialValue={editorCode}
+          <CodeEditor
+            value={editorCode}
             onChange={(value: string) => setEditorCode(value)}
           />
         </ResizablePanel>
