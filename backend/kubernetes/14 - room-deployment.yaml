@@ -10,12 +10,12 @@ spec:
   selector:
     matchLabels:
       app: room-service
+  strategy:
+    type: Recreate
   template:
     metadata:
       labels:
         app: room-service
-    strategy:
-      type: Recreate
     spec:
       containers:
         - image: docker_username/room_service:latest

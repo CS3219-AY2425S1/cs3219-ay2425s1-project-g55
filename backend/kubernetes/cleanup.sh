@@ -13,6 +13,11 @@ kubectl delete namespace $NAMESPACE
 minikube stop
 minikube delete
 
+# Revert all changes for docker image naming
+for yaml_file in *.yaml; do
+  sed -i '' "s/$DOCKER_USERNAME/docker_username/g" "$yaml_file"
+done
+
 # Remove Docker images
 for IMAGE_NAME in "${IMAGE_NAMES[@]}"
 do

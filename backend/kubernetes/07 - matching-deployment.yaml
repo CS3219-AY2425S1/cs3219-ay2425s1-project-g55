@@ -10,12 +10,12 @@ spec:
   selector:
     matchLabels:
       app: matching-service
+  strategy:
+    type: Recreate
   template:
     metadata:
       labels:
         app: matching-service
-    strategy:
-      type: Recreate
     spec:
       containers:
         - image: docker_username/matching_service:latest
