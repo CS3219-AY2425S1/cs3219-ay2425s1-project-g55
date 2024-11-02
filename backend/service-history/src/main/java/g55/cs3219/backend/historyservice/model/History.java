@@ -2,8 +2,10 @@ package g55.cs3219.backend.historyservice.model;
 
 import java.time.LocalDateTime;
 
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
-import org.springframework.data.mongodb.core.mapping.Field;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -20,11 +22,13 @@ import lombok.ToString;
 @ToString
 @Builder
 public class History {
-    @Field("_id")
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    private String questionId;
-    private String userId;
+    private Integer questionId;
+    private Long userId;
     private String code;
     private LocalDateTime attemptedAt;
 }
