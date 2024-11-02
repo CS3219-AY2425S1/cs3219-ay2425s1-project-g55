@@ -159,7 +159,7 @@ export default function QuestionView({ id }: QuestionViewProps) {
   return (
     <div className="relative w-full max-w-3xl p-4 space-y-4 h-full overflow-y-auto">
       <div className="mb-2 text-2xl font-bold">
-        <span className="mr-2">{question.id + 1}.</span>
+        <span className="mr-2">{question.id}.</span>
         <span>{question.title}</span>
       </div>
       <div className="">
