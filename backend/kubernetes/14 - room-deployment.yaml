@@ -2,25 +2,25 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
-    app: matching-service
-  name: matching-service
+    app: room-service
+  name: room-service
   namespace: g55
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: matching-service
+      app: room-service
   strategy:
     type: Recreate
   template:
     metadata:
       labels:
-        app: matching-service
+        app: room-service
     spec:
       containers:
-        - image: docker_username/matching_service:latest
+        - image: docker_username/room_service:latest
           imagePullPolicy: IfNotPresent
-          name: matching-service
+          name: room-service
           resources:
             requests:
               memory: "1Gi"
