@@ -31,7 +31,7 @@ export function useCreateSubmission() {
   
   return useMutation({
     mutationFn: async (data: Submission) => {
-      const response = await fetch(`${BACKEND_URL_HISTORY}/users/${data.userId}/questions/${data.questionId}`, {
+      const response = await fetch(`${BACKEND_URL_HISTORY}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
