@@ -222,7 +222,7 @@ export default function Question({ id }: QuestionProps) {
         </a>
       </div>
 
-      {role != 'admin' &&
+      {role == 'admin' &&
         <QuestionActions
           open={open}
           setOpen={setOpen}
