@@ -2,7 +2,7 @@ import {
   ResizableHandle,
   ResizablePanel,
   ResizablePanelGroup,
-} from '@/components/ui/resizable';
+} from "@/components/ui/resizable";
 
 import CodeEditor from '@/components/code-editor';
 import QuestionView from '@/components/QuestionView';
@@ -28,7 +28,7 @@ function SubmitButton({
   const createSubmission = useCreateSubmission();
   
     if (!userId) {
-      return <LoginPromptView />;
+      return <LoginPromptView featureName={""} featureUsage={""} />;
     }
 
   const handleSubmit = () => {    
@@ -56,8 +56,23 @@ export default function QuestionRoute() {
   const questionId = Number(questionIdString);
   const [editorCode, setEditorCode] = useState<string>('// Write your code here\n');
 
+  const auth = useAuth();
+  const userId = auth?.user?.userId;
+
   if (isNaN(questionId)) {
     return <div>Invalid question ID</div>;
+  }
+
+  // If user is not logged in, show the login prompt
+  if (!userId) {
+    return (
+      <div className="container mx-auto p-4">
+        <LoginPromptView
+          featureName="code editor"
+          featureUsage="view and solve each question in detail"
+        />
+      </div>
+    );
   }
 
   return (

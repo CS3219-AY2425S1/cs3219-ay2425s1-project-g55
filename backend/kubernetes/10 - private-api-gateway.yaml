@@ -43,3 +43,10 @@ spec:
                 name: matching-service
                 port:
                   number: 8080
+          - path: /api/rooms
+            pathType: Prefix
+            backend:
+              service:
+                name: room-service
+                port:
+                  number: 8080

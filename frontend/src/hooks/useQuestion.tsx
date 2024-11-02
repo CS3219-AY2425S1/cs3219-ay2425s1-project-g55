@@ -4,13 +4,13 @@ import {
   Question,
   QuestionSchema,
   UpdateQuestionData,
-} from '@/types/question';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { QUESTION_API_BASE_URL } from '@/lib/consts';
+} from "@/types/question";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { BACKEND_URL_QUESTIONS } from "@/lib/common";
 
 async function fetchQuestion(id: number): Promise<Question> {
   const token = getToken();
-  const response = await fetch(`${QUESTION_API_BASE_URL}/${id}`, {
+  const response = await fetch(`${BACKEND_URL_QUESTIONS}/${id}`, {
     headers: {
       Authorization: `Bearer ${token}`,
     },
@@ -44,8 +44,8 @@ export function useCreateQuestion() {
         ),
       } satisfies Omit<Question, "id">;
       const token = getToken();
-      const response = await fetch(QUESTION_API_BASE_URL, {
-        method: 'POST',
+      const response = await fetch(BACKEND_URL_QUESTIONS, {
+        method: "POST",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
@@ -72,17 +72,14 @@ export function useUpdateQuestion() {
   return useMutation({
     mutationFn: async (data: UpdateQuestionData) => {
       const token = getToken();
-      const response = await fetch(
-        `${QUESTION_API_BASE_URL}/${data.id}`,
-        {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify(data),
-        }
-      );
+      const response = await fetch(`${BACKEND_URL_QUESTIONS}/${data.id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(data),
+      });
       if (!response.ok) {
         throw new Error("Failed to update question");
       }
@@ -103,7 +100,7 @@ export function useDeleteQuestion() {
   return useMutation({
     mutationFn: async (id: number) => {
       const token = getToken();
-      const response = await fetch(`${QUESTION_API_BASE_URL}/${id}`, {
+      const response = await fetch(`${BACKEND_URL_QUESTIONS}/${id}`, {
         method: "DELETE",
         headers: {
           Authorization: `Bearer ${token}`,
