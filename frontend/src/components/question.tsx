@@ -13,6 +13,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import { Badge } from '@/components/ui/badge';
 import { Button, buttonVariants } from '@/components/ui/button';
+import { useAuth } from '@/hooks/auth/useAuth';
 import {
   useDeleteQuestion,
   useQuestion,
@@ -96,6 +97,9 @@ export default function Question({ id }: QuestionProps) {
   const { mutateAsync: updateQuestion } = useUpdateQuestion();
   const [open, setOpen] = useState(false);
   const navigate = useNavigate();
+
+  const auth = useAuth();
+  const role = auth?.user?.role || '';
 
   const dataForForm = (
     question
@@ -218,13 +222,15 @@ export default function Question({ id }: QuestionProps) {
         </a>
       </div>
 
-      <QuestionActions
-        open={open}
-        setOpen={setOpen}
-        dataForForm={dataForForm}
-        onEdit={onEdit}
-        onDelete={onDelete}
-      />
+      {role != 'admin' &&
+        <QuestionActions
+          open={open}
+          setOpen={setOpen}
+          dataForForm={dataForForm}
+          onEdit={onEdit}
+          onDelete={onDelete}
+        />
+      }
     </div>
   );
 }
