@@ -82,7 +82,8 @@ export function useUpdateQuestion() {
         body: JSON.stringify(data),
       });
       if (!response.ok) {
-        throw new Error("Failed to update question");
+        const errorResponse = await response.json();
+        throw new Error("Failed to create question - " + errorResponse.message);
       }
 
       const question = await response.json();

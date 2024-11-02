@@ -143,7 +143,10 @@ export default function Question({ id }: QuestionProps) {
       toast.success('Question updated successfully');
     } catch (error) {
       console.error(error);
-      toast.error('Error updating question');
+      const errorMessage = error instanceof Error ? error.message : "Unknown error";
+      toast.error(`${errorMessage}`, {
+        style: { backgroundColor: '#FFCCCB', color: 'black' },
+      });
     }
   };
 
