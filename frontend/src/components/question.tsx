@@ -137,6 +137,7 @@ export default function Question({ id }: QuestionProps) {
       categories: data.categories.map((category) => category.category),
       difficulty: data.difficulty,
       examples: data.examples.map((example) => example.example),
+      constraints: data.constraints.map((constraint) => constraint.constraint),
     } satisfies UpdateQuestionData;
 
     try {
