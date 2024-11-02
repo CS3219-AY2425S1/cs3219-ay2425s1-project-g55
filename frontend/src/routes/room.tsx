@@ -10,7 +10,7 @@ import { useCallback } from 'react';
 
 import CodeEditor from '@/components/code-editor';
 import ParticipantView from '@/components/ParticipantView';
-import Question from '@/components/question';
+import QuestionView from '@/components/QuestionView';
 import { useAuth } from '@/hooks/auth/useAuth';
 import { useRoom } from '@/hooks/useRoom';
 import { useParams } from 'react-router-dom';
@@ -77,7 +77,7 @@ export default function RoomRoute() {
               />
             </TabsContent>
             <TabsContent value='question'>
-              <Question id={questionId} />
+              <QuestionView id={questionId} />
             </TabsContent>
           </Tabs>
         </ResizablePanel>
