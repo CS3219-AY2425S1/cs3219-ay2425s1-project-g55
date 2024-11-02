@@ -36,7 +36,7 @@ spec:
                 name: question-service
                 port:
                   number: 8080
-          - path: /api/match
+          - path: /api/matching
             pathType: Prefix
             backend:
               service:
