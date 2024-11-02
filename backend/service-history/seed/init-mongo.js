@@ -7,11 +7,11 @@ console.log(
 
 const seedHistory = [
   {
+    _id: 1,
     questionId: '1',
     userId: '1',
     code: 'console.log("Hello, World!")',
-    attemptedAt: new Date().toDateString(),
-    _id: 1,
+    attemptedAt: new Date().toISOString(),
   },
 ];
 

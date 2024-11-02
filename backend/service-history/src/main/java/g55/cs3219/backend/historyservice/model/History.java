@@ -3,6 +3,7 @@ package g55.cs3219.backend.historyservice.model;
 import java.time.LocalDateTime;
 
 import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.Field;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -19,7 +20,8 @@ import lombok.ToString;
 @ToString
 @Builder
 public class History {
-    private String id;
+    @Field("_id")
+    private Integer id;
 
     private String questionId;
     private String userId;
