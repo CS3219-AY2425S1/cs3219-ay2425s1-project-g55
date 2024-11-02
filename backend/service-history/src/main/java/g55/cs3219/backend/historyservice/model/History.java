@@ -23,6 +23,6 @@ public class History {
 
     private String questionId;
     private String userId;
-    private String attemptedCode;
-    private LocalDateTime attemptDateTime;
+    private String code;
+    private LocalDateTime attemptedAt;
 }
