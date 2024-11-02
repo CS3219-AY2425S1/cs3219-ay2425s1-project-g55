@@ -26,6 +26,7 @@ export default function ProblemsRoute() {
 
   const auth = useAuth();
   const userId = auth?.user?.userId;
+  const roles = auth?.user?.role || '';
 
   const onSubmit = async (data: CreateQuestionData) => {
     try {
@@ -50,9 +51,13 @@ export default function ProblemsRoute() {
     <div className="container mx-auto p-4">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold">Problem Set</h1>
-        <Button onClick={() => setOpen(true)} disabled={!userId}>
-          Create Question
-        </Button>
+
+        {roles == "admin" && (
+          <Button onClick={() => setOpen(true)} disabled={!userId}>
+            Create Question
+          </Button>
+        )}
+
         <QuestionDialog
           action="create"
           open={open}
