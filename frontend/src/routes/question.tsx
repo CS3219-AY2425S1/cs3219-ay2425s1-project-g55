@@ -10,6 +10,44 @@ import { useParams } from 'react-router-dom';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import SubmissionView from '@/components/SubmissionView';
 import { useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { useCreateSubmission } from '@/hooks/useSubmissions';
+import { useAuth } from '@/hooks/auth/useAuth';
+import { LoginPromptView } from '@/components/discuss/views/LoginPromptView';
+
+function SubmitButton({ 
+  questionId, 
+  code 
+}: { 
+  questionId: number;
+  code: string;
+}) {
+  const auth = useAuth();
+  const userId = auth?.user?.userId;
+
+  const createSubmission = useCreateSubmission();
+
+  if (!userId) {
+    return <LoginPromptView />;
+  }
+
+  return (
+    <Button 
+      className="absolute bottom-4 right-4 z-10"
+      onClick={() => {
+        createSubmission.mutate({
+          id: 0,
+          userId: userId.toString(),
+          questionId: questionId.toString(),
+          code: code,
+          attemptedAt: new Date().toISOString(),
+        });
+      }}
+    >
+      Submit
+    </Button>
+  );
+}
 
 export default function QuestionRoute() {
   const { questionId: questionIdString } = useParams<{ questionId: string }>();
@@ -46,10 +84,16 @@ export default function QuestionRoute() {
         </ResizablePanel>
         <ResizableHandle withHandle />
         <ResizablePanel>
-          <CodeEditor
-            value={editorCode}
-            onChange={(value: string) => setEditorCode(value)}
-          />
+          <div className="relative h-full">
+            <CodeEditor
+              value={editorCode}
+              onChange={(value: string) => setEditorCode(value)}
+            />
+            <SubmitButton
+              questionId={questionId}
+              code={editorCode}
+            />
+          </div>
         </ResizablePanel>
       </ResizablePanelGroup>
     </div>
