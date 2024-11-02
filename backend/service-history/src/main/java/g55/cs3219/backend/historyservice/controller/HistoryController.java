@@ -18,19 +18,20 @@ public class HistoryController {
     }
 
     @GetMapping("/users/{userId}/attempts")
-    public ResponseEntity<List<History>> getAllAttemptsByUserId(@PathVariable String userId) {
+    public ResponseEntity<List<History>> getAllAttemptsByUserId(@PathVariable Long userId) {
         return ResponseEntity.ok(historyService.getHistoryByUserId(userId));
     }
 
     @GetMapping("/users/{userId}/questions/{questionId}")
     public ResponseEntity<List<History>> getAllAttemptsByUserIdAndQuestionId(
-            @PathVariable String userId,
-            @PathVariable String questionId) {
+            @PathVariable Long userId,
+            @PathVariable Integer questionId) {
         return ResponseEntity.ok(historyService.getHistoryByUserIdAndQuestionId(userId, questionId));
     }
 
     @PostMapping()
     public ResponseEntity<History> createHistory(@RequestBody History history) {
+        history.setId(null);
         return ResponseEntity.ok(historyService.createHistory(history));
     }
 }

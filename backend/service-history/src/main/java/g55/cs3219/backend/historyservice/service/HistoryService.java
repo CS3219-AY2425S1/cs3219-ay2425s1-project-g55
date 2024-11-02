@@ -17,19 +17,19 @@ public class HistoryService {
         return historyRepository.save(history);
     }
     
-    public List<History> getHistoryByUserIdAndQuestionId(String userId, String questionId) {
+    public List<History> getHistoryByUserIdAndQuestionId(Long userId, Integer questionId) {
         return historyRepository.findByUserIdAndQuestionIdOrderByAttemptedAtDesc(userId, questionId);
     }
     
-    public List<History> getHistoryByUserId(String userId) {
+    public List<History> getHistoryByUserId(Long userId) {
         return historyRepository.findByUserIdOrderByAttemptedAtDesc(userId);
     }
 
-    public History updateHistory(String id, History history) {
+    public History updateHistory(Integer id, History history) {
         return historyRepository.save(history);
     }
 
-    public void deleteHistory(String id) {
+    public void deleteHistory(Integer id) {
         historyRepository.deleteById(id);
     }
 }
