@@ -9,8 +9,8 @@ const seedHistory = [
   {
     questionId: '1',
     userId: '1',
-    attemptedCode: 'console.log("Hello, World!")',
-    attemptDateTime: new Date(),
+    code: 'console.log("Hello, World!")',
+    attemptedAt: new Date().toDateString(),
     _id: 1,
   },
 ];
