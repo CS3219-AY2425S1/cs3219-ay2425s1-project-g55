@@ -349,5 +349,50 @@ class AuthenticationServiceTest {
         verify(userRepository, times(1)).save(userToUpdate);
     }
 
+    @Test
+    void updateUser_shouldTriggerReverification_whenEmailIsUpdated() {
+        Long userId = 1L;
+        String oldEmail = "oldemail@example.com";
+        String newEmail = "newemail@example.com";
+        Map<String, Object> updates = new HashMap<>();
+        updates.put("email", newEmail);
+
+        User currentUser = new User();
+        currentUser.setId(userId);
+        currentUser.setEmail(oldEmail);
+        currentUser.setEnabled(true);
+
+        User userToUpdate = new User();
+        userToUpdate.setId(userId);
+        userToUpdate.setEmail(oldEmail);
+        userToUpdate.setEnabled(true);
+
+        when(userRepository.findById(userId)).thenReturn(Optional.of(userToUpdate));
+        when(userRepository.save(any(User.class))).thenAnswer(i -> i.getArguments()[0]);
+
+        try {
+            doNothing().when(emailService).sendVerificationEmail(eq(newEmail),
+                    eq("Account Verification"),
+                    anyString());
+        } catch (MessagingException e){
+            fail("MessagingException occurred: " + e.getMessage());
+        }
+
+        User updatedUser = authenticationService.updateUser(userId, updates, currentUser);
+
+        assertNotNull(updatedUser);
+        assertEquals(newEmail, updatedUser.getEmail());
+        assertFalse(updatedUser.isEnabled());
+        assertNotNull(updatedUser.getVerificationCode());
+        assertNotEquals(oldEmail, updatedUser.getEmail());
+
+        try {
+            verify(emailService, times(1)).sendVerificationEmail(eq(newEmail), eq("Account Verification"), anyString());
+        } catch (MessagingException e){
+            fail("MessagingException occurred: " + e.getMessage());
+        }
+
+    }
+
 }
 

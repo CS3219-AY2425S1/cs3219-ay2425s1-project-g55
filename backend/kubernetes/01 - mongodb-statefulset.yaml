@@ -1,0 +1,23 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: mongodb
+  namespace: g55
+spec:
+  serviceName: mongodb
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mongodb
+  template:
+    metadata:
+      labels:
+        app: mongodb
+    spec:
+      containers:
+        - name: mongodb
+          image: docker_username/mongodb:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 27017
+              name: mongodb

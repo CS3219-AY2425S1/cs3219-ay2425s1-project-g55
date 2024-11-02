@@ -46,7 +46,7 @@ type QuestionFormProps = {
 const formDefaultValues: CreateQuestionData = {
   title: '',
   description: '',
-  examples: [{ input: '', output: '' }],
+  examples: [],
   constraints: [],
   categories: [],
   difficulty: 'Easy',
@@ -124,18 +124,26 @@ export function QuestionForm({
           )}
         />
 
+        {/* Examples */}
+        {examplesControl.fields.length == 0 && (
+          <div className='flex flex-col gap-2'>
+            <p className='text-sm font-medium'>Examples</p>
+            <p className='text-sm text-gray-500'>No examples added</p>
+          </div>
+        )}
+
         {examplesControl.fields.map((field, index) => (
           <div key={field.id} className='flex flex-col gap-2'>
             <div className='text-sm font-medium'>Example {index + 1}</div>
             <div className='flex gap-2'>
               <FormField
                 control={form.control}
-                name={`examples.${index}.input`}
+                name={`examples.${index}.example`}
                 render={({ field }) => (
                   <FormItem className='flex-grow'>
                     <FormControl>
-                      <Input
-                        placeholder='Input'
+                      <Textarea
+                        placeholder={`Enter example, e.g.\nInput: [1, 2, 3]\nOutput: 6`}
                         className='w-full'
                         disabled={
                           form.formState.isSubmitting || action === 'edit'
@@ -147,38 +155,17 @@ export function QuestionForm({
                   </FormItem>
                 )}
               />
-              {examplesControl.fields.length > 1 && (
-                <Button
-                  variant='secondary'
-                  size='icon'
-                  type='button'
-                  onClick={() => examplesControl.remove(index)}
-                  className='flex-shrink-0'
-                  disabled={form.formState.isSubmitting || action === 'edit'}
-                >
-                  <Trash className='w-4 h-4' />
-                </Button>
-              )}
+              <Button
+                variant='secondary'
+                size='icon'
+                type='button'
+                onClick={() => examplesControl.remove(index)}
+                className='flex-shrink-0'
+                disabled={form.formState.isSubmitting || action === 'edit'}
+              >
+                <Trash className='w-4 h-4' />
+              </Button>
             </div>
-
-            <FormField
-              control={form.control}
-              name={`examples.${index}.output`}
-              render={({ field }) => (
-                <FormItem>
-                  <FormControl>
-                    <Input
-                      placeholder='Output'
-                      {...field}
-                      disabled={
-                        form.formState.isSubmitting || action === 'edit'
-                      }
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
           </div>
         ))}
 
@@ -186,7 +173,7 @@ export function QuestionForm({
           variant='secondary'
           size='sm'
           type='button'
-          onClick={() => examplesControl.append({ input: '', output: '' })}
+          onClick={() => examplesControl.append({ example: '' })}
           disabled={form.formState.isSubmitting || action === 'edit'}
         >
           Add Example

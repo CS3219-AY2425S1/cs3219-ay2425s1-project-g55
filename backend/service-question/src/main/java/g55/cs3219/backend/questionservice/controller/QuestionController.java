@@ -40,6 +40,11 @@ public class QuestionController {
     @Autowired
     private QuestionService questionService;
 
+    @GetMapping("/public")
+    public List<QuestionDto> getAllQuestionsForPublic() {
+       return questionService.getAllQuestions();
+    }
+
     @GetMapping()
     public List<QuestionDto> getAllQuestions() {
        return questionService.getAllQuestions();

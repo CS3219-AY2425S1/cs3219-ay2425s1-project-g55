@@ -1,6 +1,6 @@
-import { BACKEND_URL_USERS } from '@/lib/common';
-import { RegisterUser } from '@/types/auth';
-import { useMutation } from '@tanstack/react-query';
+import { BACKEND_URL_USERS } from "@/lib/common";
+import { RegisterUser } from "@/types/auth";
+import { useMutation } from "@tanstack/react-query";
 
 export class RegisterUsernameAlreadyTakenError extends Error {}
 export class RegisterEmailAlreadyExistsError extends Error {}
@@ -17,23 +17,23 @@ export function useRegister() {
         username: data.username,
       };
 
-      const response = await fetch(`${BACKEND_URL_USERS}`, {
-        method: 'POST',
+      const response = await fetch(`${BACKEND_URL_USERS}/create`, {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify(dataForBackend),
       });
 
       if (!response.ok) {
         const errorMessage = await response.text();
-        if (errorMessage.toLowerCase().includes('username already exists')) {
+        if (errorMessage.toLowerCase().includes("username already exists")) {
           throw new RegisterUsernameAlreadyTakenError();
         }
-        if (errorMessage.toLowerCase().includes('email already exists')) {
+        if (errorMessage.toLowerCase().includes("email already exists")) {
           throw new RegisterEmailAlreadyExistsError();
         }
-        throw new Error('Failed to register user');
+        throw new Error("Failed to register user");
       }
 
       return response.json();

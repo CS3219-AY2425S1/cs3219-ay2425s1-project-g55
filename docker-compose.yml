@@ -10,6 +10,7 @@ services:
     depends_on:
       - backend-service-question
       - backend-service-user
+      - backend-service-matching
 
   backend-service-question:
     build:
@@ -44,7 +45,7 @@ services:
       context: ./backend/service-user
     container_name: backend-service-user
     ports:
-      - '8081:8081'
+      - '8081:8080'
     networks:
       - app-network
     depends_on:
@@ -74,16 +75,49 @@ services:
       context: ./backend/service-matching
     container_name: backend-service-matching
     ports:
-      - '8082:8082'
+      - '8082:8080'
     networks:
       - app-network
     environment:
       SPRING_RABBITMQ_HOST: rabbitmq
       SPRING_RABBITMQ_PORT: 5672
     depends_on:
-      - backend-service-user
-      - backend-service-question
       - rabbitmq
+  
+  backend-service-room:
+    build:
+      context: ./backend/service-room
+    container_name: backend-service-room
+    ports:
+      - '8083:8080'
+    networks:
+      - app-network
+    depends_on:
+      - rabbitmq
+      - backend-service-room-db
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://backend-service-room-db:5432/room-db
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: password
+      SPRING_RABBITMQ_HOST: rabbitmq
+      SPRING_RABBITMQ_PORT: 5672
+      SPRING_RABBITMQ_USERNAME: guest
+      SPRING_RABBITMQ_PASSWORD: guest
+    
+  backend-service-room-db:
+    image: postgres:16-alpine
+    container_name: backend-service-room-db
+    ports:
+    - '5434:5432'
+    networks:
+      - app-network
+    environment:
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: room-db
+      POSTGRES_USER: postgres
+    volumes:
+      - room_postgres_data:/var/lib/postgresql/data
+      - ./backend/service-room/seed/init.sql:/docker-entrypoint-initdb.d/init.sql
 
   rabbitmq:
     image: rabbitmq:4.0-management
@@ -133,3 +167,4 @@ volumes:
   mongodb_data:
   postgres_data:
   history_mongodb_data:
+  room_postgres_data:

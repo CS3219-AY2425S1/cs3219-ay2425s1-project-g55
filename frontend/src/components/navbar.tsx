@@ -29,7 +29,7 @@ export function NavbarLink({
 }
 
 export default function Navbar() {
-  const user = useAuth();
+  const auth = useAuth();
 
   return (
     <nav className='col-span-12 bg-background h-14'>
@@ -47,7 +47,7 @@ export default function Navbar() {
             </div>
           </div>
           <div className='hidden sm:ml-6 sm:flex sm:items-center'>
-            {user ? <UserMenuAvatar /> : <LoginDialog />}
+            {auth ? <UserMenuAvatar /> : <LoginDialog />}
           </div>
         </div>
       </div>

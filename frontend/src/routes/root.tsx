@@ -10,7 +10,7 @@ function Root() {
     <QueryClientProvider client={queryClient}>
       <div className='grid grid-cols-12 h-screen w-screen'>
         <Navbar />
-        <div className='col-span-12 flex flex-col items-center justify-center h-[calc(100vh-4rem)]'>
+        <div className='col-span-12 flex flex-col items-center justify-center h-[calc(100vh-4rem)] pb-4 px-4'>
           <Outlet />
         </div>
       </div>

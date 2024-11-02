@@ -12,7 +12,6 @@ import lombok.Setter;
 import lombok.ToString;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-import java.util.HashMap;
 import java.util.List;
 
 @Document(collection = "questions")
@@ -33,7 +32,7 @@ public class Question {
 
     private String title;
     private String description;
-    private List<HashMap<String, String>> examples;
+    private List<String> examples;
     private List<String> constraints;
     private List<String> categories;
     private String difficulty;

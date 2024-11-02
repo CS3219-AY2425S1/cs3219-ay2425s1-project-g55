@@ -2,6 +2,7 @@ package g55.cs3219.backend.userService.controller;
 
 import g55.cs3219.backend.userService.dto.LoginUserDto;
 import g55.cs3219.backend.userService.dto.RegisterUserDto;
+import g55.cs3219.backend.userService.responses.JwtTokenValidationResponse;
 import g55.cs3219.backend.userService.responses.UserResponse;
 import g55.cs3219.backend.userService.dto.VerifyUserDto;
 import g55.cs3219.backend.userService.model.User;
@@ -12,6 +13,8 @@ import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -32,10 +35,12 @@ public class AuthenticationController {
 
     private final JwtService jwtService;
     private final AuthenticationService authenticationService;
+    private final UserDetailsService userDetailsService;
 
-    public AuthenticationController(JwtService jwtService, AuthenticationService authenticationService) {
+    public AuthenticationController(JwtService jwtService, AuthenticationService authenticationService, UserDetailsService userDetailsService) {
         this.jwtService = jwtService;
         this.authenticationService = authenticationService;
+        this.userDetailsService = userDetailsService;
     }
 
     @ResponseStatus(HttpStatus.BAD_REQUEST)
@@ -84,6 +89,10 @@ public class AuthenticationController {
 
     @GetMapping("/verify-token")
     public ResponseEntity<?> verifyToken(Authentication authentication) {
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid or missing token");
+        }
+
         try {
             User currentUser = (User) authentication.getPrincipal();
 
@@ -92,6 +101,26 @@ public class AuthenticationController {
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred while verifying the token.");
+        }
+    }
+
+    @GetMapping("/verify-token-param")
+    public ResponseEntity<?> verifyTokenParam(@RequestParam("token") String token) {
+        try {
+            String userEmail = jwtService.extractUsername(token);
+            UserDetails userDetails = userDetailsService.loadUserByUsername(userEmail);
+            User user = (User) userDetails;
+            JwtTokenValidationResponse validationResponse = jwtService.isTokenValid(token, userDetails);
+
+            if (validationResponse.isValid()) {
+                UserResponse response = new UserResponse(user.getId(), user.getName(), userDetails.getUsername(),
+                        user.isAdmin());
+                return ResponseEntity.ok(response);
+            } else {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(validationResponse.getMessage());
+            }
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid or missing token");
         }
     }
 }

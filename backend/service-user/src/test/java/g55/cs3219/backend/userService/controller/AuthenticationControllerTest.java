@@ -141,6 +141,7 @@ class AuthenticationControllerTest {
 
     @Test
     void verifyToken_shouldReturnUserResponse_whenTokenIsValid() {
+        when(authentication.isAuthenticated()).thenReturn(true);
         when(authentication.getPrincipal()).thenReturn(mockUser);
 
         ResponseEntity<?> response = authenticationController.verifyToken(authentication);
@@ -155,7 +156,18 @@ class AuthenticationControllerTest {
     }
 
     @Test
+    void verifyToken_shouldReturnUnauthorized_whenTokenIsInvalid() {
+        when(authentication.isAuthenticated()).thenReturn(false);
+
+        ResponseEntity<?> response = authenticationController.verifyToken(authentication);
+
+        assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
+        assertEquals("Invalid or missing token", response.getBody());
+    }
+
+    @Test
     void verifyToken_shouldReturnInternalServerError_whenExceptionOccurs() {
+        when(authentication.isAuthenticated()).thenReturn(true);
         when(authentication.getPrincipal()).thenThrow(new RuntimeException("Unexpected error"));
 
         ResponseEntity<?> response = authenticationController.verifyToken(authentication);

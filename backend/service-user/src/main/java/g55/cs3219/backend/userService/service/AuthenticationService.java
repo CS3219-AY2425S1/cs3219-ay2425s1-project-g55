@@ -126,6 +126,8 @@ public class AuthenticationService {
         User userToUpdate = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
+        boolean emailChanged = false;
+
         if (!currentUser.isAdmin() && !userToUpdate.getId().equals(currentUser.getId())) {
             throw new RuntimeException("Forbidden: You can only update your own information.");
         }
@@ -134,7 +136,14 @@ public class AuthenticationService {
             userToUpdate.setUsername((String) updates.get("username"));
         }
         if (updates.containsKey("email")) {
-            userToUpdate.setEmail((String) updates.get("email"));
+            String newEmail = (String) updates.get("email");
+            if (!newEmail.equals(userToUpdate.getEmail())) {
+                userToUpdate.setEmail(newEmail);
+                userToUpdate.setEnabled(false);
+                userToUpdate.setVerificationCode(generateVerificationCode());
+                userToUpdate.setVerificationCodeExpiredAt(LocalDateTime.now().plusMinutes(15));
+                emailChanged = true;
+            }
         }
         if (updates.containsKey("password")) {
             userToUpdate.setPassword(passwordEncoder.encode((String) updates.get("password")));
@@ -144,7 +153,13 @@ public class AuthenticationService {
             userToUpdate.setAdmin((Boolean) updates.get("isAdmin"));
         }
 
-        return userRepository.save(userToUpdate);
+        userRepository.save(userToUpdate);
+
+        if (emailChanged) {
+            sendVerificationEmail(userToUpdate);
+        }
+
+        return userToUpdate;
     }
 
     private  String generateVerificationCode() {

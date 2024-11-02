@@ -1,0 +1,30 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: matching-service
+  name: matching-service
+  namespace: g55
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: matching-service
+  template:
+    metadata:
+      labels:
+        app: matching-service
+    spec:
+      containers:
+        - image: docker_username/matching_service:latest
+          imagePullPolicy: IfNotPresent
+          name: matching-service
+          resources:
+            requests:
+              memory: "1Gi"
+              cpu: "500m"
+            limits:
+              memory: "1Gi"
+              cpu: "1000m"
+      restartPolicy: Always
+status: {}

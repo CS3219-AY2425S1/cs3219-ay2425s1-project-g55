@@ -1,0 +1,52 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: public-api-gateway
+  namespace: g55
+spec:
+  rules:
+    - host: localhost
+      http:
+        paths:
+          - path: /api/users/create
+            pathType: Prefix
+            backend:
+              service:
+                name: user-service
+                port:
+                  number: 8080
+          - path: /api/auth/login
+            pathType: Prefix
+            backend:
+              service:
+                name: user-service
+                port:
+                  number: 8080
+          - path: /api/auth/verify
+            pathType: Prefix
+            backend:
+              service:
+                name: user-service
+                port:
+                  number: 8080
+          - path: /api/auth/verify-token
+            pathType: Prefix
+            backend:
+              service:
+                name: user-service
+                port:
+                  number: 8080
+          - path: /api/auth/verify-token-param
+            pathType: Prefix
+            backend:
+              service:
+                name: user-service
+                port:
+                  number: 8080
+          - path: /api/questions/public
+            pathType: Prefix
+            backend:
+              service:
+                name: question-service
+                port:
+                  number: 8080

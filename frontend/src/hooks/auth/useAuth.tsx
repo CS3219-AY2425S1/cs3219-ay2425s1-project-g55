@@ -12,17 +12,22 @@ const USER_ROLES = {
   admin: 'admin',
 } as const;
 
-type AuthenticatedUser = {
-  role: UserRole;
+type AuthHelper = {
+  user: AuthUser;
   logout: () => void;
+};
+
+type AuthUser = {
+  role: UserRole;
+  userId: number;
 };
 
 function clearAuthData() {
   localStorage.removeItem(LOCAL_STORAGE_KEYS.USER);
 }
 
-export function useAuth(): AuthenticatedUser | null {
-  const [userRole, setUserRole] = useState<UserRole | null>(null);
+export function useAuth(): AuthHelper | null {
+  const [user, setUser] = useState<AuthUser | null>(null);
 
   useEffect(() => {
     const checkAuth = () => {
@@ -32,7 +37,7 @@ export function useAuth(): AuthenticatedUser | null {
 
       if (!loginResponse.success) {
         clearAuthData();
-        setUserRole(null);
+        setUser(null);
         return;
       }
 
@@ -41,16 +46,19 @@ export function useAuth(): AuthenticatedUser | null {
       try {
         const decodedToken = jwtDecode<DecodedToken>(user.token);
         if (decodedToken.exp * 1000 > Date.now()) {
-          setUserRole(user.admin ? USER_ROLES.admin : USER_ROLES.user);
+          setUser({
+            role: user.admin ? USER_ROLES.admin : USER_ROLES.user,
+            userId: user.id,
+          });
         } else {
           // Token has expired
           clearAuthData();
-          setUserRole(null);
+          setUser(null);
         }
       } catch (error) {
         console.error('Failed to decode token:', error);
         clearAuthData();
-        setUserRole(null);
+        setUser(null);
       }
     };
 
@@ -58,12 +66,12 @@ export function useAuth(): AuthenticatedUser | null {
     // You might want to set up a timer to periodically check the token's validity
   }, []);
 
-  return userRole
+  return user
     ? {
-        role: userRole,
+        user,
         logout: () => {
           clearAuthData();
-          setUserRole(null);
+          setUser(null);
           window.location.reload();
         },
       }

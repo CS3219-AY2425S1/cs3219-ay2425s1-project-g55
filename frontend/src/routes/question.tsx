@@ -1,4 +1,3 @@
-import { QuestionDialog } from '@/components/forms/question';
 import {
   ResizableHandle,
   ResizablePanel,
@@ -6,242 +5,22 @@ import {
 } from '@/components/ui/resizable';
 
 import CodeEditor from '@/components/code-editor';
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from '@/components/ui/alert-dialog';
-import { Badge } from '@/components/ui/badge';
-import { Button, buttonVariants } from '@/components/ui/button';
-import {
-  useDeleteQuestion,
-  useQuestion,
-  useUpdateQuestion,
-} from '@/hooks/useQuestion';
-import { CreateQuestionData, UpdateQuestionData } from '@/types/question';
-import { Edit, Loader2, Trash2 } from 'lucide-react';
-import { useState } from 'react';
-import { SubmitHandler } from 'react-hook-form';
-import { useNavigate, useParams } from 'react-router-dom';
-import { toast } from 'sonner';
+import Question from '@/components/question';
+import { useParams } from 'react-router-dom';
 
-type QuestionActionsProps = {
-  open: boolean;
-  setOpen: (open: boolean) => void;
-  dataForForm: CreateQuestionData | undefined;
-  onEdit: SubmitHandler<CreateQuestionData>;
-  onDelete: () => void;
-};
-
-function QuestionActions({
-  open,
-  setOpen,
-  dataForForm,
-  onEdit,
-  onDelete,
-}: QuestionActionsProps) {
-  return (
-    <div className='absolute top-1 right-6'>
-      <QuestionDialog
-        action='edit'
-        open={open}
-        onClose={() => setOpen(false)}
-        onSubmit={onEdit}
-        defaultValues={dataForForm}
-      />
-
-      <div className='flex gap-4'>
-        <Button size='icon' variant='secondary' onClick={() => setOpen(true)}>
-          <Edit className='w-4 h-4' />
-        </Button>
-
-        {/* Delete question dialog */}
-        <AlertDialog>
-          <AlertDialogTrigger asChild>
-            <Button size='icon' variant='secondary'>
-              <Trash2 className='w-4 h-4' />
-            </Button>
-          </AlertDialogTrigger>
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-              <AlertDialogDescription>
-                This action cannot be undone. This will permanently delete the
-                question.
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel>Cancel</AlertDialogCancel>
-              <AlertDialogAction
-                className={buttonVariants({ variant: 'destructive' })}
-                onClick={onDelete}
-              >
-                Continue
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
-      </div>
-    </div>
-  );
-}
-
-function Question() {
+export default function QuestionRoute() {
   const { questionId: questionIdString } = useParams<{ questionId: string }>();
   const questionId = Number(questionIdString);
-  const { data: question, isLoading } = useQuestion(Number(questionId));
-  const { mutateAsync: deleteQuestion } = useDeleteQuestion();
-  const { mutateAsync: updateQuestion } = useUpdateQuestion();
-  const [open, setOpen] = useState(false);
-  const navigate = useNavigate();
 
-  const dataForForm = (
-    question
-      ? {
-          title: question.title,
-          description: question.description,
-          categories: question.categories.map((category) => ({
-            category,
-          })),
-          difficulty: question.difficulty,
-          link: question.link,
-          examples: question.examples.map((example) => ({
-            input: example.input,
-            output: example.output,
-          })),
-          constraints: question.constraints.map((constraint) => ({
-            constraint,
-          })),
-        }
-      : undefined
-  ) satisfies CreateQuestionData | undefined;
-
-  const onDelete = async () => {
-    try {
-      await deleteQuestion(questionId);
-      toast.success('Question deleted successfully.');
-      navigate('/problems');
-    } catch (error) {
-      console.error(error);
-      toast.error('Error deleting question');
-    }
-  };
-
-  const onEdit: SubmitHandler<CreateQuestionData> = async (data) => {
-    const dataForUpdate = {
-      id: questionId,
-      title: data.title,
-      description: data.description,
-      categories: data.categories.map((category) => category.category),
-      difficulty: data.difficulty,
-    } satisfies UpdateQuestionData;
-
-    try {
-      await updateQuestion(dataForUpdate);
-      toast.success('Question updated successfully');
-    } catch (error) {
-      console.error(error);
-      toast.error('Error updating question');
-    }
-  };
-
-  if (isLoading || !question) {
-    return (
-      <div className='flex flex-col items-center justify-center h-full'>
-        <Loader2 className='w-8 h-8 animate-spin' />
-        <p className='mt-2'>Loading...</p>
-      </div>
-    );
+  if (isNaN(questionId)) {
+    return <div>Invalid question ID</div>;
   }
 
   return (
-    <div className='relative w-full max-w-3xl p-4 space-y-4 h-full overflow-y-auto'>
-      <div className='mb-2 text-2xl font-bold'>
-        <span className='mr-2'>{question.id + 1}.</span>
-        <span>{question.title}</span>
-      </div>
-      <div className=''>
-        <Badge
-          difficulty={
-            question.difficulty.toLowerCase() as 'easy' | 'medium' | 'hard'
-          }
-        >
-          {question.difficulty}
-        </Badge>
-        {question.categories.map((category, index) => (
-          <Badge key={index} variant='outline' className='ml-2'>
-            {category}
-          </Badge>
-        ))}
-      </div>
-
-      <br />
-
-      <p>{question.description}</p>
-
-      <br />
-
-      <section className='space-y-6'>
-        {question.examples.map((example, index) => (
-          <div key={index} className='mb-2'>
-            <p className='font-bold'>Example {index + 1}</p>
-            <blockquote className='mt-2 border-l-2 pl-6'>
-              <p>
-                <span className='mr-2'>Input:</span>
-                <span className='font-mono text-sm'>{example.input}</span>
-              </p>
-              <p>
-                <span className='mr-2'>Output:</span>
-                <span className='font-mono text-sm'>{example.output}</span>
-              </p>
-            </blockquote>
-          </div>
-        ))}
-      </section>
-
-      <br />
-
-      <div className='text font-bold mt-4 mb-2'>Constraints:</div>
-      <ul className='list-disc pl-5'>
-        {question.constraints.map((constraint, index) => (
-          <li key={index}>{constraint}</li>
-        ))}
-      </ul>
-
-      <div className='w-full text-right'>
-        <a
-          href={question.link}
-          target='_blank'
-          rel='noopener noreferrer'
-          className='inline-block text-blue-600 hover:underline'
-        >
-          View on LeetCode
-        </a>
-      </div>
-
-      <QuestionActions
-        open={open}
-        setOpen={setOpen}
-        dataForForm={dataForForm}
-        onEdit={onEdit}
-        onDelete={onDelete}
-      />
-    </div>
-  );
-}
-
-export default function QuestionRoute() {
-  return (
-    <div className='mx-4 mb-4 border rounded-lg overflow-hidden h-full'>
+    <div className='mx-4 mb-4 border rounded-lg overflow-hidden w-full h-full'>
       <ResizablePanelGroup direction='horizontal'>
         <ResizablePanel defaultSize={40}>
-          <Question />
+          <Question id={questionId} />
         </ResizablePanel>
         <ResizableHandle withHandle />
         <ResizablePanel>

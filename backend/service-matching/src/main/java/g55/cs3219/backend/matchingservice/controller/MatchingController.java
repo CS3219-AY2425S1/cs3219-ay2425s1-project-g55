@@ -8,7 +8,7 @@ import g55.cs3219.backend.matchingservice.service.MatchingProducer;
 import g55.cs3219.backend.matchingservice.service.MatchingService;
 
 @RestController
-@RequestMapping("/api/match")
+@RequestMapping("/api/matching")
 public class MatchingController {
 
     private final MatchingProducer matchingProducer;

@@ -34,7 +34,7 @@ public class SecurityConfiguration {
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(authorize -> authorize
                         // Allow registration and login for all users
-                        .requestMatchers("/api/auth/**", "/api/users").permitAll()
+                        .requestMatchers("/api/auth/**", "/api/users/create").permitAll()
 
                         // Get all users - restricted to admin only
                         .requestMatchers(HttpMethod.GET, "/api/users").hasRole("ADMIN")

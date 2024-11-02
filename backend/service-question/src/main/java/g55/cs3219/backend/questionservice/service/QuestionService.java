@@ -1,8 +1,18 @@
 package g55.cs3219.backend.questionservice.service;
 
-import static org.springframework.data.mongodb.core.query.Query.query;
-import static org.springframework.data.mongodb.core.query.Criteria.where;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import org.springframework.beans.factory.annotation.Autowired;
 import static org.springframework.data.mongodb.core.FindAndModifyOptions.options;
+import org.springframework.data.mongodb.core.MongoOperations;
+import static org.springframework.data.mongodb.core.query.Criteria.where;
+import static org.springframework.data.mongodb.core.query.Query.query;
+import org.springframework.data.mongodb.core.query.Update;
+import org.springframework.stereotype.Service;
 
 import g55.cs3219.backend.questionservice.dto.QuestionDto;
 import g55.cs3219.backend.questionservice.exception.InvalidQuestionException;
@@ -10,16 +20,6 @@ import g55.cs3219.backend.questionservice.exception.QuestionNotFoundException;
 import g55.cs3219.backend.questionservice.model.DatabaseSequence;
 import g55.cs3219.backend.questionservice.model.Question;
 import g55.cs3219.backend.questionservice.repository.QuestionRepository;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.mongodb.core.MongoOperations;
-import org.springframework.data.mongodb.core.query.Update;
-import org.springframework.stereotype.Service;
-
-import java.util.List;
-import java.util.Objects;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-import java.util.Set;
 
 @Service
 public class QuestionService {
@@ -81,10 +81,10 @@ public class QuestionService {
         return questions.stream().map(this::convertToDTO).collect(Collectors.toList());
     }
 
-    public QuestionDto createQuestion(QuestionDto questionDto) {
-        trimWhitespace(questionDto);
+    public QuestionDto createQuestion(QuestionDto questionDto) {       
         validateQuestion(questionDto);
-
+        trimWhitespace(questionDto);
+        
         List<Question> existingQuestions = questionRepository.findByTitleIgnoreCase(questionDto.getTitle());
     
         if (!existingQuestions.isEmpty()) {

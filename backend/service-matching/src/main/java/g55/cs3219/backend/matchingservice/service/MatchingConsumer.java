@@ -1,42 +1,55 @@
 package g55.cs3219.backend.matchingservice.service;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
 
+import g55.cs3219.backend.matchingservice.model.MatchFoundEvent;
 import g55.cs3219.backend.matchingservice.model.MatchingRequest;
 
-@Service
+@Component
 public class MatchingConsumer {
 
     private final MatchingService matchingService;
     private final NotificationService notificationService;
+    private final MatchFoundProducer matchFoundProducer;
 
-    public MatchingConsumer(MatchingService matchingService, NotificationService notificationService) {
+    public MatchingConsumer(MatchingService matchingService, NotificationService notificationService,
+            MatchFoundProducer matchFoundProducer) {
         this.matchingService = matchingService;
         this.notificationService = notificationService;
+        this.matchFoundProducer = matchFoundProducer;
     }
 
     @RabbitListener(queues = "matchingQueue")
     public void processMatchingRequest(MatchingRequest request) {
         System.out.println("Received matching request: " + request);
-        
+
         // Log the status of the queue before attempting to find a match
         System.out.println("Queue status before matching: " + matchingService.getWaitingUsersStatus());
 
         // Try to find a match
         Optional<MatchingRequest> match = matchingService.findMatch(request);
-        
+
         if (match.isPresent()) {
             // Match found
             MatchingRequest matchedUser = match.get();
             String roomId = UUID.randomUUID().toString().substring(0, 5);
+
             notificationService.notifyMatched(request.getUserId(), matchedUser.getUserId(), roomId);
             notificationService.notifyMatched(matchedUser.getUserId(), request.getUserId(), roomId);
+
+            List<String> participantIds = Arrays.asList(request.getUserId(), matchedUser.getUserId());
+            Integer questionId = matchingService.getQuestionIdForMatchRequest(request);
+            System.out.println("Sending match found event for room " + roomId + " with participants "
+                    + participantIds + " and question id " + questionId);
+            matchFoundProducer.sendMatchFoundEvent(new MatchFoundEvent(roomId, participantIds, questionId));
         } else {
             // No immediate match, start timeout
             startMatchingTimeout(request);

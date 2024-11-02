@@ -8,7 +8,7 @@ import {
 import { useAuth } from '@/hooks/auth/useAuth';
 
 export function UserMenuAvatar() {
-  const user = useAuth();
+  const auth = useAuth();
 
   return (
     <DropdownMenu>
@@ -22,7 +22,7 @@ export function UserMenuAvatar() {
         </Avatar>
       </DropdownMenuTrigger>
       <DropdownMenuContent>
-        <DropdownMenuItem onClick={user?.logout}>Logout</DropdownMenuItem>
+        <DropdownMenuItem onClick={auth?.logout}>Logout</DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
   );

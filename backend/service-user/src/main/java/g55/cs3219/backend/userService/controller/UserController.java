@@ -90,7 +90,7 @@ public class UserController {
         }
     }
 
-    @PostMapping
+    @PostMapping("/create")
     public ResponseEntity<?> createUser(@Valid @RequestBody RegisterUserDto registerUserDto) {
         try {
             User createdUser = authenticationService.signup(registerUserDto);
