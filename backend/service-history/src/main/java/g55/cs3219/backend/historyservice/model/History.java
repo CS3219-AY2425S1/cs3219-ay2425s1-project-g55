@@ -10,9 +10,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
-import jakarta.persistence.Id;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
 
 @Document(collection = "history")
 @Getter
@@ -22,9 +19,6 @@ import jakarta.persistence.GenerationType;
 @ToString
 @Builder
 public class History {
-    
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private String id;
 
     private String questionId;
