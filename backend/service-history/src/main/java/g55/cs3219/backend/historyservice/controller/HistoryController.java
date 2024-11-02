@@ -28,4 +28,9 @@ public class HistoryController {
             @PathVariable String questionId) {
         return ResponseEntity.ok(historyService.getHistoryByUserIdAndQuestionId(userId, questionId));
     }
+
+    @PostMapping()
+    public ResponseEntity<History> createHistory(@RequestBody History history) {
+        return ResponseEntity.ok(historyService.createHistory(history));
+    }
 }
