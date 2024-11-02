@@ -9,10 +9,12 @@ import QuestionView from '@/components/QuestionView';
 import { useParams } from 'react-router-dom';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import SubmissionView from '@/components/SubmissionView';
+import { useState } from 'react';
 
 export default function QuestionRoute() {
   const { questionId: questionIdString } = useParams<{ questionId: string }>();
   const questionId = Number(questionIdString);
+  const [editorCode, setEditorCode] = useState<string>('// Write your code here\n');
 
   if (isNaN(questionId)) {
     return <div>Invalid question ID</div>;
@@ -35,13 +37,19 @@ export default function QuestionRoute() {
               <QuestionView id={questionId} />
             </TabsContent>
             <TabsContent value="submissions">
-              <SubmissionView id={questionId} />
+              <SubmissionView 
+                id={questionId} 
+                onViewSubmission={setEditorCode}
+              />
             </TabsContent>
           </Tabs>
         </ResizablePanel>
         <ResizableHandle withHandle />
         <ResizablePanel>
-          <CodeEditor />
+          <CodeEditor 
+            initialValue={editorCode}
+            onChange={(value: string) => setEditorCode(value)}
+          />
         </ResizablePanel>
       </ResizablePanelGroup>
     </div>
