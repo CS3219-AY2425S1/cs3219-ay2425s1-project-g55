@@ -1,7 +1,7 @@
-import { AuthLoginForm } from '@/components/forms/auth-login';
-import { AuthRegisterForm } from '@/components/forms/auth-register';
-import AuthVerifyRegisterForm from '@/components/forms/auth-verify-register';
-import { Button } from '@/components/ui/button';
+import { AuthLoginForm } from "@/components/forms/auth-login";
+import { AuthRegisterForm } from "@/components/forms/auth-register";
+import AuthVerifyRegisterForm from "@/components/forms/auth-verify-register";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -9,27 +9,38 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from '@/components/ui/dialog';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { UnverifiedAccountError, useLogin } from '@/hooks/auth/useLogin';
+} from "@/components/ui/dialog";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { UnverifiedAccountError, useLogin } from "@/hooks/auth/useLogin";
 import {
   RegisterEmailAlreadyExistsError,
   RegisterUsernameAlreadyTakenError,
   useRegister,
-} from '@/hooks/auth/useRegister';
+} from "@/hooks/auth/useRegister";
 import {
   useResendVerificationCode,
   useVerifySignup,
   VerificationCodeExpiredError,
   VerificationCodeInvalidError,
-} from '@/hooks/auth/useVerify';
-import { LoginUser, RegisterUser, VerifyUserCode } from '@/types/auth';
-import { useState } from 'react';
-import { toast } from 'sonner';
+} from "@/hooks/auth/useVerify";
+import { LoginUser, RegisterUser, VerifyUserCode } from "@/types/auth";
+import { useState } from "react";
+import { toast } from "sonner";
 
-export default function LoginDialog() {
-  const [isOpen, setIsOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState('signup');
+interface LoginDialogProps {
+  isControlled?: boolean;
+  isOpen?: boolean;
+  setIsOpen?: React.Dispatch<React.SetStateAction<boolean>>;
+}
+
+export default function LoginDialog({
+  isControlled = false,
+  isOpen,
+  setIsOpen,
+}: LoginDialogProps) {
+  const [internalOpen, setInternalOpen] = useState(false);
+
+  const [activeTab, setActiveTab] = useState("signup");
   const loginMutation = useLogin();
   const registerMutation = useRegister();
 
@@ -42,11 +53,19 @@ export default function LoginDialog() {
     null
   );
 
+  const handleOpenChange = (open: boolean) => {
+    if (isControlled && setIsOpen) {
+      setIsOpen(open);
+    } else {
+      setInternalOpen(open);
+    }
+  };
+
   const handleLogin = async (data: LoginUser) => {
     try {
       await loginMutation.mutateAsync(data);
-      setIsOpen(false);
-      toast.success('Login successful');
+      setInternalOpen(false);
+      toast.success("Login successful");
       // Refresh the page after successful login
       window.location.reload();
     } catch (error) {
@@ -57,8 +76,8 @@ export default function LoginDialog() {
         });
         setInitialCodeSentAt(Date.now());
       } else {
-        console.error('Login failed:', error);
-        toast.error('Login failed');
+        console.error("Login failed:", error);
+        toast.error("Login failed");
       }
     }
   };
@@ -66,7 +85,7 @@ export default function LoginDialog() {
   const handleSignup = async (data: RegisterUser) => {
     try {
       await registerMutation.mutateAsync(data);
-      toast.success('Signup successful');
+      toast.success("Signup successful");
       setIsUserAwaitingEmailVerification({
         email: data.email,
         password: data.password,
@@ -74,12 +93,12 @@ export default function LoginDialog() {
       setInitialCodeSentAt(Date.now());
     } catch (error) {
       if (error instanceof RegisterUsernameAlreadyTakenError) {
-        toast.error('Username already taken');
+        toast.error("Username already taken");
       } else if (error instanceof RegisterEmailAlreadyExistsError) {
-        toast.error('Email already exists');
+        toast.error("Email already exists");
       } else {
-        console.error('Signup failed:', error);
-        toast.error('Signup failed');
+        console.error("Signup failed:", error);
+        toast.error("Signup failed");
       }
     }
   };
@@ -92,19 +111,19 @@ export default function LoginDialog() {
         email: isUserAwaitingEmailVerification.email,
         verificationCode: data.verificationCode,
       });
-      toast.success('Email verified.');
+      toast.success("Email verified.");
       handleLogin({
         email: isUserAwaitingEmailVerification.email,
         password: isUserAwaitingEmailVerification.password,
       });
     } catch (error) {
       if (error instanceof VerificationCodeInvalidError) {
-        toast.error('Invalid verification code');
+        toast.error("Invalid verification code");
       } else if (error instanceof VerificationCodeExpiredError) {
-        toast.info('Verification code expired');
+        toast.info("Verification code expired");
       } else {
-        console.error('Verify signup failed:', error);
-        toast.error('Verify signup failed');
+        console.error("Verify signup failed:", error);
+        toast.error("Verify signup failed");
       }
     }
   };
@@ -117,25 +136,30 @@ export default function LoginDialog() {
         isUserAwaitingEmailVerification.email
       );
       setInitialCodeSentAt(Date.now());
-      toast.success('Verification code resent');
+      toast.success("Verification code resent");
     } catch (error) {
-      console.error('Resend verification code failed:', error);
-      toast.error('Resend verification code failed');
+      console.error("Resend verification code failed:", error);
+      toast.error("Resend verification code failed");
     }
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={setIsOpen}>
-      <DialogTrigger asChild>
-        <Button variant='outline'>Login / Sign Up</Button>
-      </DialogTrigger>
-      <DialogContent className='sm:max-w-[425px] flex flex-col justify-start'>
+    <Dialog
+      open={isControlled ? isOpen : internalOpen}
+      onOpenChange={handleOpenChange}
+    >
+      {!isControlled && (
+        <DialogTrigger asChild>
+          <Button variant="outline">Login / Sign Up</Button>
+        </DialogTrigger>
+      )}
+      <DialogContent className="sm:max-w-[425px] flex flex-col justify-start">
         <DialogHeader>
           <DialogTitle>Account</DialogTitle>
           <DialogDescription>
             {isUserAwaitingEmailVerification
               ? `Enter the verification code sent to your email.`
-              : 'Login or create a new account to get started.'}
+              : "Login or create a new account to get started."}
           </DialogDescription>
         </DialogHeader>
         {isUserAwaitingEmailVerification ? (
@@ -148,16 +172,16 @@ export default function LoginDialog() {
           <Tabs
             value={activeTab}
             onValueChange={setActiveTab}
-            className='h-full'
+            className="h-full"
           >
-            <TabsList className='grid w-full grid-cols-2'>
-              <TabsTrigger value='signup'>Sign Up</TabsTrigger>
-              <TabsTrigger value='login'>Login</TabsTrigger>
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="signup">Sign Up</TabsTrigger>
+              <TabsTrigger value="login">Login</TabsTrigger>
             </TabsList>
-            <TabsContent value='signup'>
+            <TabsContent value="signup">
               <AuthRegisterForm onSubmit={handleSignup} />
             </TabsContent>
-            <TabsContent value='login'>
+            <TabsContent value="login">
               <AuthLoginForm onSubmit={handleLogin} />
             </TabsContent>
           </Tabs>

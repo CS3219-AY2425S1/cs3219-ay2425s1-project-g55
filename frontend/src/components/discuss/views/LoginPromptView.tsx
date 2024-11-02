@@ -1,8 +1,8 @@
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { useNavigate } from "react-router-dom";
 import React from "react";
+import LoginDialog from "@/components/auth/login-dialog";
 
 interface LoginPromptProps {
   featureName: string;
@@ -13,7 +13,7 @@ export const LoginPromptView: React.FC<LoginPromptProps> = ({
   featureName,
   featureUsage,
 }) => {
-  const navigate = useNavigate();
+  const [openDialog, setOpenDialog] = React.useState(false);
 
   return (
     <Card className="w-full max-w-md mx-auto">
@@ -31,9 +31,16 @@ export const LoginPromptView: React.FC<LoginPromptProps> = ({
           <p className="text-center text-sm text-muted-foreground">
             You need to be logged in to {featureUsage}.
           </p>
-          <Button onClick={() => navigate("/login")} className="w-full">
+          <Button onClick={() => setOpenDialog(true)} className="w-full">
             Go to Login
           </Button>
+          {openDialog && (
+            <LoginDialog
+              isControlled
+              isOpen={openDialog}
+              setIsOpen={setOpenDialog}
+            />
+          )}
         </div>
       </CardContent>
     </Card>
