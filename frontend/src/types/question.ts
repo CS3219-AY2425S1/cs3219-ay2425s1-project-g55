@@ -60,13 +60,14 @@ export const createQuestionSchema = z.object({
 });
 
 export type CreateQuestionData = z.infer<typeof createQuestionSchema>;
-
 export const updateQuestionSchema = z.object({
   id: z.number(),
   title: z.string().min(1, 'Title is required'),
   description: z.string().min(1, 'Description is required'),
+  examples: z.array(z.string()).min(1, 'At least one example is required'),
+  constraints: z.array(z.string()).min(1, 'At least one constraint is required'),
   categories: z.array(z.string()).min(1, 'At least one category is required'),
-  difficulty: z.enum(['Easy', 'Medium', 'Hard']),
+  difficulty: z.enum(DIFFICULTY_ENUM),
 });
 
 export type UpdateQuestionData = z.infer<typeof updateQuestionSchema>;
