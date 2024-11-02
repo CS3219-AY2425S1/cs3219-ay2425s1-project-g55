@@ -1,17 +1,11 @@
 import { useQuery } from '@tanstack/react-query';
 import { HISTORY_API_BASE_URL } from '@/lib/consts';
-import { Submission } from '@/types/submission';
+import { Submission, SubmissionsArraySchema } from '@/types/submission';
 
 export const useSubmissions = (userId: number, questionId: number) => {
   return useQuery({
     queryKey: ['submissions', userId, questionId],
-    queryFn: async () => {
-        if (!userId) {
-            return [];
-        }
-        return fetchSubmissions(userId, questionId);
-    },
-    enabled: !!userId,
+    queryFn: () => fetchSubmissions(userId, questionId),
   });
 };
 
@@ -22,6 +16,15 @@ async function fetchSubmissions(
   const response = await fetch(
     `${HISTORY_API_BASE_URL}/users/${userId}/questions/${questionId}`,
   );
-  return response.json();
+
+  if (!response.ok) {
+    throw new Error('Network response was not ok');
+  }
+
+  const data = await response.json();
+
+  console.log(data);
+
+  return SubmissionsArraySchema.parse(data);
 }
 
