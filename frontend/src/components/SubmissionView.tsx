@@ -26,7 +26,7 @@ export default function SubmissionView({
   const userId = auth?.user?.userId;
 
   if (!userId) {
-    return <LoginPromptView />;
+    return <LoginPromptView featureName="submission" featureUsage="view your submissions" />;
   }
 
   return (
