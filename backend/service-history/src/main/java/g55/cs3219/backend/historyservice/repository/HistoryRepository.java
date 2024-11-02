@@ -9,6 +9,6 @@ import java.util.List;
 
 @Repository
 public interface HistoryRepository extends MongoRepository<History, String> {
-    List<History> findByUserIdOrderByAttemptDateTimeDesc(String userId);
-    List<History> findByUserIdAndQuestionIdOrderByAttemptDateTimeDesc(String userId, String questionId);
+    List<History> findByUserIdOrderByAttemptedAtDesc(String userId);
+    List<History> findByUserIdAndQuestionIdOrderByAttemptedAtDesc(String userId, String questionId);
 }

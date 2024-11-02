@@ -18,11 +18,11 @@ public class HistoryService {
     }
     
     public List<History> getHistoryByUserIdAndQuestionId(String userId, String questionId) {
-        return historyRepository.findByUserIdAndQuestionIdOrderByAttemptDateTimeDesc(userId, questionId);
+        return historyRepository.findByUserIdAndQuestionIdOrderByAttemptedAtDesc(userId, questionId);
     }
     
     public List<History> getHistoryByUserId(String userId) {
-        return historyRepository.findByUserIdOrderByAttemptDateTimeDesc(userId);
+        return historyRepository.findByUserIdOrderByAttemptedAtDesc(userId);
     }
 
     public History updateHistory(String id, History history) {
