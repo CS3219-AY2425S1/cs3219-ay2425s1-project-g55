@@ -71,7 +71,7 @@ export function useUpdateUser() {
         id: String(rawData.id),
         name: rawData.username || rawData.email || '',
         email: rawData.email,
-        isAdmin: Boolean(data.role == 'admin')
+        isAdmin: Boolean(data.role == 'Admin')
       };
 
       return UserSchema.parse(transformedData);
