@@ -11,9 +11,10 @@ export const UsersArraySchema = z.array(UserSchema);
 
 export type User = z.infer<typeof UserSchema>;
 
-export const UserRoleUpdateDataSchema = z.object({
+export const UserUpdateDataSchema = z.object({
   id: z.string(),
-  role: z.enum(["admin", "user"])
+  role: z.enum(["admin", "user"]),
+  username: z.string()
 });
 
-export type UserRoleUpdateData = z.infer<typeof UserRoleUpdateDataSchema>;
+export type UserUpdateData = z.infer<typeof UserUpdateDataSchema>;
