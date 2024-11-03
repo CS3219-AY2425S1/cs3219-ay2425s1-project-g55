@@ -5,11 +5,10 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-export function getToken() {
-  const user = localStorage.getItem("user");
-  if (user) {
-    const parsedUser = JSON.parse(user);
-    return parsedUser.token;
-  }
-  return null;
+export function getToken(): string | null {
+    return localStorage.getItem("token");
+}
+
+export function setToken(token: string): void {
+  localStorage.setItem("token", token);
 }

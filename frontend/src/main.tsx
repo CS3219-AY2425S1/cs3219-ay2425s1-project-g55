@@ -8,6 +8,7 @@ import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import './index.css';
+import AdminUserManagementPage from './routes/admin';
 
 const router = createBrowserRouter([
   {
@@ -30,6 +31,10 @@ const router = createBrowserRouter([
       {
         path: 'rooms/:roomId',
         element: <RoomRoute />,
+      },
+      {
+        path: 'admin/user-management',
+        element: <AdminUserManagementPage />,
       },
     ],
   },
