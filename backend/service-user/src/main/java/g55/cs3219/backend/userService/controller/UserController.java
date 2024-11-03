@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import g55.cs3219.backend.userService.dto.RegisterUserDto;
 import g55.cs3219.backend.userService.model.User;
+import g55.cs3219.backend.userService.responses.UserAdminResponse;
 import g55.cs3219.backend.userService.responses.UserResponse;
 import g55.cs3219.backend.userService.service.AuthenticationService;
 import g55.cs3219.backend.userService.service.UserService;
@@ -50,7 +51,7 @@ public class UserController {
     }
 
     @GetMapping("/summary")
-    public ResponseEntity<List<UserResponse>> getAllUsersSummary(Authentication authentication) {
+    public ResponseEntity<List<UserAdminResponse>> getAllUsersSummary(Authentication authentication) {
         // Check if the authenticated user is an admin
         User currentUser = (User) authentication.getPrincipal();
         if (!currentUser.isAdmin()) {
@@ -59,10 +60,10 @@ public class UserController {
 
         // Fetch all users from the database
         List<User> users = userService.getAllUsers();
-        List<UserResponse> userResponses = users.stream()
-                .map(user -> new UserResponse(user.getId(), user.getEmail(), user.getName(), user.isAdmin()))
+        List<UserAdminResponse> userAdminResponses = users.stream()
+                .map(user -> new UserAdminResponse(user.getId(), user.getEmail(), user.getName(), user.isAdmin(), user.getPassword()))
                 .collect(Collectors.toList());
-        return ResponseEntity.ok(userResponses);
+        return ResponseEntity.ok(userAdminResponses);
     }
 
     @GetMapping("/{userId}")
