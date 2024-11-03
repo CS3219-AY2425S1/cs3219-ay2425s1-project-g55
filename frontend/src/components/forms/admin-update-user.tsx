@@ -16,48 +16,32 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { UserUpdateData, UserUpdateDataSchema } from '@/types/user';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Loader2 } from 'lucide-react';
 import { FieldErrors, SubmitHandler, useForm } from 'react-hook-form';
-import { z } from 'zod';
-
-// Define the schema for user data
-const updateUserSchema = z.object({
-    name: z.string().min(1, 'Name is required'),
-    // password: z.string().min(6, 'Password must be at least 6 characters long'),
-    role: z.enum(['Admin', 'User']),
-});
-
-type UpdateUserData = z.infer<typeof updateUserSchema>;
 
 type UserFormProps = {
-    onSubmit: SubmitHandler<UpdateUserData>;
-    defaultValues?: UpdateUserData;
+    onSubmit: SubmitHandler<UserUpdateData>;
+    defaultValues?: UserUpdateData;
     action: 'edit';
-    user?: Partial<UpdateUserData>;
-};
-
-const formDefaultValues: UpdateUserData = {
-    name: '',
-    // password: '',
-    role: 'User',
+    user?: Partial<UserUpdateData>;
 };
 
 export function UserForm({
     user,
     onSubmit,
-    defaultValues = formDefaultValues,
 }: UserFormProps) {
-    const form = useForm<UpdateUserData>({
-        resolver: zodResolver(updateUserSchema),
+    const form = useForm<UserUpdateData>({
+        resolver: zodResolver(UserUpdateDataSchema),
         defaultValues: {
+            id: user?.id,
             name: user?.name || '',
-            // password: user?.password || '',
-            role: user?.isAdmin ? 'Admin' : 'User',
+            role: user?.isAdmin ? "Admin" : "User"
         },
     });
-
-    const onErrors = (errors: FieldErrors<UpdateUserData>) => {
+    console.log("User:" + JSON.stringify(user))
+    const onErrors = (errors: FieldErrors<UserUpdateData>) => {
         console.error(errors);
     };
 
@@ -65,7 +49,7 @@ export function UserForm({
         <Form {...form}>
             <form
                 onSubmit={form.handleSubmit((data) => {
-                    onSubmit({ ...data, id: user?.id });
+                    onSubmit({ ...data, id: user?.id || '' });
                 }, onErrors)}
                 className='space-y-4'
             >
@@ -86,24 +70,7 @@ export function UserForm({
                         </FormItem>
                     )}
                 />
-                {/* <FormField
-                    control={form.control}
-                    name='password'
-                    render={({ field }) => (
-                        <FormItem>
-                            <FormLabel>Password</FormLabel>
-                            <FormControl>
-                                <Input
-                                    type='password'
-                                    placeholder='Enter password'
-                                    disabled={form.formState.isSubmitting}
-                                    {...field}
-                                />
-                            </FormControl>
-                            <FormMessage />
-                        </FormItem>
-                    )}
-                /> */}
+
                 <FormField
                     control={form.control}
                     name='role'
