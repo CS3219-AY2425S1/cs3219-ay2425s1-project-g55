@@ -58,7 +58,7 @@ export function useUpdateUser() {
         body: JSON.stringify({
           ...data,
           username: data.name,
-          isAdmin: "Admin" == data.role,
+          isAdmin: data.isAdmin,
         }),
       });
       if (!response.ok) {
@@ -71,7 +71,7 @@ export function useUpdateUser() {
         id: String(rawData.id),
         name: rawData.username || rawData.email || '',
         email: rawData.email,
-        isAdmin: Boolean(data.role == 'Admin')
+        isAdmin: Boolean(data.isAdmin)
       };
 
       return UserSchema.parse(transformedData);

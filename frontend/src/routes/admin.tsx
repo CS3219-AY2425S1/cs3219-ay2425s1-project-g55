@@ -1,6 +1,6 @@
 import { UserDialog } from '@/components/forms/admin-update-user';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import ErrorPage from '@/error-page';
+
 import { useAuth } from '@/hooks/auth/useAuth';
 import { useUpdateUser, useUsers } from '@/hooks/useUsers';
 import { User, UserUpdateData } from '@/types/user';
@@ -12,12 +12,11 @@ import { toast } from 'sonner';
 const AdminUserManagementPage: React.FC = () => {
     const auth = useAuth();
     const role = auth?.user?.role || '';
-    const userId = auth?.user?.userId;
     
     const { data: users, isLoading, isError } = useUsers();
     const { mutateAsync: updateUser } = useUpdateUser();
     const [open, setOpen] = useState(false);
-    const [selectedUser, setSelectedUser] = useState<User | null>(null);
+    const [selectedUser, setSelectedUser] = useState<User & { role: string } | null>(null);
 
     const onSubmit = async (data: UserUpdateData) => {
         try {
@@ -92,7 +91,7 @@ const AdminUserManagementPage: React.FC = () => {
                         <TableCell className="font-medium">
                         <button
                             onClick={() => {
-                                setSelectedUser(user);
+                                setSelectedUser({ ...user, role: user.isAdmin ? 'Admin' : 'User' });
                                 setOpen(true);
                             }}
                             className="px-2 py-1 border border-gray-300 rounded bg-blue-500 text-white"

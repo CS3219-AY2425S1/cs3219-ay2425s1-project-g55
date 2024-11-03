@@ -25,7 +25,7 @@ type UserFormProps = {
     onSubmit: SubmitHandler<UserUpdateData>;
     defaultValues?: UserUpdateData;
     action: 'edit';
-    user?: Partial<UserUpdateData>;
+    user?: UserUpdateData;
 };
 
 export function UserForm({
@@ -37,6 +37,7 @@ export function UserForm({
         defaultValues: {
             id: user?.id,
             name: user?.name || '',
+            isAdmin: user?.isAdmin,
             role: user?.isAdmin ? "Admin" : "User"
         },
     });
@@ -81,6 +82,7 @@ export function UserForm({
                                 <Select
                                     onValueChange={(value) => {
                                         field.onChange(value);
+                                        form.setValue('isAdmin', value === 'Admin');
                                     }}
                                     disabled={form.formState.isSubmitting}
                                     value={field.value}

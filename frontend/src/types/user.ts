@@ -13,8 +13,9 @@ export type User = z.infer<typeof UserSchema>;
 
 export const UserUpdateDataSchema = z.object({
   id: z.string(),
-  role: z.enum(["Admin", "User"]),
-  name: z.string()
+  isAdmin: z.boolean(),
+  name: z.string(),
+  role: z.string()
 });
 
 export type UserUpdateData = z.infer<typeof UserUpdateDataSchema>;
