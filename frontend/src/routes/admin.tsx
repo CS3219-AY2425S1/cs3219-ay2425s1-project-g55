@@ -1,20 +1,23 @@
 import { UserDialog } from '@/components/forms/admin-update-user';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import ErrorPage from '@/error-page';
 import { useAuth } from '@/hooks/auth/useAuth';
 import { useUpdateUser, useUsers } from '@/hooks/useUsers';
 import { User, UserUpdateData } from '@/types/user';
 import { Loader2 } from 'lucide-react';
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { toast } from 'sonner';
 
 const AdminUserManagementPage: React.FC = () => {
+    const auth = useAuth();
+    const role = auth?.user?.role || '';
+    const userId = auth?.user?.userId;
+    
     const { data: users, isLoading, isError } = useUsers();
     const { mutateAsync: updateUser } = useUpdateUser();
     const [open, setOpen] = useState(false);
     const [selectedUser, setSelectedUser] = useState<User | null>(null);
-
-    const auth = useAuth();
-    const role = auth?.user?.role || '';
 
     const onSubmit = async (data: UserUpdateData) => {
         try {
@@ -27,6 +30,18 @@ const AdminUserManagementPage: React.FC = () => {
                 style: { backgroundColor: '#FFCCCB', color: 'black' },
             });
         }
+    };
+
+    if (role !== 'admin') {
+        return (
+            <div className="flex flex-col items-center justify-center h-full">
+                <h1 className="text-4xl font-bold">404</h1>
+                <p className="mt-2 text-lg">Page Not Found</p>
+                <Link to="/" className="mt-4 text-blue-500 underline">
+                    Go back to Home
+                </Link>
+            </div>
+        );
     };
 
     if (isLoading) {
