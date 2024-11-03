@@ -1,0 +1,84 @@
+import { BACKEND_URL_USERS } from "@/lib/common";
+import { User, UsersArraySchema, UserRoleUpdateData, UserSchema } from "@/types/user";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { getToken } from "@/lib/utils";
+
+interface RawUser {
+  id: string;
+  username?: string;
+  email: string;
+  admin: boolean;
+}
+
+async function fetchUsers(): Promise<User[]> {
+  const token = getToken();
+
+  const response = await fetch(`${BACKEND_URL_USERS}/summary`, {
+      headers: {
+          Authorization: `Bearer ${token}`,
+      },
+  });
+  
+  if (!response.ok) {
+      throw new Error("Network response was not ok");
+  }
+  
+  const rawData = await response.json();
+  
+  const transformedData = rawData.map((user: RawUser) => ({
+      id: String(user.id),
+      name: user.username || user.email || '',
+      email: user.email,
+      isAdmin: Boolean(user.admin)
+  }));
+
+  console.log("Transformed data:", transformedData);
+  return UsersArraySchema.parse(transformedData);
+}
+
+export function useUsers() {
+    return useQuery<User[], Error>({
+        queryKey: ["users"],
+        queryFn: fetchUsers,
+    });
+}
+
+export function useUpdateUserRole() {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: async (data: UserRoleUpdateData) => {
+      
+      const token = getToken();
+      console.log(data)
+      const response = await fetch(`${BACKEND_URL_USERS}/${data.id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(data),
+      });
+      if (!response.ok) {
+        const errorResponse = await response.json();
+        throw new Error("Failed to update user role - " + errorResponse.message);
+      }
+
+      const rawData = await response.json();
+      
+      // Transform the data to match the schema
+      const transformedData = {
+        id: String(rawData.id),
+        name: rawData.username || rawData.email || '',
+        email: rawData.email,
+        isAdmin: Boolean(data.isAdmin)
+      };
+
+      return UserSchema.parse(transformedData);
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ["user", data.id] });
+      queryClient.invalidateQueries({ queryKey: ["users"] });
+    },
+  });
+}
