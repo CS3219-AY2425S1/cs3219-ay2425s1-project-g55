@@ -30,6 +30,7 @@ export function NavbarLink({
 
 export default function Navbar() {
   const auth = useAuth();
+  const role = auth?.user?.role || '';
 
   return (
     <nav className="col-span-12 bg-background h-14">
@@ -44,6 +45,9 @@ export default function Navbar() {
             <div className="hidden sm:ml-6 sm:flex sm:space-x-8">
               <NavbarLink to="/problems">Problems</NavbarLink>
               <NavbarLink to="/discuss">Discuss</NavbarLink>
+              {role == "admin" && (
+                <NavbarLink to="/admin/user-management">User Management</NavbarLink>
+              )}
             </div>
           </div>
           <div className="hidden sm:ml-6 sm:flex sm:items-center">
