@@ -1,3 +1,4 @@
+import { setToken } from '@/lib/utils';
 import { BACKEND_URL_AUTH } from '@/lib/common';
 import {
   LOCAL_STORAGE_KEYS,
@@ -41,10 +42,10 @@ export function useLogin() {
 
         throw new Error('Failed to login');
       }
-
       const dataResponse = await response.json();
       const loginResponse = LoginResponseSchema.parse(dataResponse);
       localStorage.setItem(LOCAL_STORAGE_KEYS.USER, JSON.stringify(loginResponse));
+      setToken(dataResponse.token); 
 
       return loginResponse;
     },
