@@ -1,5 +1,5 @@
 import { BACKEND_URL_USERS } from "@/lib/common";
-import { User, UsersArraySchema, UserRoleUpdateData, UserSchema } from "@/types/user";
+import { User, UsersArraySchema, UserUpdateData, UserSchema } from "@/types/user";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { getToken } from "@/lib/utils";
 
@@ -24,7 +24,7 @@ async function fetchUsers(): Promise<User[]> {
   }
   
   const rawData = await response.json();
-  
+
   const transformedData = rawData.map((user: RawUser) => ({
       id: String(user.id),
       name: user.username || user.email || '',
@@ -32,7 +32,6 @@ async function fetchUsers(): Promise<User[]> {
       isAdmin: Boolean(user.admin)
   }));
 
-  console.log("Transformed data:", transformedData);
   return UsersArraySchema.parse(transformedData);
 }
 
@@ -43,35 +42,36 @@ export function useUsers() {
     });
 }
 
-export function useUpdateUserRole() {
+export function useUpdateUser() {
   const queryClient = useQueryClient();
   
   return useMutation({
-    mutationFn: async (data: UserRoleUpdateData) => {
-      
+    mutationFn: async (data: UserUpdateData) => {
       const token = getToken();
-      console.log(data)
+
       const response = await fetch(`${BACKEND_URL_USERS}/${data.id}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify(data),
+        body: JSON.stringify({
+          ...data,
+          username: data.name,
+          isAdmin: "Admin" == data.role,
+        }),
       });
       if (!response.ok) {
         const errorResponse = await response.json();
-        throw new Error("Failed to update user role - " + errorResponse.message);
+        throw new Error("Failed to update user - " + errorResponse.message);
       }
 
       const rawData = await response.json();
-      
-      // Transform the data to match the schema
       const transformedData = {
         id: String(rawData.id),
         name: rawData.username || rawData.email || '',
         email: rawData.email,
-        isAdmin: Boolean(data.isAdmin)
+        isAdmin: Boolean(data.role == 'admin')
       };
 
       return UserSchema.parse(transformedData);
