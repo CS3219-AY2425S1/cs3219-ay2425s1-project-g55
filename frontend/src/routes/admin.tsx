@@ -1,45 +1,34 @@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import React, { useState, useEffect, ChangeEvent } from 'react';
-
-interface User {
-    id: number;
-    name: string;
-    email: string;
-    isAdmin: boolean;
-}
+import { useAuth } from '@/hooks/auth/useAuth';
+import { useUpdateUserRole, useUsers } from '@/hooks/useUsers';
+import { User } from '@/types/user';
+import { Loader2 } from 'lucide-react';
 
 const AdminUserManagementPage: React.FC = () => {
-    const [users, setUsers] = useState<User[]>([]);
-    useEffect(() => {
-        // Mock data for users
-        const mockUsers: User[] = [
-            { id: 1, name: 'Alice', email: 'alice@example.com', isAdmin: false },
-            { id: 2, name: 'Bob', email: 'bob@example.com', isAdmin: true },
-            { id: 3, name: 'Charlie', email: 'charlie@example.com', isAdmin: false },
-            { id: 4, name: 'David', email: 'david@example.com', isAdmin: true },
-            { id: 5, name: 'Eve', email: 'eve@example.com', isAdmin: false },
-            { id: 6, name: 'Frank', email: 'frank@example.com', isAdmin: true },
-            { id: 7, name: 'Grace', email: 'grace@example.com', isAdmin: false },
-            { id: 8, name: 'Hank', email: 'hank@example.com', isAdmin: true },
-            { id: 9, name: 'Ivy', email: 'ivy@example.com', isAdmin: false },
-            { id: 10, name: 'Jack', email: 'jack@example.com', isAdmin: true },
-        ];
-        setUsers(mockUsers);
-    }, []);
+    const { data: users, isLoading, isError } = useUsers();
+    const { mutateAsync: updateRole } = useUpdateUserRole();
 
-    const handlePermissionChange = (userId: number, e: ChangeEvent<HTMLSelectElement>) => {
-        const isAdmin = e.target.value === 'admin';
-        const confirmChange = window.confirm(`Are you sure you want to change admin access for user ID ${userId}?`);
-        if (confirmChange) {
-            setUsers(users.map(user => user.id === userId ? { ...user, isAdmin } : user));
-            // axios.put(`/api/users/${userId}`, { isAdmin })
-            //     .then(response => {
-            //         alert('User updated successfully');
-            //         setUsers(users.map(user => user.id === userId ? response.data : user));
-            //     })
-            //     .catch(error => console.error('Error updating user:', error));
-        }
-    };
+    const auth = useAuth();
+    const role = auth?.user?.role || '';
+
+    console.log(users); // Debugging line to check the users data
+
+    if (isLoading) {
+        return (
+          <div className="flex flex-col items-center justify-center h-full">
+            <Loader2 className="w-8 h-8 animate-spin" />
+            <p className="mt-2">Loading...</p>
+          </div>
+        );
+    }
+
+    if (isError) {
+        return (
+          <div className="flex flex-col items-center justify-center h-full">
+            <p className="mt-2 text-red-500">Failed to load users. Please try again later.</p>
+          </div>
+        );
+    }
 
     return (
         <div className="container mx-auto p-4">
@@ -57,14 +46,14 @@ const AdminUserManagementPage: React.FC = () => {
                             </TableRow>
                         </TableHeader>
                         <TableBody>
-                            {users.map(user => (
+                            {users && users.map((user: User) => (
                                 <TableRow key={user.id}>
                                     <TableCell className="font-medium">{user.name}</TableCell>
                                     <TableCell className="font-medium">{user.email}</TableCell>
                                     <TableCell className="font-medium">
                                         <select
                                             value={user.isAdmin ? 'admin' : 'user'}
-                                            onChange={(e) => handlePermissionChange(user.id, e)}
+                                            onChange={(e) => updateRole({ id: user.id.toString(), isAdmin: e.target.value == 'admin' })}
                                             className="px-2 py-1 border border-gray-300 rounded"
                                         >
                                             <option value="user">User</option>
