@@ -1,7 +1,10 @@
+import cors from 'cors';
 import express, { Request, Response } from 'express';
 import { z } from 'zod';
 import { IsolatedExecutionService } from './service/execution';
+
 const app = express();
+app.use(cors());
 app.use(express.json());
 
 const isolatedExecutionService = new IsolatedExecutionService();
@@ -13,7 +16,7 @@ const executionSchema = z.object({
 });
 
 // @ts-expect-error
-app.post('/execute', async (req: Request, res: Response) => {
+app.post('/api/code-execution/execute', async (req: Request, res: Response) => {
   const body = executionSchema.safeParse(req.body);
   if (!body.success) {
     console.log(body.error);
