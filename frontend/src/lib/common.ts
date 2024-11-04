@@ -14,4 +14,4 @@ export const BACKEND_WEBSOCKET_ROOM = "ws://localhost:8083/ws/rooms";
 export const BACKEND_URL_MATCHING = `http://localhost:8082/api/matching`;
 export const BACKEND_WEBSOCKET_MATCHING = `ws://localhost:8082/ws/matching`;
 
-export const BACKEND_WEBSOCKET_COLLABORATIVE_EDITOR = `ws://localhost:8084/ws/collaborative-editor`;
+export const BACKEND_WEBSOCKET_COLLABORATIVE_EDITOR = `ws://localhost:8085/ws/collaborative-editor`;
