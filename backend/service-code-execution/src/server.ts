@@ -1,27 +1,35 @@
 import express, { Request, Response } from 'express';
+import { z } from 'zod';
 import { IsolatedExecutionService } from './service/execution';
-
 const app = express();
 app.use(express.json());
 
 const isolatedExecutionService = new IsolatedExecutionService();
 
+const supportedLanguages = ['javascript', 'typescript'] as const;
+const executionSchema = z.object({
+  code: z.string(),
+  language: z.enum(supportedLanguages),
+});
+
 // @ts-expect-error
 app.post('/execute', async (req: Request, res: Response) => {
-  const { code, timeout, language } = req.body;
+  const body = executionSchema.safeParse(req.body);
+  if (!body.success) {
+    console.log(body.error);
+    return res.status(400).json({ error: 'Invalid request body' });
+  }
+
+  const { code, language } = body.data;
 
   if (!code) {
     return res.status(400).json({ error: 'Code is required' });
   }
 
-  if (language && language !== 'javascript' && language !== 'typescript') {
-    return res.status(400).json({ error: 'Invalid language' });
-  }
-
   try {
     const result = await isolatedExecutionService.executeCode(
       code,
-      timeout,
+      3000,
       language
     );
     res.json(result);
@@ -33,7 +41,7 @@ app.post('/execute', async (req: Request, res: Response) => {
   }
 });
 
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 8086;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
