@@ -32,7 +32,7 @@ const CollaborativeEditor: React.FC<CollaborativeEditorProps> = ({
   const [editor, setEditor] =
     useState<monaco.editor.IStandaloneCodeEditor | null>(null);
   const [provider, setProvider] = useState<WebsocketProvider | null>(null);
-  const [binding, setBinding] = useState<MonacoBinding | null>(null);
+  const [_binding, setBinding] = useState<MonacoBinding | null>(null);
   const decorationsRef = useRef<string[]>([]);
   const cursorUserLabelWidgetRef = useRef<EditorCursorWidget | null>(null);
 
