@@ -8,10 +8,14 @@ import MonacoEditor from '@/components/code-editor/MonacoEditor';
 import { LoginPromptView } from '@/components/discuss/views/LoginPromptView';
 import QuestionView from '@/components/QuestionView';
 import SubmissionView from '@/components/SubmissionView';
+import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAuth } from '@/hooks/auth/useAuth';
+import useExecuteCode from '@/hooks/useExecuteCode';
+import { Loader2, PlayIcon } from 'lucide-react';
 import { useState } from 'react';
 import { useParams } from 'react-router-dom';
+import { toast } from 'sonner';
 
 export default function QuestionRoute() {
   const { questionId: questionIdString } = useParams<{ questionId: string }>();
@@ -23,6 +27,27 @@ export default function QuestionRoute() {
   const [editorCode, setEditorCode] = useState<string>(
     '// Write your code here\n'
   );
+
+  const { mutateAsync: executeCodeMutation, isPending: isExecutingCode } =
+    useExecuteCode({
+      onSuccess: () => {
+        toast.success('Your code has been executed successfully');
+      },
+      onError: (error) => {
+        toast.error('Failed to execute your code', {
+          description: error.message || 'Please try again',
+        });
+      },
+    });
+
+  const handleExecuteCode = async () => {
+    const result = await executeCodeMutation({
+      code: editorCode,
+      language: 'javascript',
+    });
+    console.log(result.stdout);
+    console.log(result.stderr);
+  };
 
   if (isNaN(questionId)) {
     return <div>Invalid question ID</div>;
@@ -73,6 +98,19 @@ export default function QuestionRoute() {
           />
         </ResizablePanel>
       </ResizablePanelGroup>
+
+      <Button
+        onClick={handleExecuteCode}
+        variant={'outline'}
+        className='absolute top-2 left-1/2 -translate-x-1/2'
+      >
+        {isExecutingCode ? (
+          <Loader2 className='w-4 h-4 animate-spin mr-2' />
+        ) : (
+          <PlayIcon className='w-4 h-4 mr-2' />
+        )}
+        Run
+      </Button>
     </div>
   );
 }
