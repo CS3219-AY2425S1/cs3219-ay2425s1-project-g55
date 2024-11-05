@@ -27,7 +27,7 @@ export class IsolatedExecutionService {
       });
       return result.outputText;
     } catch (error) {
-      throw new Error(`TypeScript compilation error: ${error.message}`);
+      throw new Error(`TypeScript compilation error: ${(error as Error).message}`);
     }
   }
 
@@ -49,7 +49,7 @@ export class IsolatedExecutionService {
           stdout,
           stderr,
           result: null,
-          error: error.message,
+          error: (error as Error).message,
           executionTime: 0,
           memoryUsage: 0,
           compiledCode: jsCode,
@@ -125,7 +125,7 @@ export class IsolatedExecutionService {
         stdout,
         stderr,
         result: null,
-        error: error.message,
+        error: (error as Error).message,
         executionTime,
         memoryUsage: 0,
       };

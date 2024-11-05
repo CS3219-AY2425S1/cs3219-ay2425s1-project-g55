@@ -39,7 +39,7 @@ app.post('/api/code-execution/execute', async (req: Request, res: Response) => {
   } catch (error) {
     res.status(500).json({
       error: 'Execution failed',
-      message: error.message,
+      message: (error as Error).message,
     });
   }
 });
