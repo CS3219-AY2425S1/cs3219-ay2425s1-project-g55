@@ -20,7 +20,7 @@ WORKDIR /app
 COPY --from=build /app/target/*.jar app.jar
 
 # Expose port 8084 for the backend service
-EXPOSE 8084
+EXPOSE 8080
 
 # Run the 
 ENTRYPOINT ["java", "-jar", "app.jar"]

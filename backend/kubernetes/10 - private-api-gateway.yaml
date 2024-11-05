@@ -57,3 +57,10 @@ spec:
                 name: history-service
                 port:
                   number: 8080
+          - path: /api/code-execution
+            pathType: Prefix
+            backend:
+              service:
+                name: code-execution-service
+                port:
+                  number: 8080
