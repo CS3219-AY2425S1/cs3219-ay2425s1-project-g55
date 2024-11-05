@@ -3,6 +3,12 @@ kind: Ingress
 metadata:
   name: public-api-gateway
   namespace: g55
+  annotations:
+    nginx.ingress.kubernetes.io/enable-cors: 'true'
+    nginx.ingress.kubernetes.io/cors-allow-origin: 'http://localhost:5173'
+    nginx.ingress.kubernetes.io/cors-allow-methods: 'GET, PUT, POST, DELETE, OPTIONS'
+    nginx.ingress.kubernetes.io/cors-allow-headers: 'Authorization, Content-Type'
+    nginx.ingress.kubernetes.io/cors-allow-credentials: 'true'
 spec:
   rules:
     - host: localhost
