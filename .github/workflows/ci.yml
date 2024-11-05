@@ -20,11 +20,12 @@ jobs:
         distribution: 'temurin'
         cache: maven
         
-    - name: Build and test service-question
+    # Service Question Coverage
+    - name: Build and test with coverage - Service Question
       run: |
         cd backend/service-question
-        mvn clean verify
-        
+        mvn clean verify jacoco:report
+
     - name: Create .env file
       run: |
         cd backend/service-user/src/main/resources
@@ -35,16 +36,36 @@ jobs:
         echo "SUPPORT_EMAIL=${{ secrets.SUPPORT_EMAIL }}" >> .env
         echo "APP_PASSWORD=${{ secrets.APP_PASSWORD }}" >> .env
 
-    - name: Build and test service-user
+    - name: Build and test with coverage - Service User
       run: |
         cd backend/service-user
-        mvn clean verify
+        mvn clean verify jacoco:report
     
     - name: Clean up .env file
       if: always()
       run: |
         cd backend/service-user/src/main/resources
         rm -f .env
+
+    # Verify coverage files exist
+    - name: List coverage files
+      run: |
+        ls -la backend/service-question/target/site/jacoco/
+        ls -la backend/service-user/target/site/jacoco/
+
+    # Upload Coverage Reports
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v4
+      env:
+        CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+      with:
+        files: |
+          backend/service-question/target/site/jacoco/jacoco.xml,
+          backend/service-user/target/site/jacoco/jacoco.xml
+        flags: backend
+        name: codecov-umbrella
+        verbose: true
+        fail_ci_if_error: true
 
   build-and-test-frontend:
     runs-on: ubuntu-latest
