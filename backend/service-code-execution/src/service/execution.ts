@@ -27,7 +27,9 @@ export class IsolatedExecutionService {
       });
       return result.outputText;
     } catch (error) {
-      throw new Error(`TypeScript compilation error: ${(error as Error).message}`);
+      throw new Error(
+        `TypeScript compilation error: ${(error as Error).message}`
+      );
     }
   }
 
@@ -36,6 +38,7 @@ export class IsolatedExecutionService {
     timeout: number = this.DEFAULT_TIMEOUT,
     language: 'javascript' | 'typescript' = 'javascript'
   ): Promise<ExecutionResult> {
+    console.log('Executing code', code);
     const stdout: string[] = [];
     const stderr: string[] = [];
     const startTime = process.hrtime();
@@ -57,17 +60,21 @@ export class IsolatedExecutionService {
       }
     }
 
+    console.log('Creating isolate with memory limit:', this.MEMORY_LIMIT);
+    console.log('Creating isolate');
     // Create a new isolate
     const isolate = new ivm.Isolate({
       memoryLimit: this.MEMORY_LIMIT,
     });
 
+    console.log('Creating context');
     // Create a new context within the isolate
     const context = await isolate.createContext();
 
     // Get a reference to the global object within the context
     const jail = context.global;
 
+    console.log('Creating log callback');
     // Create the console functions as reference functions
     const logCallback = new ivm.Reference((...args: any[]) => {
       stdout.push(args.join(' '));
@@ -77,9 +84,11 @@ export class IsolatedExecutionService {
       stderr.push(args.join(' '));
     });
 
+    console.log('Setting log callback');
     await jail.set('_log', logCallback);
     await jail.set('_error', errorCallback);
 
+    console.log('Creating console object');
     // Then create the console object inside the isolate
     await context.eval(`
     const console = {
@@ -88,6 +97,7 @@ export class IsolatedExecutionService {
     };
 `);
 
+    console.log('Evaluating code');
     try {
       // Wrap the code in a try-catch and return statement
       const wrappedCode = `
@@ -107,9 +117,11 @@ export class IsolatedExecutionService {
       const [seconds, nanoseconds] = process.hrtime(startTime);
       const executionTime = seconds * 1000 + nanoseconds / 1000000;
 
+      console.log('Getting memory usage statistics');
       // Get memory usage statistics
       const stats = isolate.getHeapStatistics();
 
+      console.log('Returning execution result');
       return {
         stdout,
         stderr,
@@ -121,6 +133,8 @@ export class IsolatedExecutionService {
       const [seconds, nanoseconds] = process.hrtime(startTime);
       const executionTime = seconds * 1000 + nanoseconds / 1000000;
 
+      console.log('Returning error result');
+
       return {
         stdout,
         stderr,
@@ -131,6 +145,7 @@ export class IsolatedExecutionService {
       };
     } finally {
       // Dispose of the isolate to free memory
+      console.log('Disposing of isolate');
       context.release();
       isolate.dispose();
     }

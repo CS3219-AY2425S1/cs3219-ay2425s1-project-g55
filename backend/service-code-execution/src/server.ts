@@ -45,6 +45,15 @@ app.post('/api/code-execution/execute', async (req: Request, res: Response) => {
 });
 
 const PORT = process.env.PORT || 8086;
-app.listen(PORT, () => {
+const server = app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
+});
+
+// Graceful shutdown handler
+process.on('SIGTERM', () => {
+  console.log('Received SIGTERM. Performing graceful shutdown...');
+  server.close(() => {
+    console.log('Server closed. Exiting process.');
+    process.exit(0);
+  });
 });
