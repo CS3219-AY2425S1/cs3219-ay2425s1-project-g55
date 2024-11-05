@@ -1,9 +1,9 @@
-export const BACKEND_URL_BASE = "http://localhost:8081";
+export const BACKEND_URL_BASE = "http://localhost:8080";
 export const BACKEND_WS_BASE = "ws://localhost:8080";
 
 export const BACKEND_URL_AUTH = `${BACKEND_URL_BASE}/api/auth`;
 export const BACKEND_URL_USERS = `${BACKEND_URL_BASE}/api/users`;
-export const BACKEND_URL_QUESTIONS = `http://localhost:8080/api/questions`;
+export const BACKEND_URL_QUESTIONS = `${BACKEND_URL_BASE}/api/questions`;
 export const BACKEND_URL_HISTORY = `http://localhost:8084/api/history`;
 
 // export const BACKEND_URL_ROOM = `${BACKEND_URL_BASE}/api/rooms`;
