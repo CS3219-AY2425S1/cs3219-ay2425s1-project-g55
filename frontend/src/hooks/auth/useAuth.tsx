@@ -21,6 +21,7 @@ type AuthUser = {
   role: UserRole;
   userId: number;
   userName: string;
+  email: string;
 };
 
 function clearAuthData() {
@@ -51,6 +52,7 @@ export function useAuth(): AuthHelper | null {
             role: user.admin ? USER_ROLES.admin : USER_ROLES.user,
             userId: user.id,
             userName: user.username,
+            email: user.email, // Add email here
           });
         } else {
           // Token has expired
