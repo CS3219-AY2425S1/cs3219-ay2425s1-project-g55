@@ -168,6 +168,24 @@ services:
     networks:
       - app-network
 
+  backend-service-code-execution:
+    build:
+      context: ./backend/service-code-execution
+    environment:
+      NODE_ENV: production
+      PORT: 8080
+    container_name: backend-service-code-execution
+    ports:
+      - '8086:8080'
+    networks:
+      - app-network
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+        reservations:
+          memory: 256M
+
 networks:
   app-network:
     driver: bridge
