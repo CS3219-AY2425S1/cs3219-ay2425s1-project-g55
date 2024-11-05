@@ -12,6 +12,7 @@ import ParticipantView from '@/components/ParticipantView';
 import QuestionView from '@/components/QuestionView';
 import MonacoEditor from '@/components/code-editor/MonacoEditor';
 import CollaborativeEditor from '@/components/code-editor/collaborative-code-editor';
+import VideoCall from '@/components/VideoCall';
 import { LoginPromptView } from '@/components/discuss/views/LoginPromptView';
 import { useAuth } from '@/hooks/auth/useAuth';
 import { useRoom } from '@/hooks/useRoom';
@@ -42,6 +43,8 @@ export default function RoomRoute() {
       toast('You have been disconnected from the room');
     }, []),
   });
+
+  const [activeTab, setActiveTab] = useState('participants');
 
   if (!roomId) {
     return <div>No room ID</div>;
@@ -74,8 +77,12 @@ export default function RoomRoute() {
   return (
     <div className='border rounded-lg overflow-hidden h-full w-full'>
       <ResizablePanelGroup direction='horizontal'>
-        <ResizablePanel defaultSize={40} className=''>
-          <Tabs defaultValue='participants'>
+        {/* Tabs Panel */}
+        <ResizablePanel defaultSize={30} className=''>
+          <Tabs
+            defaultValue='participants'
+            onValueChange={(value) => setActiveTab(value)}
+          >
             <TabsList className='w-full'>
               <TabsTrigger value='participants' className='flex-1'>
                 Participants
@@ -96,7 +103,17 @@ export default function RoomRoute() {
             </TabsContent>
           </Tabs>
         </ResizablePanel>
+
         <ResizableHandle withHandle />
+
+        {/* Video Call Panel */}
+        <ResizablePanel defaultSize={40}>
+          <VideoCall showVideo={true} />
+        </ResizablePanel>
+
+        <ResizableHandle withHandle />
+
+        {/* Collaborative Editor Panel */}
         <ResizablePanel>
           {isConnected ? (
             <CollaborativeEditor
