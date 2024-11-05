@@ -94,7 +94,7 @@ const AdminUserManagementPage: React.FC = () => {
                         <TableCell className="font-medium">
                             <Badge
                                 variant="outline"
-                                className={`font-medium ${user.isAdmin ? 'bg-green-200 text-black' : 'bg-gray-500 text-white'}`}
+                                className={`font-medium ${user.isAdmin ? 'bg-green-200 text-black' : 'bg-gray-400 text-white'}`}
                             >
                                 {user.isAdmin ? 'Admin' : 'User'}
                             </Badge>
