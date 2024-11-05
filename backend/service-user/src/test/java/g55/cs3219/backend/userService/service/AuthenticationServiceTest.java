@@ -432,6 +432,7 @@ class AuthenticationServiceTest {
     void resetPassword_shouldUpdatePassword_whenResetCodeIsValid() {
         User user = new User("testUser", "test@example.com", "encodedPassword");
         String resetCode = "123456";
+        user.setEnabled(true);
         user.setResetPasswordToken(resetCode);
         user.setResetTokenExpiry(LocalDateTime.now().plusMinutes(10));
 
@@ -449,6 +450,7 @@ class AuthenticationServiceTest {
     @Test
     void resetPassword_shouldThrowException_whenResetCodeIsInvalid() {
         User user = new User("testUser", "test@example.com", "encodedPassword");
+        user.setEnabled(true);
         user.setResetPasswordToken("validCode");
         user.setResetTokenExpiry(LocalDateTime.now().plusMinutes(10));
 
@@ -461,8 +463,24 @@ class AuthenticationServiceTest {
     }
 
     @Test
+    void resetPassword_shouldThrowException_whenUserIsNotVerified() {
+        User user = new User("testUser", "test@example.com", "encodedPassword");
+        user.setEnabled(false);
+        user.setResetPasswordToken("validCode");
+        user.setResetTokenExpiry(LocalDateTime.now().plusMinutes(10));
+
+        when(userRepository.findByEmail("test@example.com")).thenReturn(Optional.of(user));
+
+        RuntimeException exception = assertThrows(RuntimeException.class, () ->
+                authenticationService.resetPassword("test@example.com", "invalidCode", "newPassword")
+        );
+        assertEquals("User is not verified. Please verify your account first.", exception.getMessage());
+    }
+
+    @Test
     void resetPassword_shouldThrowException_whenResetCodeIsExpired() {
         User user = new User("testUser", "test@example.com", "encodedPassword");
+        user.setEnabled(true);
         user.setResetPasswordToken("expiredCode");
         user.setResetTokenExpiry(LocalDateTime.now().minusMinutes(5)); // Expired token
 
