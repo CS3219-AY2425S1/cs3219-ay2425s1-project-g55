@@ -22,6 +22,15 @@ const AdminUserManagementPage: React.FC = () => {
 
     const onSubmit = async (data: UserUpdateData) => {
         try {
+            if (auth && 
+                data.id.toString() === auth.user?.userId.toString() && 
+                data.isAdmin == false
+            ) {
+                toast.error("You cannot change your own admin status.", {
+                    style: { backgroundColor: '#FFCCCB', color: 'black' },
+                });
+                return;
+            }
             await updateUser(data);
             toast.success("User Profile updated successfully for " + data.name);
         } catch (error) {
