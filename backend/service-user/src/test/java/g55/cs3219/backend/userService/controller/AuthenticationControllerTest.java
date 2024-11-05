@@ -1,5 +1,6 @@
 package g55.cs3219.backend.userService.controller;
 
+import g55.cs3219.backend.userService.dto.ChangePasswordDto;
 import g55.cs3219.backend.userService.dto.ForgetPasswordDto;
 import g55.cs3219.backend.userService.dto.LoginUserDto;
 import g55.cs3219.backend.userService.dto.ResetPasswordDto;
@@ -32,6 +33,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
@@ -320,6 +322,69 @@ class AuthenticationControllerTest {
         assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
         assertEquals("Invalid or expired reset code", response.getBody());
         verify(authenticationService, times(1)).resetPassword("user@example.com", "invalidCode", "newPassword");
+    }
+
+    @Test
+    void changePassword_shouldReturnOk_whenOldPasswordIsCorrect() {
+        ChangePasswordDto changePasswordDto = new ChangePasswordDto();
+        changePasswordDto.setOldPassword("oldPassword");
+        changePasswordDto.setNewPassword("newPassword");
+
+        when(authentication.isAuthenticated()).thenReturn(true);
+        when(authentication.getPrincipal()).thenReturn(mockUser);
+        doNothing().when(authenticationService).changePassword(mockUser, "oldPassword", "newPassword");
+
+        ResponseEntity<?> response = authenticationController.changePassword(changePasswordDto, authentication);
+
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertEquals("Password has been reset successfully.", response.getBody());
+        verify(authenticationService, times(1)).changePassword(mockUser, "oldPassword", "newPassword");
+    }
+
+    @Test
+    void changePassword_shouldReturnBadRequest_whenOldPasswordIsIncorrect() {
+        ChangePasswordDto changePasswordDto = new ChangePasswordDto();
+        changePasswordDto.setOldPassword("wrongOldPassword");
+        changePasswordDto.setNewPassword("newPassword");
+
+        when(authentication.isAuthenticated()).thenReturn(true);
+        when(authentication.getPrincipal()).thenReturn(mockUser);
+        doThrow(new RuntimeException("Incorrect old password."))
+                .when(authenticationService).changePassword(mockUser, "wrongOldPassword", "newPassword");
+
+        ResponseEntity<?> response = authenticationController.changePassword(changePasswordDto, authentication);
+
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        assertEquals("Incorrect old password.", response.getBody());
+        verify(authenticationService, times(1)).changePassword(mockUser, "wrongOldPassword", "newPassword");
+    }
+
+    @Test
+    void changePassword_shouldReturnUnauthorized_whenUserIsNotAuthenticated() {
+        ChangePasswordDto changePasswordDto = new ChangePasswordDto();
+        changePasswordDto.setOldPassword("oldPassword");
+        changePasswordDto.setNewPassword("newPassword");
+
+        // Set authentication to null to simulate an unauthenticated request
+        ResponseEntity<?> response = authenticationController.changePassword(changePasswordDto, null);
+
+        assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
+        assertEquals("User is not authenticated", response.getBody());
+    }
+
+    @Test
+    void changePassword_shouldReturnUnauthorized_whenUserIsNotFullyAuthenticated() {
+        ChangePasswordDto changePasswordDto = new ChangePasswordDto();
+        changePasswordDto.setOldPassword("oldPassword");
+        changePasswordDto.setNewPassword("newPassword");
+
+        // Mock authentication but set isAuthenticated to false
+        when(authentication.isAuthenticated()).thenReturn(false);
+
+        ResponseEntity<?> response = authenticationController.changePassword(changePasswordDto, authentication);
+
+        assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
+        assertEquals("User is not authenticated", response.getBody());
     }
 }
 

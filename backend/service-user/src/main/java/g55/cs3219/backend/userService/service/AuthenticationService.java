@@ -145,7 +145,7 @@ public class AuthenticationService {
                 emailChanged = true;
             }
         }
-        if (updates.containsKey("password")) {
+        if (updates.containsKey("password") && currentUser.isAdmin()) {
             userToUpdate.setPassword(passwordEncoder.encode((String) updates.get("password")));
         }
 
@@ -186,6 +186,15 @@ public class AuthenticationService {
         user.setPassword(passwordEncoder.encode(newPassword));
         user.setResetPasswordToken(null); // Clear reset code after successful reset
         user.setResetTokenExpiry(null);
+        userRepository.save(user);
+    }
+
+    public void changePassword(User user, String oldPassword, String newPassword) {
+        if (!passwordEncoder.matches(oldPassword, user.getPassword())) {
+            throw new RuntimeException("Incorrect old password.");
+        }
+
+        user.setPassword(passwordEncoder.encode(newPassword));
         userRepository.save(user);
     }
 

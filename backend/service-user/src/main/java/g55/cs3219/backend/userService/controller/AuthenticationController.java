@@ -1,5 +1,6 @@
 package g55.cs3219.backend.userService.controller;
 
+import g55.cs3219.backend.userService.dto.ChangePasswordDto;
 import g55.cs3219.backend.userService.dto.ForgetPasswordDto;
 import g55.cs3219.backend.userService.dto.LoginUserDto;
 import g55.cs3219.backend.userService.dto.RegisterUserDto;
@@ -143,6 +144,25 @@ public class AuthenticationController {
                     resetPasswordDto.getNewPassword());
             return ResponseEntity.ok("Password has been reset successfully.");
         } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        }
+    }
+
+    @PostMapping("/change-password")
+    public ResponseEntity<?> changePassword(@RequestBody ChangePasswordDto changePasswordDto,
+                                         Authentication authentication) {
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User is not authenticated");
+        }
+
+        try {
+            User currentUser = (User) authentication.getPrincipal();
+            authenticationService.changePassword(currentUser, changePasswordDto.getOldPassword(), changePasswordDto.getNewPassword());
+            return ResponseEntity.ok("Password has been reset successfully.");
+        } catch (RuntimeException e) {
+            if (e.getMessage().equals("Incorrect old password.")) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Incorrect old password.");
+            }
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         }
     }

@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import { z } from "zod";
 
 export const RegisterUserSchema = z
   .object({
@@ -8,14 +8,14 @@ export const RegisterUserSchema = z
       .min(8)
       .regex(
         /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,20}$/,
-        'Password must contain at least one uppercase letter, one lowercase letter, one digit, and one special character. Special characters include @ $ ! % * ? &'
+        "Password must contain at least one uppercase letter, one lowercase letter, one digit, and one special character. Special characters include @ $ ! % * ? &"
       ),
     confirmPassword: z.string().min(8),
     username: z.string(),
   })
   .refine((data) => data.password === data.confirmPassword, {
     message: "Passwords don't match",
-    path: ['confirmPassword'],
+    path: ["confirmPassword"],
   });
 
 export type RegisterUser = z.infer<typeof RegisterUserSchema>;
@@ -49,9 +49,26 @@ export const VerifyUserCodeSchema = VerifyUserSchema.pick({
 });
 export type VerifyUserCode = z.infer<typeof VerifyUserCodeSchema>;
 
+export const ChangePasswordSchema = z
+  .object({
+    oldPassword: z.string(),
+    newPassword: z
+      .string()
+      .min(8, "New password must be at least 8 characters"),
+    confirmPassword: z
+      .string()
+      .min(8, "Confirm password must be at least 8 characters"),
+  })
+  .refine((data) => data.newPassword === data.confirmPassword, {
+    message: "New passwords do not match",
+    path: ["confirmPassword"],
+  });
+
+export type ChangePasswordData = z.infer<typeof ChangePasswordSchema>;
+
 /**
  * Keys for auth related data in local storage
  */
 export const LOCAL_STORAGE_KEYS = {
-  USER: 'user',
+  USER: "user",
 } as const;

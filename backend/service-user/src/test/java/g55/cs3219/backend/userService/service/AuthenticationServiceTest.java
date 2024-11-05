@@ -474,5 +474,31 @@ class AuthenticationServiceTest {
         assertEquals("Invalid or expired reset code", exception.getMessage());
     }
 
+    @Test
+    void resetPasswordAuthenticated_shouldUpdatePassword_whenOldPasswordIsCorrect() {
+        User user = new User("testUser", "test@example.com", "encodedOldPassword");
+
+        when(passwordEncoder.matches("oldPassword", "encodedOldPassword")).thenReturn(true);
+        when(passwordEncoder.encode("newPassword")).thenReturn("encodedNewPassword");
+
+        authenticationService.changePassword(user, "oldPassword", "newPassword");
+
+        assertEquals("encodedNewPassword", user.getPassword());
+        verify(userRepository, times(1)).save(user);
+    }
+
+    @Test
+    void resetPasswordAuthenticated_shouldThrowException_whenOldPasswordIsIncorrect() {
+        User user = new User("testUser", "test@example.com", "encodedOldPassword");
+
+        when(passwordEncoder.matches("wrongOldPassword", "encodedOldPassword")).thenReturn(false);
+
+        RuntimeException exception = assertThrows(RuntimeException.class, () ->
+                authenticationService.changePassword(user, "wrongOldPassword", "newPassword")
+        );
+        assertEquals("Incorrect old password.", exception.getMessage());
+        verify(userRepository, times(0)).save(user); // Ensure no save action is performed
+    }
+
 }
 
