@@ -44,7 +44,7 @@ app.post('/api/code-execution/execute', async (req: Request, res: Response) => {
   }
 });
 
-const PORT = process.env.PORT || 8086;
+const PORT = process.env.PORT || 8080;
 const server = app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });

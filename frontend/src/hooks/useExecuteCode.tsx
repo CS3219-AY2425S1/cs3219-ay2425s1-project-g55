@@ -1,9 +1,10 @@
-import { BACKEND_URL_EXECUTE_CODE } from '@/lib/common';
-import { useMutation } from '@tanstack/react-query';
-import { z } from 'zod';
+import { BACKEND_URL_EXECUTE_CODE } from "@/lib/common";
+import { getToken } from "@/lib/utils";
+import { useMutation } from "@tanstack/react-query";
+import { z } from "zod";
 type CodeExecutionInput = {
   code: string;
-  language: 'javascript' | 'typescript';
+  language: "javascript" | "typescript";
 };
 
 const executeCodeResponseSchema = z.object({
@@ -27,16 +28,18 @@ export default function useExecuteCode({
 } = {}) {
   return useMutation({
     mutationFn: async (input: CodeExecutionInput) => {
+      const token = getToken();
       const response = await fetch(`${BACKEND_URL_EXECUTE_CODE}/execute`, {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify(input),
       });
 
       if (!response.ok) {
-        throw new Error('Failed to execute code');
+        throw new Error("Failed to execute code");
       }
 
       const data = await response.json();
