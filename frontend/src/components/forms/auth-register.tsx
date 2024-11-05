@@ -123,7 +123,7 @@ export function AuthRegisterForm({ onSubmit }: AuthRegisterFormProps) {
                       className='absolute inset-y-0 right-0 pr-3 flex items-center text-sm leading-5'
                       onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                     >
-                      {showPassword ? (
+                      {showConfirmPassword ? (
                         <EyeOff className='h-5 w-5 text-gray-400' />
                       ) : (
                         <Eye className='h-5 w-5 text-gray-400' />
