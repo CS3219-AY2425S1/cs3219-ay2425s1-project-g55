@@ -6,6 +6,7 @@ import {
   SubmissionSchema,
   CreateSubmissionData 
 } from '@/types/submission';
+import { getToken } from "@/lib/utils";
 
 export const useSubmissions = (userId: number, questionId: number) => {
   return useQuery({
@@ -19,8 +20,15 @@ async function fetchSubmissions(
   questionId: number,
 ): Promise<Submission[]> {
   try {
+    const token = getToken();
     const response = await fetch(
       `${BACKEND_URL_HISTORY}/users/${userId}/questions/${questionId}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        credentials: 'include',
+      }
     );
 
     if (!response.ok) {
@@ -50,11 +58,14 @@ export function useCreateSubmission({
   return useMutation({
     mutationFn: async (data: CreateSubmissionData) => {
       try {
+        const token = getToken();
         const response = await fetch(`${BACKEND_URL_HISTORY}`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
           },
+          credentials: 'include',
           body: JSON.stringify(data),
         });
 
