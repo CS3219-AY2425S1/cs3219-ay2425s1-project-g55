@@ -1,16 +1,22 @@
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { useAuth } from '@/hooks/auth/useAuth';
+} from "@/components/ui/dropdown-menu";
+import { useAuth } from "@/hooks/auth/useAuth";
 
-export function UserMenuAvatar() {
+export function UserMenuAvatar({
+  onProfileClick,
+}: {
+  onProfileClick: () => void;
+}) {
   const auth = useAuth();
 
   return (
+
+<>
     <DropdownMenu>
       <DropdownMenuTrigger>
         <Avatar>
@@ -25,8 +31,11 @@ export function UserMenuAvatar() {
         <DropdownMenuItem style={{ backgroundColor: 'lightgrey' }} disabled>
           {auth?.user?.email}
         </DropdownMenuItem>
+        <DropdownMenuItem onClick={onProfileClick}>Profile</DropdownMenuItem>
         <DropdownMenuItem onClick={auth?.logout}>Logout</DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
+</>
+
   );
 }

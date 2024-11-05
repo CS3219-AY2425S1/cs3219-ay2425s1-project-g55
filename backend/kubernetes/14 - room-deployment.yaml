@@ -17,10 +17,29 @@ spec:
       labels:
         app: room-service
     spec:
+      initContainers:
+        - name: wait-for-db
+          image: busybox
+          command: [ 'sh', '-c', 'until nc -z userdb 5432; do echo waiting for database; sleep 2; done;' ]
       containers:
         - image: docker_username/room_service:latest
           imagePullPolicy: IfNotPresent
           name: room-service
+          env:
+            - name: SPRING_DATASOURCE_URL
+              value: "jdbc:postgresql://userdb.g55.svc.cluster.local:5432/postgres"
+            - name: SPRING_DATASOURCE_USERNAME
+              value: "postgres"
+            - name: SPRING_DATASOURCE_PASSWORD
+              value: "password"
+            - name: SPRING_RABBITMQ_HOST
+              value: "rabbitmq"
+            - name: SPRING_RABBITMQ_PORT
+              value: "5672"
+            - name: SPRING_RABBITMQ_USERNAME
+              value: "guest"
+            - name: SPRING_RABBITMQ_PASSWORD
+              value: "guest"
           resources:
             requests:
               memory: "1Gi"

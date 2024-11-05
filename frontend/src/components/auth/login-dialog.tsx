@@ -11,6 +11,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useForgotPassword } from "@/hooks/auth/useForgotPassword";
 import { UnverifiedAccountError, useLogin } from "@/hooks/auth/useLogin";
 import {
   RegisterEmailAlreadyExistsError,
@@ -18,14 +19,26 @@ import {
   useRegister,
 } from "@/hooks/auth/useRegister";
 import {
+  useResetPassword,
+  InvalidResetCodeError,
+} from "@/hooks/auth/useResetPassword";
+import {
   useResendVerificationCode,
   useVerifySignup,
   VerificationCodeExpiredError,
   VerificationCodeInvalidError,
 } from "@/hooks/auth/useVerify";
-import { LoginUser, RegisterUser, VerifyUserCode } from "@/types/auth";
+import {
+  ForgotPasswordData,
+  LoginUser,
+  RegisterUser,
+  ResetPasswordData,
+  VerifyUserCode,
+} from "@/types/auth";
 import { useState } from "react";
 import { toast } from "sonner";
+import { AuthResetPasswordForm } from "../forms/auth-reset-password";
+import { AuthForgotPasswordForm } from "../forms/auth-forgot-password";
 
 interface LoginDialogProps {
   isControlled?: boolean;
@@ -39,19 +52,25 @@ export default function LoginDialog({
   setIsOpen,
 }: LoginDialogProps) {
   const [internalOpen, setInternalOpen] = useState(false);
-
-  const [activeTab, setActiveTab] = useState("signup");
-  const loginMutation = useLogin();
-  const registerMutation = useRegister();
-
+  const [activeView, setActiveView] = useState<
+    "login" | "signup" | "verify" | "forgotPassword" | "resetPassword"
+  >("signup");
+  const [emailForPasswordReset, setEmailForPasswordReset] = useState<
+    string | null
+  >(null);
   const [isUserAwaitingEmailVerification, setIsUserAwaitingEmailVerification] =
     useState<LoginUser | null>(null);
-
-  const verifySignupMutation = useVerifySignup();
-  const resendVerificationCodeMutation = useResendVerificationCode();
   const [initialCodeSentAt, setInitialCodeSentAt] = useState<number | null>(
     null
   );
+  const [activeTab, setActiveTab] = useState("signup");
+
+  const loginMutation = useLogin();
+  const registerMutation = useRegister();
+  const verifySignupMutation = useVerifySignup();
+  const resendVerificationCodeMutation = useResendVerificationCode();
+  const forgotPasswordMutation = useForgotPassword();
+  const resetPasswordMutation = useResetPassword();
 
   const handleOpenChange = (open: boolean) => {
     if (isControlled && setIsOpen) {
@@ -75,9 +94,12 @@ export default function LoginDialog({
           password: data.password,
         });
         setInitialCodeSentAt(Date.now());
+        setActiveView("verify");
       } else {
         console.error("Login failed:", error);
-        toast.error("Login failed");
+        const errorMessage =
+          error instanceof Error ? error.message : "Unknown error";
+        toast.error("Login failed: " + errorMessage);
       }
     }
   };
@@ -91,6 +113,7 @@ export default function LoginDialog({
         password: data.password,
       });
       setInitialCodeSentAt(Date.now());
+      setActiveView("verify");
     } catch (error) {
       if (error instanceof RegisterUsernameAlreadyTakenError) {
         toast.error("Username already taken");
@@ -98,7 +121,9 @@ export default function LoginDialog({
         toast.error("Email already exists");
       } else {
         console.error("Signup failed:", error);
-        toast.error("Signup failed");
+        const errorMessage =
+          error instanceof Error ? error.message : "Unknown error";
+        toast.error("Signup failed: " + errorMessage);
       }
     }
   };
@@ -123,7 +148,9 @@ export default function LoginDialog({
         toast.info("Verification code expired");
       } else {
         console.error("Verify signup failed:", error);
-        toast.error("Verify signup failed");
+        const errorMessage =
+          error instanceof Error ? error.message : "Unknown error";
+        toast.error("Verify signup failed: " + errorMessage);
       }
     }
   };
@@ -139,7 +166,48 @@ export default function LoginDialog({
       toast.success("Verification code resent");
     } catch (error) {
       console.error("Resend verification code failed:", error);
-      toast.error("Resend verification code failed");
+      const errorMessage =
+        error instanceof Error ? error.message : "Unknown error";
+      toast.error("Resend verification code failed: " + errorMessage);
+    }
+  };
+
+  const handleForgotPassword = async (data: ForgotPasswordData) => {
+    try {
+      await forgotPasswordMutation.mutateAsync(data);
+      setEmailForPasswordReset(data.email);
+      toast.success("Password reset code sent to your email");
+      setActiveView("resetPassword");
+    } catch (error) {
+      console.error("Forgot password failed:", error);
+      const errorMessage =
+        error instanceof Error ? error.message : "Unknown error";
+      toast.error("Failed to send password reset code: " + errorMessage);
+    }
+  };
+
+  const handleResetPassword = async (data: ResetPasswordData) => {
+    if (!emailForPasswordReset) return;
+
+    try {
+      await resetPasswordMutation.mutateAsync({
+        email: emailForPasswordReset,
+        resetCode: data.resetCode,
+        newPassword: data.newPassword,
+      });
+      toast.success(
+        "Password reset successfully. Please log in with your new password."
+      );
+      setActiveView("login");
+    } catch (error) {
+      if (error instanceof InvalidResetCodeError) {
+        toast.error("Invalid or Expired reset code");
+      } else {
+        console.error("Reset password failed:", error);
+        const errorMessage =
+          error instanceof Error ? error.message : "Unknown error";
+        toast.error("Reset password failed: " + errorMessage);
+      }
     }
   };
 
@@ -157,16 +225,31 @@ export default function LoginDialog({
         <DialogHeader>
           <DialogTitle>Account</DialogTitle>
           <DialogDescription>
-            {isUserAwaitingEmailVerification
+            {activeView === "verify"
               ? `Enter the verification code sent to your email.`
+              : activeView === "forgotPassword"
+              ? "Enter your email to reset your password."
+              : activeView === "resetPassword"
+              ? "Enter your reset code and new password."
               : "Login or create a new account to get started."}
           </DialogDescription>
         </DialogHeader>
-        {isUserAwaitingEmailVerification ? (
+        {activeView === "verify" ? (
           <AuthVerifyRegisterForm
             onSubmit={handleVerifySignup}
             onResendVerificationCode={handleResendVerificationCode}
             initialCodeSentAt={initialCodeSentAt ?? 0}
+          />
+        ) : activeView === "forgotPassword" ? (
+          <AuthForgotPasswordForm
+            onSubmit={handleForgotPassword}
+            onBack={() => setActiveView("login")}
+          />
+        ) : activeView === "resetPassword" ? (
+          <AuthResetPasswordForm
+            email={emailForPasswordReset || ""}
+            onSubmit={handleResetPassword}
+            onBack={() => setActiveView("login")}
           />
         ) : (
           <Tabs
@@ -182,7 +265,10 @@ export default function LoginDialog({
               <AuthRegisterForm onSubmit={handleSignup} />
             </TabsContent>
             <TabsContent value="login">
-              <AuthLoginForm onSubmit={handleLogin} />
+              <AuthLoginForm
+                onSubmit={handleLogin}
+                onForgotPassword={() => setActiveView("forgotPassword")}
+              />
             </TabsContent>
           </Tabs>
         )}

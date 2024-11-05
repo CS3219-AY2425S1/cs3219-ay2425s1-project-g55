@@ -4,6 +4,8 @@ import { useAuth } from "@/hooks/auth/useAuth";
 import { cn } from "@/lib/utils";
 import { CodeXml } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
+import { EditProfileDialog } from "./forms/auth-user-profile";
+import { useState } from "react";
 
 export function NavbarLink({
   to,
@@ -30,7 +32,11 @@ export function NavbarLink({
 
 export default function Navbar() {
   const auth = useAuth();
-  const role = auth?.user?.role || '';
+  const role = auth?.user?.role || "";
+
+  const [open, setOpen] = useState(false);
+  const handleProfileClick = () => setOpen(true);
+  const handleDialogClose = () => setOpen(false);
 
   return (
     <nav className="col-span-12 bg-background h-14">
@@ -46,15 +52,27 @@ export default function Navbar() {
               <NavbarLink to="/problems">Problems</NavbarLink>
               <NavbarLink to="/discuss">Discuss</NavbarLink>
               {role == "admin" && (
-                <NavbarLink to="/admin/user-management">User Management</NavbarLink>
+                <NavbarLink to="/admin/user-management">
+                  User Management
+                </NavbarLink>
               )}
             </div>
           </div>
           <div className="hidden sm:ml-6 sm:flex sm:items-center">
-            {auth ? <UserMenuAvatar /> : <LoginDialog />}
+            {auth ? (
+              <UserMenuAvatar onProfileClick={handleProfileClick} />
+            ) : (
+              <LoginDialog />
+            )}
           </div>
         </div>
       </div>
+
+      <EditProfileDialog
+        open={open}
+        onClose={handleDialogClose}
+        action="edit"
+      />
     </nav>
   );
 }

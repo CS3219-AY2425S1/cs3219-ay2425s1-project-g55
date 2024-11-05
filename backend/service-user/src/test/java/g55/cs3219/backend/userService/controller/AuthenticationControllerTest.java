@@ -1,8 +1,12 @@
 package g55.cs3219.backend.userService.controller;
 
+import g55.cs3219.backend.userService.dto.ChangePasswordDto;
+import g55.cs3219.backend.userService.dto.ForgetPasswordDto;
 import g55.cs3219.backend.userService.dto.LoginUserDto;
+import g55.cs3219.backend.userService.dto.ResetPasswordDto;
 import g55.cs3219.backend.userService.dto.VerifyUserDto;
 import g55.cs3219.backend.userService.model.User;
+import g55.cs3219.backend.userService.responses.JwtTokenValidationResponse;
 import g55.cs3219.backend.userService.responses.LoginResponse;
 import g55.cs3219.backend.userService.responses.UserResponse;
 import g55.cs3219.backend.userService.service.AuthenticationService;
@@ -15,6 +19,8 @@ import org.mockito.MockitoAnnotations;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -27,6 +33,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
@@ -41,6 +48,9 @@ class AuthenticationControllerTest {
 
     @Mock
     private AuthenticationService authenticationService;
+
+    @Mock
+    private UserDetailsService userDetailsService;
 
     @Mock
     private Authentication authentication;
@@ -195,6 +205,186 @@ class AuthenticationControllerTest {
         assertEquals(2, errors.size());
         assertTrue(errors.contains("email: must not be blank"));
         assertTrue(errors.contains("password: must not be blank"));
+    }
+
+    @Test
+    void verifyTokenParam_shouldReturnUserResponse_whenTokenIsValid() {
+        String validToken = "valid-jwt-token";
+        UserDetails mockUserDetails = mockUser;
+        JwtTokenValidationResponse validationResponse = new JwtTokenValidationResponse(true, "Token is valid");
+
+        when(jwtService.extractUsername(validToken)).thenReturn(mockUserDetails.getUsername());
+        when(userDetailsService.loadUserByUsername(mockUserDetails.getUsername())).thenReturn(mockUserDetails);
+        when(jwtService.isTokenValid(validToken, mockUserDetails)).thenReturn(validationResponse);
+
+        ResponseEntity<?> response = authenticationController.verifyTokenParam(validToken);
+
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        UserResponse userResponse = (UserResponse) response.getBody();
+        assertNotNull(userResponse);
+        assertEquals(mockUser.getId(), userResponse.getId());
+        assertEquals(mockUser.getEmail(), userResponse.getEmail());
+        assertEquals(mockUser.isAdmin(), userResponse.isAdmin());
+        assertEquals(mockUser.getName(), userResponse.getUsername());
+
+        verify(jwtService, times(1)).extractUsername(validToken);
+        verify(jwtService, times(1)).isTokenValid(validToken, mockUserDetails);
+    }
+
+    @Test
+    void verifyTokenParam_shouldReturnUnauthorized_whenTokenIsInvalid() {
+        String invalidToken = "invalid-jwt-token";
+        JwtTokenValidationResponse validationResponse = new JwtTokenValidationResponse(false, "Token is invalid");
+
+        when(jwtService.extractUsername(invalidToken)).thenReturn(mockUser.getEmail());
+        when(userDetailsService.loadUserByUsername(mockUser.getEmail())).thenReturn(mockUser);
+        when(jwtService.isTokenValid(invalidToken, mockUser)).thenReturn(validationResponse);
+
+        ResponseEntity<?> response = authenticationController.verifyTokenParam(invalidToken);
+
+        assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
+        assertEquals("Token is invalid", response.getBody());
+
+        verify(jwtService, times(1)).extractUsername(invalidToken);
+        verify(jwtService, times(1)).isTokenValid(invalidToken, mockUser);
+    }
+
+    @Test
+    void verifyTokenParam_shouldReturnUnauthorized_whenTokenIsExpired() {
+        String expiredToken = "expired-jwt-token";
+        JwtTokenValidationResponse validationResponse = new JwtTokenValidationResponse(false, "Token has expired");
+
+        when(jwtService.extractUsername(expiredToken)).thenReturn(mockUser.getEmail());
+        when(userDetailsService.loadUserByUsername(mockUser.getEmail())).thenReturn(mockUser);
+        when(jwtService.isTokenValid(expiredToken, mockUser)).thenReturn(validationResponse);
+
+        ResponseEntity<?> response = authenticationController.verifyTokenParam(expiredToken);
+
+        assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
+        assertEquals("Token has expired", response.getBody());
+
+        verify(jwtService, times(1)).extractUsername(expiredToken);
+        verify(jwtService, times(1)).isTokenValid(expiredToken, mockUser);
+    }
+
+    @Test
+    void forgotPassword_shouldReturnOk_whenEmailExists() {
+        ForgetPasswordDto forgotPasswordDto = new ForgetPasswordDto();
+        forgotPasswordDto.setEmail("user@example.com");
+
+        ResponseEntity<?> response = authenticationController.forgotPassword(forgotPasswordDto);
+
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertEquals("Password reset email sent successfully.", response.getBody());
+        verify(authenticationService, times(1)).initiatePasswordReset("user@example.com");
+    }
+
+    @Test
+    void forgotPassword_shouldReturnNotFound_whenEmailDoesNotExist() {
+        ForgetPasswordDto forgotPasswordDto = new ForgetPasswordDto();
+        forgotPasswordDto.setEmail("nonexistent@example.com");
+
+        doThrow(new RuntimeException("User not found")).when(authenticationService).initiatePasswordReset(anyString());
+
+        ResponseEntity<?> response = authenticationController.forgotPassword(forgotPasswordDto);
+
+        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
+        assertEquals("User not found", response.getBody());
+        verify(authenticationService, times(1)).initiatePasswordReset("nonexistent@example.com");
+    }
+
+    @Test
+    void resetPassword_shouldReturnOk_whenResetCodeIsValid() {
+        ResetPasswordDto resetPasswordDto = new ResetPasswordDto();
+        resetPasswordDto.setEmail("user@example.com");
+        resetPasswordDto.setResetCode("validCode");
+        resetPasswordDto.setNewPassword("newPassword");
+
+        ResponseEntity<?> response = authenticationController.resetPassword(resetPasswordDto);
+
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertEquals("Password has been reset successfully.", response.getBody());
+        verify(authenticationService, times(1)).resetPassword("user@example.com", "validCode", "newPassword");
+    }
+
+    @Test
+    void resetPassword_shouldReturnBadRequest_whenResetCodeIsInvalid() {
+        ResetPasswordDto resetPasswordDto = new ResetPasswordDto();
+        resetPasswordDto.setEmail("user@example.com");
+        resetPasswordDto.setResetCode("invalidCode");
+        resetPasswordDto.setNewPassword("newPassword");
+
+        doThrow(new RuntimeException("Invalid or expired reset code")).when(authenticationService)
+                .resetPassword(anyString(), anyString(), anyString());
+
+        ResponseEntity<?> response = authenticationController.resetPassword(resetPasswordDto);
+
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        assertEquals("Invalid or expired reset code", response.getBody());
+        verify(authenticationService, times(1)).resetPassword("user@example.com", "invalidCode", "newPassword");
+    }
+
+    @Test
+    void changePassword_shouldReturnOk_whenOldPasswordIsCorrect() {
+        ChangePasswordDto changePasswordDto = new ChangePasswordDto();
+        changePasswordDto.setOldPassword("oldPassword");
+        changePasswordDto.setNewPassword("newPassword");
+
+        when(authentication.isAuthenticated()).thenReturn(true);
+        when(authentication.getPrincipal()).thenReturn(mockUser);
+        doNothing().when(authenticationService).changePassword(mockUser, "oldPassword", "newPassword");
+
+        ResponseEntity<?> response = authenticationController.changePassword(changePasswordDto, authentication);
+
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertEquals("Password has been reset successfully.", response.getBody());
+        verify(authenticationService, times(1)).changePassword(mockUser, "oldPassword", "newPassword");
+    }
+
+    @Test
+    void changePassword_shouldReturnBadRequest_whenOldPasswordIsIncorrect() {
+        ChangePasswordDto changePasswordDto = new ChangePasswordDto();
+        changePasswordDto.setOldPassword("wrongOldPassword");
+        changePasswordDto.setNewPassword("newPassword");
+
+        when(authentication.isAuthenticated()).thenReturn(true);
+        when(authentication.getPrincipal()).thenReturn(mockUser);
+        doThrow(new RuntimeException("Incorrect old password."))
+                .when(authenticationService).changePassword(mockUser, "wrongOldPassword", "newPassword");
+
+        ResponseEntity<?> response = authenticationController.changePassword(changePasswordDto, authentication);
+
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        assertEquals("Incorrect old password.", response.getBody());
+        verify(authenticationService, times(1)).changePassword(mockUser, "wrongOldPassword", "newPassword");
+    }
+
+    @Test
+    void changePassword_shouldReturnUnauthorized_whenUserIsNotAuthenticated() {
+        ChangePasswordDto changePasswordDto = new ChangePasswordDto();
+        changePasswordDto.setOldPassword("oldPassword");
+        changePasswordDto.setNewPassword("newPassword");
+
+        // Set authentication to null to simulate an unauthenticated request
+        ResponseEntity<?> response = authenticationController.changePassword(changePasswordDto, null);
+
+        assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
+        assertEquals("User is not authenticated", response.getBody());
+    }
+
+    @Test
+    void changePassword_shouldReturnUnauthorized_whenUserIsNotFullyAuthenticated() {
+        ChangePasswordDto changePasswordDto = new ChangePasswordDto();
+        changePasswordDto.setOldPassword("oldPassword");
+        changePasswordDto.setNewPassword("newPassword");
+
+        // Mock authentication but set isAuthenticated to false
+        when(authentication.isAuthenticated()).thenReturn(false);
+
+        ResponseEntity<?> response = authenticationController.changePassword(changePasswordDto, authentication);
+
+        assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
+        assertEquals("User is not authenticated", response.getBody());
     }
 }
 

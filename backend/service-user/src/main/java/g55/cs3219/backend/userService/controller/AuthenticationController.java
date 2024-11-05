@@ -1,7 +1,10 @@
 package g55.cs3219.backend.userService.controller;
 
+import g55.cs3219.backend.userService.dto.ChangePasswordDto;
+import g55.cs3219.backend.userService.dto.ForgetPasswordDto;
 import g55.cs3219.backend.userService.dto.LoginUserDto;
 import g55.cs3219.backend.userService.dto.RegisterUserDto;
+import g55.cs3219.backend.userService.dto.ResetPasswordDto;
 import g55.cs3219.backend.userService.responses.JwtTokenValidationResponse;
 import g55.cs3219.backend.userService.responses.UserResponse;
 import g55.cs3219.backend.userService.dto.VerifyUserDto;
@@ -113,7 +116,7 @@ public class AuthenticationController {
             JwtTokenValidationResponse validationResponse = jwtService.isTokenValid(token, userDetails);
 
             if (validationResponse.isValid()) {
-                UserResponse response = new UserResponse(user.getId(), user.getName(), userDetails.getUsername(),
+                UserResponse response = new UserResponse(user.getId(), user.getEmail(), user.getName(),
                         user.isAdmin());
                 return ResponseEntity.ok(response);
             } else {
@@ -121,6 +124,46 @@ public class AuthenticationController {
             }
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid or missing token");
+        }
+    }
+
+    @PostMapping("/forgot-password")
+    public ResponseEntity<?> forgotPassword(@RequestBody ForgetPasswordDto forgotPasswordDto) {
+        try {
+            authenticationService.initiatePasswordReset(forgotPasswordDto.getEmail());
+            return ResponseEntity.ok("Password reset email sent successfully.");
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        }
+    }
+
+    @PostMapping("/reset-password")
+    public ResponseEntity<?> resetPassword(@RequestBody ResetPasswordDto resetPasswordDto) {
+        try {
+            authenticationService.resetPassword(resetPasswordDto.getEmail(), resetPasswordDto.getResetCode(),
+                    resetPasswordDto.getNewPassword());
+            return ResponseEntity.ok("Password has been reset successfully.");
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        }
+    }
+
+    @PostMapping("/change-password")
+    public ResponseEntity<?> changePassword(@RequestBody ChangePasswordDto changePasswordDto,
+                                         Authentication authentication) {
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User is not authenticated");
+        }
+
+        try {
+            User currentUser = (User) authentication.getPrincipal();
+            authenticationService.changePassword(currentUser, changePasswordDto.getOldPassword(), changePasswordDto.getNewPassword());
+            return ResponseEntity.ok("Password has been reset successfully.");
+        } catch (RuntimeException e) {
+            if (e.getMessage().equals("Incorrect old password.")) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Incorrect old password.");
+            }
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         }
     }
 }

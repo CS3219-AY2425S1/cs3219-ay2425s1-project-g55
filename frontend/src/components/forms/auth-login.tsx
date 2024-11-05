@@ -1,10 +1,10 @@
-import { Form } from '@/components/ui/form';
-import { LoginUser, LoginUserSchema } from '@/types/auth';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { SubmitHandler, useForm } from 'react-hook-form';
+import { Form } from "@/components/ui/form";
+import { LoginUser, LoginUserSchema } from "@/types/auth";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { SubmitHandler, useForm } from "react-hook-form";
 
-import { Button } from '@/components/ui/button';
-import { DialogFooter } from '@/components/ui/dialog';
+import { Button } from "@/components/ui/button";
+import { DialogFooter } from "@/components/ui/dialog";
 import {
   FormControl,
   FormField,
@@ -16,16 +16,22 @@ import { Input } from '@/components/ui/input';
 import { Eye, EyeOff, Loader2 } from 'lucide-react';
 import { useState } from 'react';
 
+
 const formDefaultValues: LoginUser = {
-  email: '',
-  password: '',
+  email: "",
+  password: "",
 };
 
 type AuthLoginFormProps = {
   onSubmit: SubmitHandler<LoginUser>;
+  onForgotPassword: () => void;
 };
 
-export function AuthLoginForm({ onSubmit }: AuthLoginFormProps) {
+
+export function AuthLoginForm({
+  onSubmit,
+  onForgotPassword,
+}: AuthLoginFormProps) {
   const [showPassword, setShowPassword] = useState(false);
 
   const form = useForm<LoginUser>({
@@ -36,12 +42,13 @@ export function AuthLoginForm({ onSubmit }: AuthLoginFormProps) {
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)}>
-        <div className='grid gap-4 py-4'>
+        <div className="grid gap-4 py-4">
           <FormField
             control={form.control}
-            name='email'
+            name="email"
             render={({ field }) => (
               <FormItem>
+
           <FormLabel>Email</FormLabel>
           <FormControl>
             <Input type='email' {...field} />
@@ -81,14 +88,23 @@ export function AuthLoginForm({ onSubmit }: AuthLoginFormProps) {
               );
             }}
           />
+          <div className="flex justify-end">
+            <Button
+              variant="link"
+              onClick={onForgotPassword}
+              className="text-sm underline"
+            >
+              Forgot Password?
+            </Button>
+          </div>
         </div>
 
         <DialogFooter>
-          <Button type='submit' disabled={form.formState.isSubmitting}>
+          <Button type="submit" disabled={form.formState.isSubmitting}>
             {form.formState.isSubmitting && (
-              <Loader2 className='mr-2 h-4 w-4 animate-spin' />
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
             )}
-            {form.formState.isSubmitting ? 'Logging in...' : 'Login'}
+            {form.formState.isSubmitting ? "Logging in..." : "Login"}
           </Button>
         </DialogFooter>
       </form>
