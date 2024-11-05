@@ -166,7 +166,7 @@ export default function QuestionView({ id }: QuestionViewProps) {
   }
 
   return (
-    <div className="relative w-full max-w-3xl p-4 space-y-4 h-full overflow-y-auto">
+    <div className="relative w-full max-w-3xl p-4 space-y-4 overflow-y-auto">
       <div className="mb-2 text-2xl font-bold">
         <span className="mr-2">{question.id}.</span>
         <span>{question.title}</span>
@@ -197,7 +197,7 @@ export default function QuestionView({ id }: QuestionViewProps) {
           <div key={index} className="mb-2">
             <p className="font-bold">Example {index + 1}</p>
             <blockquote className="mt-2 border-l-2 pl-6">
-              <p className="font-mono text-sm whitespace-pre">{example}</p>
+              <p className="font-mono text-sm whitespace-pre-wrap">{example}</p>
             </blockquote>
           </div>
         ))}

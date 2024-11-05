@@ -1,8 +1,8 @@
+import { LoginPromptView } from '@/components/discuss/views/LoginPromptView';
+import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/auth/useAuth';
 import { useCreateSubmission } from '@/hooks/useSubmissions';
 import Editor from '@monaco-editor/react';
-import { LoginPromptView } from '@/components/discuss/views/LoginPromptView';
-import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 
 function SubmitButton({
@@ -17,11 +17,11 @@ function SubmitButton({
 
   const createSubmission = useCreateSubmission({
     onSuccess: () => {
-      toast.success("Your code has been submitted successfully");
+      toast.success('Your code has been submitted successfully');
     },
     onError: (error) => {
-      toast.error("Failed to submit your code", {
-        description: error.message || "Please try again"
+      toast.error('Failed to submit your code', {
+        description: error.message || 'Please try again',
       });
     },
   });
@@ -57,16 +57,16 @@ const MonacoEditor = ({
   questionId: number;
 }) => {
   return (
-    <div className="flex flex-col h-full gap-4">
-      <div className="flex-grow">
+    <div className='flex flex-col h-full gap-4'>
+      <div className='flex-grow'>
         <Editor
-          defaultLanguage="javascript"
+          defaultLanguage='typescript'
           value={value}
           onChange={onChange}
           options={{ automaticLayout: true }}
         />
       </div>
-      <div className="flex justify-end m-4">
+      <div className='flex justify-end m-4'>
         <SubmitButton questionId={questionId} code={value} />
       </div>
     </div>

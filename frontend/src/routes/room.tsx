@@ -10,14 +10,19 @@ import { useCallback, useState } from 'react';
 
 import ParticipantView from '@/components/ParticipantView';
 import QuestionView from '@/components/QuestionView';
+import MonacoEditor from '@/components/code-editor/MonacoEditor';
+import CollaborativeEditor from '@/components/code-editor/collaborative-code-editor';
+import { LoginPromptView } from '@/components/discuss/views/LoginPromptView';
 import { useAuth } from '@/hooks/auth/useAuth';
 import { useRoom } from '@/hooks/useRoom';
+import { BACKEND_WEBSOCKET_COLLABORATIVE_EDITOR } from '@/lib/common';
 import { useParams } from 'react-router-dom';
 import { toast } from 'sonner';
-import MonacoEditor from '@/components/code-editor/MonacoEditor';
 
 export default function RoomRoute() {
-  const [editorCode, setEditorCode] = useState<string>('// Write your code here\n');
+  const [editorCode, setEditorCode] = useState<string>(
+    '// Write your code here\n'
+  );
   const { roomId } = useParams<{ roomId: string }>();
   const { isLoading, data, error } = useRoom(roomId);
   const auth = useAuth();
@@ -57,6 +62,15 @@ export default function RoomRoute() {
     return <div>Invalid question ID</div>;
   }
 
+  if (!auth?.user) {
+    return (
+      <LoginPromptView
+        featureName='rooms'
+        featureUsage='view and solve questions in a room'
+      />
+    );
+  }
+
   return (
     <div className='border rounded-lg overflow-hidden h-full w-full'>
       <ResizablePanelGroup direction='horizontal'>
@@ -84,11 +98,22 @@ export default function RoomRoute() {
         </ResizablePanel>
         <ResizableHandle withHandle />
         <ResizablePanel>
-          <MonacoEditor
-            questionId={questionId}
-            value={editorCode}
-            onChange={(value: string | undefined) => setEditorCode(value ?? '')}
-          />
+          {isConnected ? (
+            <CollaborativeEditor
+              initialValue={editorCode}
+              roomName={roomId}
+              websocketUrl={BACKEND_WEBSOCKET_COLLABORATIVE_EDITOR}
+              userName={auth.user.userName}
+            />
+          ) : (
+            <MonacoEditor
+              questionId={questionId}
+              value={editorCode}
+              onChange={(value: string | undefined) =>
+                setEditorCode(value ?? '')
+              }
+            />
+          )}
         </ResizablePanel>
       </ResizablePanelGroup>
     </div>
