@@ -80,7 +80,7 @@ const AdminUserManagementPage: React.FC = () => {
                     <TableRow>
                     <TableHead className="w-[40%]">Username</TableHead>
                     <TableHead className="w-[40%]">Email</TableHead>
-                    <TableHead className="w-[20%]">Role</TableHead>
+                    <TableHead className="w-[20%]">Action</TableHead>
                     </TableRow>
                 </TableHeader>
                 <TableBody>
