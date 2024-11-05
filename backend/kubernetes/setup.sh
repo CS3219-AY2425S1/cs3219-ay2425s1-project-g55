@@ -5,9 +5,6 @@ DOCKER_USERNAME="your_docker_username"
 NAMESPACE="g55"
 SERVICE_NAMES=("service-user" "service-question" "service-matching" "mongoDB" "service-room" "service-history")
 IMAGE_NAMES=("user_service" "question_service" "matching_service" "mongodb" "room_service" "history_service")
-DB_SERVICE_NAMES=("service-user" "service-history")
-DB_NAMES=("userdb-seed-config" "historydb-seed-config")
-INIT_SQL_NAMES=("init.sql" "init-mongo.js")
 
 # Start Minikube
 minikube start
@@ -27,12 +24,9 @@ do
   cd ..
 done
 
-for i in "${!DB_NAMES[@]}"
-do
-  cd ${DB_SERVICE_NAMES[$i]}
-  kubectl create configmap ${DB_NAMES[$i]} --from-file=./seed/${INIT_SQL_NAMES[$i]} -n g55
-  cd ..
-done
+cd service-user
+kubectl create configmap userdb-seed-config --from-file=./seed/init.sql -n g55
+cd ..
 
 # Push all images to Docker Hub
 for IMAGE_NAME in "${IMAGE_NAMES[@]}"

@@ -7,7 +7,6 @@ IMAGE_NAMES=("user_service" "question_service" "matching_service" "mongodb" "roo
 
 # Clean up Kubernetes resources
 kubectl patch pvc postgres-data-userdb-0 -n g55 -p '{"metadata":{"finalizers":null}}'
-kubectl patch pvc history-mongodb-data-historydb-0 -n g55 -p '{"metadata":{"finalizers":null}}'
 kubectl delete all --all -n $NAMESPACE
 kubectl delete namespace $NAMESPACE
 
