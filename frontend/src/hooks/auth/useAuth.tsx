@@ -52,7 +52,7 @@ export function useAuth(): AuthHelper | null {
             role: user.admin ? USER_ROLES.admin : USER_ROLES.user,
             userId: user.id,
             userName: user.username,
-            email: user.email, // Add email here
+            email: user.email,
           });
         } else {
           // Token has expired
