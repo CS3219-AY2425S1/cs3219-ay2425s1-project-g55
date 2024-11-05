@@ -186,6 +186,16 @@ services:
         reservations:
           memory: 256M
 
+  backend-service-video:
+    build:
+      context: ./backend/service-video
+    container_name: backend-service-video
+    ports:
+      - '8087:8080'
+    networks:
+      - app-network
+
+
 networks:
   app-network:
     driver: bridge
