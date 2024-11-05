@@ -3,8 +3,11 @@
 # Variables
 DOCKER_USERNAME="your_docker_username"
 NAMESPACE="g55"
-SERVICE_NAMES=("service-user" "service-question" "service-matching" "mongoDB" "service-room")
-IMAGE_NAMES=("user_service" "question_service" "matching_service" "mongodb" "room_service")
+SERVICE_NAMES=("service-user" "service-question" "service-matching" "mongoDB" "service-room" "service-history")
+IMAGE_NAMES=("user_service" "question_service" "matching_service" "mongodb" "room_service" "history_service")
+DB_SERVICE_NAMES=("service-user" "service-history")
+DB_NAMES=("userdb-seed-config" "historydb-seed-config")
+INIT_SQL_NAMES=("init.sql" "init-mongo.js")
 
 # Start Minikube
 minikube start
@@ -21,6 +24,13 @@ for i in "${!IMAGE_NAMES[@]}"
 do
   cd ${SERVICE_NAMES[$i]}
   docker build -t $DOCKER_USERNAME/${IMAGE_NAMES[$i]} .
+  cd ..
+done
+
+for i in "${!DB_NAMES[@]}"
+do
+  cd ${DB_SERVICE_NAMES[$i]}
+  kubectl create configmap ${DB_NAMES[$i]} --from-file=./seed/${INIT_SQL_NAMES[$i]} -n g55
   cd ..
 done
 

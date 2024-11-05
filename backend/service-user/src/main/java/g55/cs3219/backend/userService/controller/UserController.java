@@ -38,27 +38,12 @@ public class UserController {
     }
 
     @GetMapping
-    public ResponseEntity<List<User>> getAllUsers(Authentication authentication) {
-        // Check if the authenticated user is an admin
+    public ResponseEntity<List<UserAdminResponse>> getAllUsers(Authentication authentication) {
         User currentUser = (User) authentication.getPrincipal();
         if (!currentUser.isAdmin()) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(null);
         }
 
-        // Fetch all users from the database
-        List<User> users = userService.getAllUsers();
-        return ResponseEntity.ok(users);
-    }
-
-    @GetMapping("/summary")
-    public ResponseEntity<List<UserAdminResponse>> getAllUsersSummary(Authentication authentication) {
-        // Check if the authenticated user is an admin
-        User currentUser = (User) authentication.getPrincipal();
-        if (!currentUser.isAdmin()) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(null);
-        }
-
-        // Fetch all users from the database
         List<User> users = userService.getAllUsers();
         List<UserAdminResponse> userAdminResponses = users.stream()
                 .map(user -> new UserAdminResponse(user.getId(), user.getEmail(), user.getName(), user.isAdmin(), user.getPassword()))

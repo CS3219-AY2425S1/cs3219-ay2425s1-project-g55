@@ -394,5 +394,85 @@ class AuthenticationServiceTest {
 
     }
 
+    @Test
+    void initiatePasswordReset_shouldGenerateResetTokenAndSendEmail_whenEmailIsValid() {
+        User user = new User("testUser", "test@example.com", "encodedPassword");
+        user.setEnabled(true);
+        when(userRepository.findByEmail("test@example.com")).thenReturn(Optional.of(user));
+
+        try {
+            doNothing().when(emailService).sendVerificationEmail(anyString(), anyString(), anyString());
+        } catch (MessagingException e){
+            fail("MessagingException occurred: " + e.getMessage());
+        }
+
+        authenticationService.initiatePasswordReset("test@example.com");
+
+        assertNotNull(user.getResetPasswordToken());
+        assertNotNull(user.getResetTokenExpiry());
+        assertTrue(user.getResetTokenExpiry().isAfter(LocalDateTime.now()));
+
+        try {
+            verify(emailService, times(1)).sendVerificationEmail(eq("test@example.com"), eq("Password Reset Request"), anyString());
+        } catch (MessagingException e) {
+            fail("MessagingException occurred: " + e.getMessage());
+        }
+        verify(userRepository, times(1)).save(user);
+    }
+
+    @Test
+    void initiatePasswordReset_shouldThrowException_whenEmailNotFound() {
+        when(userRepository.findByEmail("missing@example.com")).thenReturn(Optional.empty());
+
+        RuntimeException exception = assertThrows(RuntimeException.class, () -> authenticationService.initiatePasswordReset("missing@example.com"));
+        assertEquals("User not found", exception.getMessage());
+    }
+
+    @Test
+    void resetPassword_shouldUpdatePassword_whenResetCodeIsValid() {
+        User user = new User("testUser", "test@example.com", "encodedPassword");
+        String resetCode = "123456";
+        user.setResetPasswordToken(resetCode);
+        user.setResetTokenExpiry(LocalDateTime.now().plusMinutes(10));
+
+        when(userRepository.findByEmail("test@example.com")).thenReturn(Optional.of(user));
+        when(passwordEncoder.encode("newPassword")).thenReturn("encodedNewPassword");
+
+        authenticationService.resetPassword("test@example.com", resetCode, "newPassword");
+
+        assertEquals("encodedNewPassword", user.getPassword());
+        assertNull(user.getResetPasswordToken());
+        assertNull(user.getResetTokenExpiry());
+        verify(userRepository, times(1)).save(user);
+    }
+
+    @Test
+    void resetPassword_shouldThrowException_whenResetCodeIsInvalid() {
+        User user = new User("testUser", "test@example.com", "encodedPassword");
+        user.setResetPasswordToken("validCode");
+        user.setResetTokenExpiry(LocalDateTime.now().plusMinutes(10));
+
+        when(userRepository.findByEmail("test@example.com")).thenReturn(Optional.of(user));
+
+        RuntimeException exception = assertThrows(RuntimeException.class, () ->
+                authenticationService.resetPassword("test@example.com", "invalidCode", "newPassword")
+        );
+        assertEquals("Invalid or expired reset code", exception.getMessage());
+    }
+
+    @Test
+    void resetPassword_shouldThrowException_whenResetCodeIsExpired() {
+        User user = new User("testUser", "test@example.com", "encodedPassword");
+        user.setResetPasswordToken("expiredCode");
+        user.setResetTokenExpiry(LocalDateTime.now().minusMinutes(5)); // Expired token
+
+        when(userRepository.findByEmail("test@example.com")).thenReturn(Optional.of(user));
+
+        RuntimeException exception = assertThrows(RuntimeException.class, () ->
+                authenticationService.resetPassword("test@example.com", "expiredCode", "newPassword")
+        );
+        assertEquals("Invalid or expired reset code", exception.getMessage());
+    }
+
 }
 

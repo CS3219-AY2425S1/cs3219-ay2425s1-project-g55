@@ -20,10 +20,21 @@ spec:
       labels:
         app: user-service
     spec:
+      initContainers:
+        - name: wait-for-db
+          image: busybox
+          command: [ 'sh', '-c', 'until nc -z userdb 5432; do echo waiting for database; sleep 2; done;' ]
       containers:
         - image: docker_username/user_service:latest
           imagePullPolicy: IfNotPresent
           name: user-service
+          env:
+            - name: SPRING_DATASOURCE_URL
+              value: "jdbc:postgresql://userdb.g55.svc.cluster.local:5432/postgres"
+            - name: SPRING_DATASOURCE_USERNAME
+              value: "postgres"
+            - name: SPRING_DATASOURCE_PASSWORD
+              value: "password"
           resources:
             requests:
               memory: "1Gi"
