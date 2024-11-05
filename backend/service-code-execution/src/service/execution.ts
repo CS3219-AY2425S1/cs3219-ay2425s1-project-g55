@@ -95,7 +95,7 @@ export class IsolatedExecutionService {
         try {
             ${jsCode}
         } catch (error) {
-            throw new Error(error.message);
+            console.error(error.message);
         }
     })();
             `;
@@ -113,7 +113,7 @@ export class IsolatedExecutionService {
       return {
         stdout,
         stderr,
-        result: result, // Copy the result from the isolate
+        result: JSON.stringify(result), // Copy the result from the isolate
         executionTime,
         memoryUsage: Math.round((await stats).heap_size_limit / (1024 * 1024)), // Convert to MB
       };

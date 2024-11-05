@@ -10,8 +10,7 @@ it('should execute code', async () => {
 it('should handle errors', async () => {
   const service = new IsolatedExecutionService();
   const result = await service.executeCode('throw new Error("Test error");');
-  expect(result.error).toBeDefined();
-  expect(result.error).toContain('Test error');
+  expect(result.stderr).toEqual(['Test error']);
 });
 
 const sampleCode = `
