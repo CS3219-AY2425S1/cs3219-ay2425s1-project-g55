@@ -22,7 +22,7 @@ export function UserMenuAvatar() {
         </Avatar>
       </DropdownMenuTrigger>
       <DropdownMenuContent>
-        <DropdownMenuItem style={{ backgroundColor: 'lightgrey', cursor: 'default' }} disabled>
+        <DropdownMenuItem style={{ backgroundColor: 'lightgrey' }} disabled>
           {auth?.user?.email}
         </DropdownMenuItem>
         <DropdownMenuItem onClick={auth?.logout}>Logout</DropdownMenuItem>
