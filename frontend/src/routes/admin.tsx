@@ -1,4 +1,6 @@
 import { UserDialog } from '@/components/forms/admin-update-user';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 
 import { useAuth } from '@/hooks/auth/useAuth';
@@ -78,8 +80,9 @@ const AdminUserManagementPage: React.FC = () => {
                 <Table>
                 <TableHeader>
                     <TableRow>
-                    <TableHead className="w-[40%]">Username</TableHead>
-                    <TableHead className="w-[40%]">Email</TableHead>
+                    <TableHead className="w-[30%]">Username</TableHead>
+                    <TableHead className="w-[30%]">Email</TableHead>
+                    <TableHead className="w-[20%]">Role</TableHead>
                     <TableHead className="w-[20%]">Action</TableHead>
                     </TableRow>
                 </TableHeader>
@@ -89,15 +92,25 @@ const AdminUserManagementPage: React.FC = () => {
                         <TableCell className="font-medium">{user.name}</TableCell>
                         <TableCell className="font-medium">{user.email}</TableCell>
                         <TableCell className="font-medium">
-                        <button
+                            <Badge
+                                variant="outline"
+                                className={`font-medium ${user.isAdmin ? 'bg-green-200 text-black' : 'bg-gray-500 text-white'}`}
+                            >
+                                {user.isAdmin ? 'Admin' : 'User'}
+                            </Badge>
+                        </TableCell>
+                        <TableCell className="font-medium">
+                        <Button
                             onClick={() => {
                                 setSelectedUser({ ...user, role: user.isAdmin ? 'Admin' : 'User' });
                                 setOpen(true);
                             }}
-                            className="px-2 py-1 border border-gray-300 rounded bg-blue-500 text-white"
+                            className="p-2 border border-gray-300 rounded text-white"
                         >
-                            Edit
-                        </button>
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                <path d="M17.414 2.586a2 2 0 00-2.828 0L7 10.172V13h2.828l7.586-7.586a2 2 0 000-2.828zM4 12v4h4l10-10-4-4L4 12z" />
+                            </svg>
+                        </Button>
                         </TableCell>
                     </TableRow>
                     ))}
