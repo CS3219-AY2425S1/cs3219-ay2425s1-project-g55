@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: historydb
+  namespace: g55
+spec:
+  serviceName: historydb
+  replicas: 1
+  selector:
+    matchLabels:
+      app: historydb
+  template:
+    metadata:
+      labels:
+        app: historydb
+    spec:
+      containers:
+        - name: mongodb
+          image: mongo:latest
+          ports:
+            - containerPort: 27017
+              name: mongodb
+          volumeMounts:
+            - name: history-mongodb-data
+              mountPath: /data/db
+            - name: historydb-seed-volume
+              mountPath: /docker-entrypoint-initdb.d
+      volumes:
+        - name: historydb-seed-volume
+          configMap:
+            name: historydb-seed-config
+  volumeClaimTemplates:
+    - metadata:
+        name: history-mongodb-data
+      spec:
+        accessModes: [ "ReadWriteOnce" ]
+        resources:
+          requests:
+            storage: 1Gi 
