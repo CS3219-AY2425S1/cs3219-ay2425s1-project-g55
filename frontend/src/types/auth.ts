@@ -66,6 +66,31 @@ export const ChangePasswordSchema = z
 
 export type ChangePasswordData = z.infer<typeof ChangePasswordSchema>;
 
+export const ForgotPasswordSchema = z.object({
+  email: z.string().email("Invalid email address"),
+});
+
+export type ForgotPasswordData = z.infer<typeof ForgotPasswordSchema>;
+
+export const ResetPasswordSchema = z
+  .object({
+    resetCode: z.string().min(6, "Reset code must be at least 6 characters"),
+    newPassword: z
+      .string()
+      .min(8, "New password must be at least 8 characters"),
+    confirmPassword: z
+      .string()
+      .min(8, "Confirm password must be at least 8 characters"),
+  })
+  .refine((data) => data.newPassword === data.confirmPassword, {
+    message: "New passwords do not match",
+    path: ["confirmPassword"],
+  });
+
+export type ResetPasswordData = z.infer<typeof ResetPasswordSchema> & {
+  email: string;
+};
+
 /**
  * Keys for auth related data in local storage
  */

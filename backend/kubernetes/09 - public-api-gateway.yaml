@@ -28,7 +28,28 @@ spec:
                 name: user-service
                 port:
                   number: 8080
+          - path: /api/auth/forgot-password
+            pathType: Prefix
+            backend:
+              service:
+                name: user-service
+                port:
+                  number: 8080
+          - path: /api/auth/reset-password
+            pathType: Prefix
+            backend:
+              service:
+                name: user-service
+                port:
+                  number: 8080
           - path: /api/auth/verify
+            pathType: Prefix
+            backend:
+              service:
+                name: user-service
+                port:
+                  number: 8080
+          - path: /api/auth/resend-verification
             pathType: Prefix
             backend:
               service:

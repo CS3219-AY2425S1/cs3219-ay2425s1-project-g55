@@ -166,6 +166,10 @@ public class AuthenticationService {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
+        if (!user.isEnabled()) {
+            throw new RuntimeException("User is not verified. Please verify your account first.");
+        }
+
         String resetCode = generateVerificationCode();
         user.setResetPasswordToken(resetCode);
         user.setResetTokenExpiry(LocalDateTime.now().plusMinutes(30));  // Set expiry for 30 minutes
@@ -177,6 +181,10 @@ public class AuthenticationService {
     public void resetPassword(String email, String resetCode, String newPassword) {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("User not found"));
+
+        if (!user.isEnabled()) {
+            throw new RuntimeException("User is not verified. Please verify your account first.");
+        }
 
         if (user.getResetPasswordToken() == null || !user.getResetPasswordToken().equals(resetCode) ||
                 user.getResetTokenExpiry().isBefore(LocalDateTime.now())) {
