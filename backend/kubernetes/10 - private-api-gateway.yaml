@@ -50,3 +50,10 @@ spec:
                 name: room-service
                 port:
                   number: 8080
+          - path: /api/history
+            pathType: Prefix
+            backend:
+              service:
+                name: history-service
+                port:
+                  number: 8080
