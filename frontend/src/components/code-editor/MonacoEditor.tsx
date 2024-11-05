@@ -60,7 +60,7 @@ const MonacoEditor = ({
     <div className='flex flex-col h-full gap-4'>
       <div className='flex-grow'>
         <Editor
-          defaultLanguage='javascript'
+          defaultLanguage='typescript'
           value={value}
           onChange={onChange}
           options={{ automaticLayout: true }}

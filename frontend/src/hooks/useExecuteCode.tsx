@@ -16,6 +16,8 @@ const executeCodeResponseSchema = z.object({
   compiledCode: z.string().optional(),
 });
 
+export type CodeExecutionResponse = z.infer<typeof executeCodeResponseSchema>;
+
 export default function useExecuteCode({
   onSuccess,
   onError,
