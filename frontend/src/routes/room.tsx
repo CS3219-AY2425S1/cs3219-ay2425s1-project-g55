@@ -23,7 +23,7 @@ import { useAuth } from '@/hooks/auth/useAuth';
 import useExecuteCode, { CodeExecutionResponse } from '@/hooks/useExecuteCode';
 import { useRoom } from '@/hooks/useRoom';
 import { BACKEND_WEBSOCKET_COLLABORATIVE_EDITOR } from '@/lib/common';
-import { Loader2, PlayIcon } from 'lucide-react';
+import { Loader2, LogOutIcon, PlayIcon } from 'lucide-react';
 import { useParams } from 'react-router-dom';
 import { toast } from 'sonner';
 
@@ -34,7 +34,7 @@ export default function RoomRoute() {
   const { roomId } = useParams<{ roomId: string }>();
   const { isLoading, data, error } = useRoom(roomId);
   const auth = useAuth();
-  const { activeParticipants, isConnected } = useParticipantWebsocket({
+  const { activeParticipants, isConnected, disconnect } = useParticipantWebsocket({
     roomId,
     userId: auth?.user?.userId?.toString(),
     onEnteredRoom: useCallback((userId: string) => {
@@ -149,10 +149,12 @@ export default function RoomRoute() {
         <ResizableHandle withHandle />
 
         {/* Video Call Panel */}
-        <ResizablePanel defaultSize={40}>
-          <VideoCall showVideo={true} />
-        </ResizablePanel>
 
+        {isConnected && (
+          <ResizablePanel defaultSize={40}>
+            <VideoCall showVideo={true} />
+          </ResizablePanel>
+        )}
         <ResizableHandle withHandle />
 
         {/* Collaborative Editor Panel */}
@@ -193,6 +195,13 @@ export default function RoomRoute() {
           Run
         </Button>
         <SubmitButton questionId={questionId} code={editorCode} />
+        <Button 
+          variant={'outline'}
+          onClick={disconnect}
+        >
+          <LogOutIcon className='w-4 h-4 mr-2' />
+          Disconnect
+        </Button>
       </div>
     </div>
   );
