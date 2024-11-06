@@ -17,6 +17,7 @@ import { Loader2, PlayIcon } from 'lucide-react';
 import { useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { toast } from 'sonner';
+import LanguageSelector from '@/components/code-editor/language-selector';
 
 export default function QuestionRoute() {
   const { questionId: questionIdString } = useParams<{ questionId: string }>();
@@ -28,6 +29,7 @@ export default function QuestionRoute() {
   const [editorCode, setEditorCode] = useState<string>(
     '// Write your code here\n'
   );
+  const [selectedLanguage, setSelectedLanguage] = useState<string>("typescript");
 
   const [codeExecutionResponse, setCodeExecutionResponse] = useState<
     CodeExecutionResponse | undefined
@@ -51,7 +53,7 @@ export default function QuestionRoute() {
   const handleExecuteCode = async () => {
     const result = await executeCodeMutation({
       code: editorCode,
-      language: 'typescript',
+      language: selectedLanguage,
     });
     setCodeExecutionResponse(result);
   };
@@ -112,20 +114,21 @@ export default function QuestionRoute() {
           />
         </ResizablePanel>
       </ResizablePanelGroup>
-
-      <Button
-        onClick={handleExecuteCode}
-        variant={'outline'}
-        disabled={isExecutingCode}
-        className='absolute top-2 left-1/2 -translate-x-1/2'
-      >
-        {isExecutingCode ? (
-          <Loader2 className='w-4 h-4 animate-spin mr-2' />
-        ) : (
-          <PlayIcon className='w-4 h-4 mr-2' />
-        )}
-        Run
-      </Button>
+      <div className='absolute top-2 left-1/2 -translate-x-1/2 flex space-x-2'>
+        <Button
+          onClick={handleExecuteCode}
+          variant={'outline'}
+          disabled={isExecutingCode}
+        >
+          {isExecutingCode ? (
+            <Loader2 className='w-4 h-4 animate-spin mr-2' />
+          ) : (
+            <PlayIcon className='w-4 h-4 mr-2' />
+          )}
+          Run
+        </Button>
+        <LanguageSelector language={selectedLanguage} onSelect={setSelectedLanguage} />
+      </div>
     </div>
   );
 }
