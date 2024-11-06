@@ -8,15 +8,20 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import useParticipantWebsocket from '@/hooks/useParticipantWebsocket';
 import { useCallback, useState } from 'react';
 
+import CodeExecutionView from '@/components/CodeExecutionView';
 import ParticipantView from '@/components/ParticipantView';
 import QuestionView from '@/components/QuestionView';
+import SubmissionView from '@/components/SubmissionView';
+import VideoCall from '@/components/VideoCall';
 import MonacoEditor from '@/components/code-editor/MonacoEditor';
 import CollaborativeEditor from '@/components/code-editor/collaborative-code-editor';
-import VideoCall from '@/components/VideoCall';
 import { LoginPromptView } from '@/components/discuss/views/LoginPromptView';
+import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/auth/useAuth';
+import useExecuteCode, { CodeExecutionResponse } from '@/hooks/useExecuteCode';
 import { useRoom } from '@/hooks/useRoom';
 import { BACKEND_WEBSOCKET_COLLABORATIVE_EDITOR } from '@/lib/common';
+import { Loader2, PlayIcon } from 'lucide-react';
 import { useParams } from 'react-router-dom';
 import { toast } from 'sonner';
 
@@ -44,7 +49,32 @@ export default function RoomRoute() {
     }, []),
   });
 
-  const [activeTab, setActiveTab] = useState('participants');
+  const [codeExecutionResponse, setCodeExecutionResponse] = useState<
+    CodeExecutionResponse | undefined
+  >(undefined);
+  const { mutateAsync: executeCodeMutation, isPending: isExecutingCode } =
+    useExecuteCode({
+      onSuccess: (data) => {
+        if (data.error?.includes('Script execution timed out')) {
+          toast.error('Your code execution timed out');
+        } else {
+          toast.success('Your code has been executed successfully');
+        }
+      },
+      onError: (error) => {
+        toast.error('Failed to execute your code', {
+          description: error.message || 'Please try again',
+        });
+      },
+    });
+
+  const handleExecuteCode = async () => {
+    const result = await executeCodeMutation({
+      code: editorCode,
+      language: 'typescript',
+    });
+    setCodeExecutionResponse(result);
+  };
 
   if (!roomId) {
     return <div>No room ID</div>;
@@ -79,10 +109,7 @@ export default function RoomRoute() {
       <ResizablePanelGroup direction='horizontal'>
         {/* Tabs Panel */}
         <ResizablePanel defaultSize={30} className=''>
-          <Tabs
-            defaultValue='participants'
-            onValueChange={(value) => setActiveTab(value)}
-          >
+          <Tabs defaultValue='participants'>
             <TabsList className='w-full'>
               <TabsTrigger value='participants' className='flex-1'>
                 Participants
@@ -90,7 +117,14 @@ export default function RoomRoute() {
               <TabsTrigger value='question' className='flex-1'>
                 Question
               </TabsTrigger>
+              <TabsTrigger value='submissions' className='flex-1'>
+                Submissions
+              </TabsTrigger>
+              <TabsTrigger value='execution' className='flex-1'>
+                Execution
+              </TabsTrigger>
             </TabsList>
+
             <TabsContent value='participants' className='w-full'>
               <ParticipantView
                 allParticipants={room.participants}
@@ -100,6 +134,12 @@ export default function RoomRoute() {
             </TabsContent>
             <TabsContent value='question'>
               <QuestionView id={questionId} />
+            </TabsContent>
+            <TabsContent value='submissions'>
+              <SubmissionView id={questionId} onViewSubmission={() => {}} />
+            </TabsContent>
+            <TabsContent value='execution'>
+              <CodeExecutionView response={codeExecutionResponse} />
             </TabsContent>
           </Tabs>
         </ResizablePanel>
@@ -121,6 +161,9 @@ export default function RoomRoute() {
               roomName={roomId}
               websocketUrl={BACKEND_WEBSOCKET_COLLABORATIVE_EDITOR}
               userName={auth.user.userName}
+              onChange={(value: string | undefined) =>
+                setEditorCode(value ?? '')
+              }
             />
           ) : (
             <MonacoEditor
@@ -133,6 +176,20 @@ export default function RoomRoute() {
           )}
         </ResizablePanel>
       </ResizablePanelGroup>
+
+      <Button
+        onClick={handleExecuteCode}
+        variant={'outline'}
+        disabled={isExecutingCode}
+        className='absolute top-2 left-1/2 -translate-x-1/2'
+      >
+        {isExecutingCode ? (
+          <Loader2 className='w-4 h-4 animate-spin mr-2' />
+        ) : (
+          <PlayIcon className='w-4 h-4 mr-2' />
+        )}
+        Run
+      </Button>
     </div>
   );
 }
