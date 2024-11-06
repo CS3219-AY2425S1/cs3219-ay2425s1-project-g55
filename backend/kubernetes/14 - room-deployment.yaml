@@ -20,7 +20,20 @@ spec:
       initContainers:
         - name: wait-for-db
           image: busybox
-          command: [ 'sh', '-c', 'until nc -z userdb 5432; do echo waiting for database; sleep 2; done;' ]
+          command:
+            [
+              "sh",
+              "-c",
+              "until nc -z userdb 5432; do echo waiting for database; sleep 2; done;",
+            ]
+        - name: wait-for-rabbitmq
+          image: busybox
+          command:
+            [
+              "sh",
+              "-c",
+              "until nc -z rabbitmq.g55.svc.cluster.local 5672; do echo waiting for rabbitmq; sleep 2; done;",
+            ]
       containers:
         - image: docker_username/room_service:latest
           imagePullPolicy: IfNotPresent
