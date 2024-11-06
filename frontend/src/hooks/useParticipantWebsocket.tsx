@@ -185,6 +185,7 @@ const useParticipantWebSocket = ({
       wsRef.current.close();
       wsRef.current = null;
     }
+    setIsConnected(false);
   };
 
   return {

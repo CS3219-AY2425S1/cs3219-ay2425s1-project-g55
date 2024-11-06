@@ -1,9 +1,9 @@
-import React, { useEffect, useRef, useState } from "react";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faMicrophone,
   faMicrophoneSlash,
 } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import React, { useEffect, useRef, useState } from "react";
 import DefaultAvatarPic from "../assets/Default Avatar Pic.png";
 
 interface VideoCallProps {
@@ -105,19 +105,10 @@ const VideoCall: React.FC<VideoCallProps> = ({ showVideo }) => {
   };
 
   return (
-    <div
-      className="video-call"
-      style={{ display: "flex", flexDirection: "column", alignItems: "center" }}
-    >
+    <div className='video-call flex items-center gap-2'>
       {showVideo && (
         <div
-          className="video-container"
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            gap: "20px",
-            alignItems: "center",
-          }}
+          className="video-container flex gap-2 items-center"
         >
           <div
             className="local-video-wrapper"
