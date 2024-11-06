@@ -13,7 +13,9 @@ import ParticipantView from '@/components/ParticipantView';
 import QuestionView from '@/components/QuestionView';
 import SubmissionView from '@/components/SubmissionView';
 import VideoCall from '@/components/VideoCall';
-import MonacoEditor from '@/components/code-editor/MonacoEditor';
+import MonacoEditor, {
+  SubmitButton,
+} from '@/components/code-editor/MonacoEditor';
 import CollaborativeEditor from '@/components/code-editor/collaborative-code-editor';
 import { LoginPromptView } from '@/components/discuss/views/LoginPromptView';
 import { Button } from '@/components/ui/button';
@@ -177,19 +179,21 @@ export default function RoomRoute() {
         </ResizablePanel>
       </ResizablePanelGroup>
 
-      <Button
-        onClick={handleExecuteCode}
-        variant={'outline'}
-        disabled={isExecutingCode}
-        className='absolute top-2 left-1/2 -translate-x-1/2'
-      >
-        {isExecutingCode ? (
-          <Loader2 className='w-4 h-4 animate-spin mr-2' />
-        ) : (
-          <PlayIcon className='w-4 h-4 mr-2' />
-        )}
-        Run
-      </Button>
+      <div className='absolute top-2 left-1/2 -translate-x-1/2 flex gap-2'>
+        <Button
+          onClick={handleExecuteCode}
+          variant={'outline'}
+          disabled={isExecutingCode}
+        >
+          {isExecutingCode ? (
+            <Loader2 className='w-4 h-4 animate-spin mr-2' />
+          ) : (
+            <PlayIcon className='w-4 h-4 mr-2' />
+          )}
+          Run
+        </Button>
+        <SubmitButton questionId={questionId} code={editorCode} />
+      </div>
     </div>
   );
 }
