@@ -61,10 +61,12 @@ export function SubmitButton({
 }
 
 const MonacoEditor = ({
+  language,
   value = '// Write your code here\n',
   onChange,
   questionId,
 }: {
+  language: string;
   value?: string;
   onChange: (value: string | undefined) => void;
   questionId: number;
@@ -73,7 +75,7 @@ const MonacoEditor = ({
     <div className='flex flex-col h-full gap-4'>
       <div className='flex-grow'>
         <Editor
-          defaultLanguage='typescript'
+          language={language}
           value={value}
           onChange={onChange}
           options={{ automaticLayout: true }}

@@ -14,10 +14,11 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAuth } from '@/hooks/auth/useAuth';
 import useExecuteCode, { CodeExecutionResponse } from '@/hooks/useExecuteCode';
 import { Loader2, PlayIcon } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { toast } from 'sonner';
 import LanguageSelector from '@/components/code-editor/language-selector';
+import { CODE_SNIPPETS } from '@/lib/consts';
 
 export default function QuestionRoute() {
   const { questionId: questionIdString } = useParams<{ questionId: string }>();
@@ -26,10 +27,14 @@ export default function QuestionRoute() {
   const auth = useAuth();
   const userId = auth?.user?.userId;
 
+  const [selectedLanguage, setSelectedLanguage] = useState<keyof typeof CODE_SNIPPETS>("typescript");
   const [editorCode, setEditorCode] = useState<string>(
-    '// Write your code here\n'
+    CODE_SNIPPETS[selectedLanguage] || ''
   );
-  const [selectedLanguage, setSelectedLanguage] = useState<string>("typescript");
+
+  useEffect(() => {
+    setEditorCode(CODE_SNIPPETS[selectedLanguage] || '');
+  }, [selectedLanguage]);
 
   const [codeExecutionResponse, setCodeExecutionResponse] = useState<
     CodeExecutionResponse | undefined
@@ -108,6 +113,7 @@ export default function QuestionRoute() {
         <ResizableHandle withHandle />
         <ResizablePanel>
           <MonacoEditor
+            language={selectedLanguage}
             questionId={questionId}
             value={editorCode}
             onChange={(value: string | undefined) => setEditorCode(value ?? '')}
@@ -127,7 +133,7 @@ export default function QuestionRoute() {
           )}
           Run
         </Button>
-        <LanguageSelector language={selectedLanguage} onSelect={setSelectedLanguage} />
+        <LanguageSelector language={selectedLanguage} onSelect={(language: string) => setSelectedLanguage(language as keyof typeof CODE_SNIPPETS)} />
       </div>
     </div>
   );
