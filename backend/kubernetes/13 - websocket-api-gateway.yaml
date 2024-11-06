@@ -37,3 +37,10 @@ spec:
                 name: collaborative-editor-service
                 port:
                   number: 8080
+          - path: /ws/signaling
+            pathType: Prefix
+            backend:
+              service:
+                name: video-service
+                port:
+                  number: 8080

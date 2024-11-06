@@ -3,7 +3,7 @@
 # Variables
 DOCKER_USERNAME="your_docker_username"
 NAMESPACE="g55"
-IMAGE_NAMES=("user_service" "question_service" "matching_service" "mongodb" "room_service" "history_service" "code_execution_service" "collaborative_editor_service")
+IMAGE_NAMES=("user_service" "question_service" "matching_service" "mongodb" "room_service" "history_service" "code_execution_service" "collaborative_editor_service" "video_service")
 
 # Clean up Kubernetes resources
 kubectl patch pvc postgres-data-userdb-0 -n g55 -p '{"metadata":{"finalizers":null}}'

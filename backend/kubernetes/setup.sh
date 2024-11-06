@@ -3,8 +3,8 @@
 # Variables
 DOCKER_USERNAME="your_docker_username"
 NAMESPACE="g55"
-SERVICE_NAMES=("service-user" "service-question" "service-matching" "mongoDB" "service-room" "service-history" "service-code-execution" "service-collaborative-editor")
-IMAGE_NAMES=("user_service" "question_service" "matching_service" "mongodb" "room_service" "history_service" "code_execution_service" "collaborative_editor_service")
+SERVICE_NAMES=("service-user" "service-question" "service-matching" "mongoDB" "service-room" "service-history" "service-code-execution" "service-collaborative-editor" "service-video")
+IMAGE_NAMES=("user_service" "question_service" "matching_service" "mongodb" "room_service" "history_service" "code_execution_service" "collaborative_editor_service" "video_service")
 
 # Start Minikube
 minikube start
