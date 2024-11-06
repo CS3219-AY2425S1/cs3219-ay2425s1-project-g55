@@ -92,10 +92,7 @@ export default function QuestionRoute() {
               <QuestionView id={questionId} />
             </TabsContent>
             <TabsContent value='submissions'>
-              <SubmissionView
-                id={questionId}
-                onViewSubmission={setEditorCode}
-              />
+              <SubmissionView questionId={questionId} />
             </TabsContent>
             <TabsContent value='execution'>
               <CodeExecutionView response={codeExecutionResponse} />

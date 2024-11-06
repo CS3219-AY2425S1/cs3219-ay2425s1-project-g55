@@ -1,11 +1,11 @@
-import LoginDialog from "@/components/auth/login-dialog";
-import { UserMenuAvatar } from "@/components/auth/user-avatar";
-import { useAuth } from "@/hooks/auth/useAuth";
-import { cn } from "@/lib/utils";
-import { CodeXml } from "lucide-react";
-import { Link, useLocation } from "react-router-dom";
-import { EditProfileDialog } from "./forms/auth-user-profile";
-import { useState } from "react";
+import LoginDialog from '@/components/auth/login-dialog';
+import { UserMenuAvatar } from '@/components/auth/user-avatar';
+import { useAuth } from '@/hooks/auth/useAuth';
+import { cn } from '@/lib/utils';
+import { CodeXml } from 'lucide-react';
+import { Link, useLocation } from 'react-router-dom';
+import { EditProfileDialog } from './forms/auth-user-profile';
+import { useState } from 'react';
 
 export function NavbarLink({
   to,
@@ -19,10 +19,10 @@ export function NavbarLink({
     <Link
       to={to}
       className={cn(
-        "border-transparent text-muted-foreground  hover:text-foreground inline-flex items-center px-1 pt-2 border-b-2 text-sm font-medium transition h-12",
+        'border-transparent text-muted-foreground  hover:text-foreground inline-flex items-center px-1 pt-2 border-b-2 text-sm font-medium transition h-12',
         pathname === to
-          ? "border-primary text-foreground border-b-2"
-          : "hover:border-muted-foreground"
+          ? 'border-primary text-foreground border-b-2'
+          : 'hover:border-muted-foreground'
       )}
     >
       {children}
@@ -32,7 +32,7 @@ export function NavbarLink({
 
 export default function Navbar() {
   const auth = useAuth();
-  const role = auth?.user?.role || "";
+  const role = auth?.user?.role || '';
 
   const [open, setOpen] = useState(false);
   const handleProfileClick = () => setOpen(true);
@@ -51,7 +51,8 @@ export default function Navbar() {
             <div className="hidden sm:ml-6 sm:flex sm:space-x-8">
               <NavbarLink to="/problems">Problems</NavbarLink>
               <NavbarLink to="/discuss">Discuss</NavbarLink>
-              {role == "admin" && (
+              <NavbarLink to="/submissions">Submissions</NavbarLink>
+              {role == 'admin' && (
                 <NavbarLink to="/admin/user-management">
                   User Management
                 </NavbarLink>

@@ -3,6 +3,7 @@ import DiscussRoute from '@/routes/discuss';
 import ProblemsRoute from '@/routes/problems';
 import QuestionRoute from '@/routes/question';
 import RoomRoute from '@/routes/room';
+import SubmissionsRoute from '@/routes/submissions';
 import Root from '@/routes/root';
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
@@ -31,6 +32,10 @@ const router = createBrowserRouter([
       {
         path: 'rooms/:roomId',
         element: <RoomRoute />,
+      },
+      {
+        path: 'submissions',
+        element: <SubmissionsRoute />,
       },
       {
         path: 'admin/user-management',

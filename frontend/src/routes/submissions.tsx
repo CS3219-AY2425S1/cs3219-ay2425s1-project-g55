@@ -2,7 +2,7 @@ import { useAuth } from '@/hooks/auth/useAuth';
 import { LoginPromptView } from '@/components/discuss/views/LoginPromptView';
 import { SubmissionsTable } from '@/components/submissions/SubmissionsTable';
 
-export default function SubmissionView({ questionId }: { questionId: number }) {
+export default function SubmissionsRoute() {
   const auth = useAuth();
   const userId = auth?.user?.userId;
 
@@ -15,15 +15,5 @@ export default function SubmissionView({ questionId }: { questionId: number }) {
     );
   }
 
-  return (
-    <SubmissionsTable
-      userId={userId}
-      questionId={questionId}
-      visibleColumns={{
-        id: true,
-        attemptedAt: true,
-        actions: true,
-      }}
-    />
-  );
+  return <SubmissionsTable userId={userId} />;
 }

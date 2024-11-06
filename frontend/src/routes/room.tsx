@@ -148,7 +148,7 @@ export default function RoomRoute() {
               <QuestionView id={questionId} />
             </TabsContent>
             <TabsContent value='submissions'>
-              <SubmissionView id={questionId} onViewSubmission={() => {}} />
+              <SubmissionView questionId={questionId} />
             </TabsContent>
             <TabsContent value='execution'>
               <CodeExecutionView response={codeExecutionResponse} />
