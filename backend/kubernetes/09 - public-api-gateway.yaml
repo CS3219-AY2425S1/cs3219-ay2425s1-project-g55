@@ -77,3 +77,10 @@ spec:
                 name: question-service
                 port:
                   number: 8080
+          - path: /api/questions/filter
+            pathType: Prefix
+            backend:
+              service:
+                name: question-service
+                port:
+                  number: 8080

@@ -16,7 +16,7 @@ public class MatchingService {
     private final ConcurrentHashMap<String, MatchingRequest> waitingUsers = new ConcurrentHashMap<>();
     private final RestTemplate restTemplate;
     private final Logger logger = LoggerFactory.getLogger(MatchingService.class);
-    private final String questionServiceUrl = "http://backend-service-question:8080/api/questions/filter";
+    private final String questionServiceUrl = "http://question-service.g55.svc.cluster.local:8080/api/questions/filter";
 
     public MatchingService(RestTemplate restTemplate) {
         this.restTemplate = restTemplate;

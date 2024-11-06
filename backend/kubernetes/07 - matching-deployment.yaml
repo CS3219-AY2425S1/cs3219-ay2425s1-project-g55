@@ -17,6 +17,10 @@ spec:
       labels:
         app: matching-service
     spec:
+      initContainers:
+        - name: wait-for-rabbitmq
+          image: busybox
+          command: [ 'sh', '-c', 'until nc -z rabbitmq.g55.svc.cluster.local 5672; do echo waiting for rabbitmq; sleep 2; done;' ]
       containers:
         - image: docker_username/matching_service:latest
           imagePullPolicy: IfNotPresent

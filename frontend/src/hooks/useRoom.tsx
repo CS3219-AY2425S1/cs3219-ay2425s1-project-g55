@@ -1,13 +1,14 @@
-import { useAuth } from '@/hooks/auth/useAuth';
-import { BACKEND_URL_ROOM } from '@/lib/common';
-import { useQuery } from '@tanstack/react-query';
+import { useAuth } from "@/hooks/auth/useAuth";
+import { BACKEND_URL_ROOM } from "@/lib/common";
+import { getToken } from "@/lib/utils";
+import { useQuery } from "@tanstack/react-query";
 
 interface Room {
   roomId: string;
   expiryTime: number; // ISO timestamp number
   participants: string[];
   questionId: number;
-  status: 'OPEN' | 'CLOSED' | 'EXPIRED';
+  status: "OPEN" | "CLOSED" | "EXPIRED";
 }
 
 /**
@@ -17,25 +18,27 @@ interface Room {
 export function useRoom(roomId: string | undefined) {
   const auth = useAuth();
   return useQuery({
-    queryKey: ['room', roomId],
+    queryKey: ["room", roomId],
     queryFn: async (): Promise<Room> => {
       if (!roomId) {
-        throw new Error('Room ID is required');
+        throw new Error("Room ID is required");
       }
 
       if (!auth) {
-        throw new Error('useRoom must be used by an authenticated user');
+        throw new Error("useRoom must be used by an authenticated user");
       }
 
       console.log(`ID is ${roomId}`);
+      const token = getToken();
       const response = await fetch(`${BACKEND_URL_ROOM}/${roomId}`, {
         headers: {
-          'X-User-Id': auth.user.userId.toString(),
+          "X-User-Id": auth.user.userId.toString(),
+          Authorization: `Bearer ${token}`,
         },
       });
 
       if (!response.ok) {
-        throw new Error('Failed to fetch room');
+        throw new Error("Failed to fetch room");
       }
 
       const data = await response.json();
