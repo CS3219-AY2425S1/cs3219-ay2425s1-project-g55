@@ -8,7 +8,7 @@ env:
   AWS_REGION: ap-southeast-1                 
   ECR_REPOSITORY: peerprep/question-db
   ECS_SERVICE: question-db-service
-  ECS_CLUSTER: Peerprep
+  ECS_CLUSTER: PeerPrep
   ECS_TASK_DEFINITION: .aws/question-db-task-definition.json
   CONTAINER_NAME: question-db
 
