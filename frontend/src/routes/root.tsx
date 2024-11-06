@@ -10,6 +10,9 @@ function LandingPage() {
   return (
     <div className="flex flex-col items-center justify-center space-y-8 max-w-4xl mx-auto text-center">
       <h1 className="text-4xl font-bold tracking-tight">Welcome to PeerPrep</h1>
+      <p className="text-2xl font-semibold text-primary">
+        Your journey to FAANG starts here!
+      </p>
       <p className="text-xl text-muted-foreground">
         Practice coding interviews with peers in real-time
       </p>
@@ -51,6 +54,17 @@ function LandingPage() {
           <p className="text-muted-foreground">
             Join other developers preparing for technical interviews
           </p>
+        </div>
+      </div>
+
+      <div className="w-full mt-8">
+        <p className="text-sm text-muted-foreground mb-4">Trusted By</p>
+        <div className="flex justify-center items-center gap-8">
+          <img src="/meta-logo.png" alt="Meta" className="h-16" />
+          <img src="/amazon-logo.png" alt="Amazon" className="h-16" />
+          <img src="/netflix-logo.png" alt="Netflix" className="h-16" />
+          <img src="/google-logo.png" alt="Google" className="h-16" />
+          <img src="/apple-logo.png" alt="Apple" className="h-16" />
         </div>
       </div>
     </div>
