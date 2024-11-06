@@ -4,7 +4,7 @@ import { useMutation } from "@tanstack/react-query";
 import { z } from "zod";
 type CodeExecutionInput = {
   code: string;
-  language: "javascript" | "typescript";
+  language: string;
 };
 
 const executeCodeResponseSchema = z.object({
