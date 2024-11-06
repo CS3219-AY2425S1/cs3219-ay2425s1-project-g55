@@ -10,7 +10,7 @@ env:
   ECS_SERVICE: question-db-service
   ECS_CLUSTER: Peerprep
   ECS_TASK_DEFINITION: .aws/question-db-task-definition.json
-  CONTAINER_NAME: mongodb
+  CONTAINER_NAME: question-db
 
 permissions:
   contents: read
