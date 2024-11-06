@@ -19,11 +19,18 @@ import MonacoEditor, {
 import CollaborativeEditor from '@/components/code-editor/collaborative-code-editor';
 import { LoginPromptView } from '@/components/discuss/views/LoginPromptView';
 import { Button } from '@/components/ui/button';
+import { Switch } from '@/components/ui/switch';
 import { useAuth } from '@/hooks/auth/useAuth';
 import useExecuteCode, { CodeExecutionResponse } from '@/hooks/useExecuteCode';
 import { useRoom } from '@/hooks/useRoom';
 import { BACKEND_WEBSOCKET_COLLABORATIVE_EDITOR } from '@/lib/common';
-import { Loader2, LogInIcon, LogOutIcon, PlayIcon } from 'lucide-react';
+import {
+  Loader2,
+  LogInIcon,
+  LogOutIcon,
+  PlayIcon,
+  VideoIcon,
+} from 'lucide-react';
 import { useParams } from 'react-router-dom';
 import { toast } from 'sonner';
 
@@ -78,6 +85,8 @@ export default function RoomRoute() {
     });
     setCodeExecutionResponse(result);
   };
+
+  const [isVideoCall, setIsVideoCall] = useState(true);
 
   if (!roomId) {
     return <div>No room ID</div>;
@@ -152,9 +161,9 @@ export default function RoomRoute() {
         {/* Video Call Panel */}
 
         {isConnected && (
-          <ResizablePanel defaultSize={40}>
-            <VideoCall showVideo={true} />
-          </ResizablePanel>
+          <div className='absolute bottom-4 left-4'>
+            <VideoCall showVideo={isVideoCall} />
+          </div>
         )}
         <ResizableHandle withHandle />
 
@@ -213,6 +222,13 @@ export default function RoomRoute() {
             <LogInIcon className='w-4 h-4 mr-2' />
             Connect
           </Button>
+        )}
+
+        {isConnected && (
+          <div className='flex items-center gap-2'>
+            <Switch checked={isVideoCall} onCheckedChange={setIsVideoCall} />
+            <VideoIcon className='h-4 w-4' />
+          </div>
         )}
       </div>
     </div>
