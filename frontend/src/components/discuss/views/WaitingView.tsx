@@ -5,12 +5,10 @@ import { Loader2, Timer } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 
 interface WaitingViewProps {
-  queuePosition: number;
   onCancel: () => void;
 }
 
 export const WaitingView: React.FC<WaitingViewProps> = ({
-  queuePosition,
   onCancel,
 }) => {
   const [elapsedTime, setElapsedTime] = useState(0);
@@ -42,7 +40,7 @@ export const WaitingView: React.FC<WaitingViewProps> = ({
           <Alert>
             <AlertTitle>Searching for a match</AlertTitle>
             <AlertDescription>
-              Your position in queue: {queuePosition}
+              Looking for available partners...
             </AlertDescription>
           </Alert>
           <div className='flex items-center justify-center space-x-2 text-sm text-muted-foreground'>

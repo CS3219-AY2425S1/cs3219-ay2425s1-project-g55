@@ -21,7 +21,6 @@ import React, { useRef } from "react";
 
 export default function DiscussRoute() {
   const [matchStatus, setMatchStatus] = React.useState("idle");
-  const [queuePosition, setQueuePosition] = React.useState(0);
   const [roomId, setRoomId] = React.useState("");
 
   const auth = useAuth();
@@ -146,7 +145,6 @@ export default function DiscussRoute() {
   // Update resetState to use setupWebSocket
   const resetState = async () => {
     setMatchStatus(MATCH_IDLE_STATUS);
-    setQueuePosition(0);
     setRoomId("");
 
     // Close existing WebSocket connection
@@ -174,7 +172,7 @@ export default function DiscussRoute() {
         <IdleView onStartMatching={startMatching} />
       )}
       {matchStatus === MATCH_WAITING_STATUS && (
-        <WaitingView queuePosition={queuePosition} onCancel={cancelMatching} />
+        <WaitingView onCancel={cancelMatching} />
       )}
       {matchStatus === MATCH_FOUND_STATUS && (
         <MatchedView roomId={roomId} onNewMatch={resetState} />
