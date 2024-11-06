@@ -4,7 +4,6 @@ import { z } from 'zod';
 export const SubmissionSchema = z.object({
   id: z.number(),
   questionId: z.number(),
-  questionTitle: z.string(),
   userId: z.number(),
   code: z.string(),
   attemptedAt: z.string().transform((str) => {
