@@ -122,6 +122,9 @@ export function useCreateSubmission({
       queryClient.invalidateQueries({
         queryKey: ['submissions', data.userId, data.questionId],
       });
+      queryClient.invalidateQueries({
+        queryKey: ['allSubmissions', data.userId],
+      });
       onSuccess?.();
     },
     onError: (error: Error) => {
