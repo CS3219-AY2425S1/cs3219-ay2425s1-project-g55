@@ -3,9 +3,10 @@ import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/auth/useAuth';
 import { useCreateSubmission } from '@/hooks/useSubmissions';
 import Editor from '@monaco-editor/react';
+import { Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 
-function SubmitButton({
+export function SubmitButton({
   questionId,
   code,
 }: {
@@ -44,7 +45,19 @@ function SubmitButton({
     });
   };
 
-  return <Button onClick={handleSubmit}>Submit</Button>;
+  return (
+    <Button
+      variant={'outline'}
+      disabled={createSubmission.isPending}
+      onClick={handleSubmit}
+    >
+      {createSubmission.isPending ? (
+        <Loader2 className='w-4 h-4 animate-spin mr-2' />
+      ) : (
+        'Submit'
+      )}
+    </Button>
+  );
 }
 
 const MonacoEditor = ({
