@@ -15,9 +15,10 @@ import {
   MATCH_TIMEOUT_MESSAGE_TYPE,
   MATCH_TIMEOUT_STATUS,
   MATCH_WAITING_STATUS,
+  MATCH_FOUND_SOUND_PATH,
 } from "@/lib/consts";
 import { getToken } from "@/lib/utils";
-import React, { useRef } from "react";
+import React, { useRef, useEffect } from "react";
 
 export default function DiscussRoute() {
   const [matchStatus, setMatchStatus] = React.useState("idle");
@@ -28,6 +29,10 @@ export default function DiscussRoute() {
 
   const ws = useRef<WebSocket | null>(null);
   const matchSound = useRef<HTMLAudioElement | null>(null);
+
+  useEffect(() => {
+    matchSound.current = new Audio(MATCH_FOUND_SOUND_PATH);
+  }, []);
 
   const setupWebSocket = async () => {
     return new Promise((resolve, reject) => {
