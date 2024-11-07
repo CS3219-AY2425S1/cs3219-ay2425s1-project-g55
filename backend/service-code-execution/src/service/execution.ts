@@ -1,5 +1,6 @@
 import ivm from 'isolated-vm';
 import ts from 'typescript';
+import { exec } from 'child_process';
 
 interface ExecutionResult {
   stdout: string[];
@@ -36,12 +37,27 @@ export class IsolatedExecutionService {
   async executeCode(
     code: string,
     timeout: number = this.DEFAULT_TIMEOUT,
-    language: 'javascript' | 'typescript' = 'javascript'
+    language: 'python' | 'javascript' | 'typescript' = 'javascript'
   ): Promise<ExecutionResult> {
     console.log('Executing code', code);
     const stdout: string[] = [];
     const stderr: string[] = [];
     const startTime = process.hrtime();
+
+    if (language === 'python') {
+      try {
+        return await this.executePythonCode(code, timeout);
+      } catch (error) {
+        return {
+          stdout,
+          stderr,
+          result: null,
+          error: (error as Error).message,
+          executionTime: 0,
+          memoryUsage: 0,
+        };
+      }
+    }
     // Compile TypeScript if needed
     let jsCode = code;
     if (language === 'typescript') {
@@ -149,5 +165,50 @@ export class IsolatedExecutionService {
       context.release();
       isolate.dispose();
     }
+  }
+
+  async executePythonCode(code: string, timeout: number = this.DEFAULT_TIMEOUT): Promise<ExecutionResult> {
+    return new Promise((resolve, reject) => {
+      const start = Date.now();
+      const process = exec('python3', { timeout });
+
+      let stdout: string[] = [];
+      let stderr: string[] = [];
+
+      process.stdout?.on('data', (data) => {
+        stdout.push(data.toString());
+      });
+
+      process.stderr?.on('data', (data) => {
+        stderr.push(data.toString());
+      });
+
+      process.on('close', (code) => {
+        const executionTime = Date.now() - start;
+        const memoryUsage = require('process').memoryUsage().heapUsed / 1024 / 1024; // Convert to MB
+
+        if (code !== 0) {
+          return reject({
+            stdout,
+            stderr,
+            result: null,
+            error: `Process exited with code ${code}`,
+            executionTime,
+            memoryUsage,
+          });
+        }
+
+        resolve({
+          stdout,
+          stderr,
+          result: stdout.join(''),
+          executionTime,
+          memoryUsage,
+        });
+      });
+
+      process.stdin?.write(code);
+      process.stdin?.end();
+    });
   }
 }
