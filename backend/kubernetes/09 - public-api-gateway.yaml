@@ -63,13 +63,6 @@ spec:
                 name: user-service
                 port:
                   number: 8080
-          - path: /api/auth/verify-token-param
-            pathType: Prefix
-            backend:
-              service:
-                name: user-service
-                port:
-                  number: 8080
           - path: /api/questions/public
             pathType: Prefix
             backend:

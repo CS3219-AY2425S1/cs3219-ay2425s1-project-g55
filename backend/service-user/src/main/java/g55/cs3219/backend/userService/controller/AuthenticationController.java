@@ -115,26 +115,6 @@ public class AuthenticationController {
         }
     }
 
-    @GetMapping("/verify-token-param")
-    public ResponseEntity<?> verifyTokenParam(@RequestParam("token") String token) {
-        try {
-            String userEmail = jwtService.extractUsername(token);
-            UserDetails userDetails = userDetailsService.loadUserByUsername(userEmail);
-            User user = (User) userDetails;
-            JwtTokenValidationResponse validationResponse = jwtService.isTokenValid(token, userDetails);
-
-            if (validationResponse.isValid()) {
-                UserResponse response = new UserResponse(user.getId(), user.getEmail(), user.getName(),
-                        user.isAdmin());
-                return ResponseEntity.ok(response);
-            } else {
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(validationResponse.getMessage());
-            }
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid or missing token");
-        }
-    }
-
     @PostMapping("/forgot-password")
     public ResponseEntity<?> forgotPassword(@RequestBody ForgetPasswordDto forgotPasswordDto) {
         try {

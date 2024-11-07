@@ -48,13 +48,12 @@ public class MatchingWebSocketHandler extends TextWebSocketHandler {
     }
 
     private String extractUserId(WebSocketSession session) {
-        URI uri = session.getUri();
-        if (uri != null) {
-            String query = uri.getQuery();
-            if (query != null && !query.isEmpty()) {
-                return UriComponentsBuilder.newInstance().query(query).build().getQueryParams().getFirst("userId");
-            }
+        String userId = session.getHandshakeHeaders().getFirst("X-User-Id");
+
+        if(userId != null) {
+            return userId;
         }
+
         return null;
     }
 }

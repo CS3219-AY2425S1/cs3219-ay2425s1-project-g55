@@ -138,28 +138,8 @@ public class RoomWebSocketHandler extends TextWebSocketHandler {
     if (userId != null) {
       return userId;
     }
-
-    // throw new IllegalArgumentException("User ID is not present in the request");
-
-    String query = session.getUri().getQuery();
-    if (query == null) {
-      throw new IllegalArgumentException("User ID is not present in the request");
-    }
-
-    String[] params = query.split("&");
-    for (String param : params) {
-      String[] keyValue = param.split("=");
-      if (keyValue.length == 2 && keyValue[0].equals("userId")) {
-        userId = keyValue[1];
-        break;
-      }
-    }
-
-    if (userId == null) {
-      throw new IllegalArgumentException("User ID is not present in the request");
-    }
-
-    return userId;
+    
+    throw new IllegalArgumentException("User ID is not present in the request");
   }
 
   private void broadcastParticipantMessage(String roomId, String userId, String status)

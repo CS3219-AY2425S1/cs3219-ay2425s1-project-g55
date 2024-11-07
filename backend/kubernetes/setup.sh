@@ -14,6 +14,7 @@ kubectl create namespace $NAMESPACE
 
 # Enable Ingress addon in Minikube
 minikube addons enable ingress
+minikube addons enable metrics-server
 
 # Build Docker images for each service
 cd ..
