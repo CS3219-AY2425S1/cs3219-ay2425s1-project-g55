@@ -1,6 +1,11 @@
 import ivm from 'isolated-vm';
 import ts from 'typescript';
 import { exec } from 'child_process';
+import { promisify } from 'util';
+import fs from 'fs';
+import path from 'path';
+
+const execAsync = promisify(exec);
 
 interface ExecutionResult {
   stdout: string[];
@@ -37,7 +42,7 @@ export class IsolatedExecutionService {
   async executeCode(
     code: string,
     timeout: number = this.DEFAULT_TIMEOUT,
-    language: 'python' | 'javascript' | 'typescript' = 'javascript'
+    language: 'java' | 'python' | 'javascript' | 'typescript' = 'javascript'
   ): Promise<ExecutionResult> {
     console.log('Executing code', code);
     const stdout: string[] = [];
@@ -47,6 +52,21 @@ export class IsolatedExecutionService {
     if (language === 'python') {
       try {
         return await this.executePythonCode(code, timeout);
+      } catch (error) {
+        return {
+          stdout,
+          stderr,
+          result: null,
+          error: (error as Error).message,
+          executionTime: 0,
+          memoryUsage: 0,
+        };
+      }
+    }
+
+    if (language === 'java') {
+      try {
+        return await this.executeJavaCode(code, timeout);
       } catch (error) {
         return {
           stdout,
@@ -209,6 +229,94 @@ export class IsolatedExecutionService {
 
       process.stdin?.write(code);
       process.stdin?.end();
+    });
+  }
+
+  
+  async executeJavaCode(code: string, timeout: number = this.DEFAULT_TIMEOUT): Promise<ExecutionResult> {
+    const tempDir = path.join(__dirname, 'temp');
+
+    // Extract the class name from the code
+    const classNameMatch = code.match(/public\s+class\s+(\w+)/);
+    if (!classNameMatch) {
+      throw new Error('No public class found in the Java code');
+    }
+    const className = classNameMatch[1];
+    const javaFileName = `${className}.java`;
+    const classFileName = `${className}.class`;
+    const javaFilePath = path.join(tempDir, javaFileName);
+    const classFilePath = path.join(tempDir, classFileName);
+
+    // Ensure temp directory exists
+    if (!fs.existsSync(tempDir)) {
+      fs.mkdirSync(tempDir);
+    }
+
+    // Write the Java code to a temporary file
+    fs.writeFileSync(javaFilePath, code);
+
+    const stdout: string[] = [];
+    const stderr: string[] = [];
+    const startTime = process.hrtime();
+
+    return new Promise(async (resolve, reject) => {
+      try {
+        // Compile the Java code
+        await execAsync(`javac ${javaFilePath}`, { timeout });
+
+        // Run the compiled Java code
+        const childProcess = exec(`java -cp ${tempDir} ${className}`, { timeout });
+
+        childProcess.stdout?.on('data', (data) => {
+          stdout.push(data.toString());
+        });
+
+        childProcess.stderr?.on('data', (data) => {
+          stderr.push(data.toString());
+        });
+
+        childProcess.on('close', (code) => {
+          const executionTime = process.hrtime(startTime);
+          const memoryUsage = process.memoryUsage().heapUsed / 1024 / 1024;
+
+          // Clean up temporary files
+          if (fs.existsSync(javaFilePath)) fs.unlinkSync(javaFilePath);
+          if (fs.existsSync(classFilePath)) fs.unlinkSync(classFilePath);
+
+          if (code !== 0) {
+            return reject({
+              stdout,
+              stderr,
+              result: null,
+              error: `Process exited with code ${code}`,
+              executionTime: executionTime[0] * 1000 + executionTime[1] / 1e6,
+              memoryUsage,
+            });
+          }
+
+          resolve({
+            stdout,
+            stderr,
+            result: stdout.join(''),
+            executionTime: executionTime[0] * 1000 + executionTime[1] / 1e6,
+            memoryUsage,
+          });
+        });
+
+        childProcess.stdin?.end();
+      } catch (error) {
+        if (fs.existsSync(javaFilePath)) fs.unlinkSync(javaFilePath);
+        if (fs.existsSync(classFilePath)) fs.unlinkSync(classFilePath);
+
+        reject({
+          stdout,
+          stderr,
+          result: null,
+          error: `Java execution error: ${(error as Error).message}`,
+          executionTime: 0,
+          memoryUsage: 0,
+        });
+      }
     });
   }
 }
