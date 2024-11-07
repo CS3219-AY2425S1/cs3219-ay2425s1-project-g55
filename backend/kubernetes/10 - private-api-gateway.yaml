@@ -5,10 +5,11 @@ metadata:
   namespace: g55
   annotations:
     nginx.ingress.kubernetes.io/auth-url: "http://user-service.g55.svc.cluster.local:8080/api/auth/verify-token"
+    nginx.ingress.kubernetes.io/auth-response-headers: "X-User-Id,X-User-Email,X-User-Name,X-User-Is-Admin"
     nginx.ingress.kubernetes.io/enable-cors: "true"
     nginx.ingress.kubernetes.io/cors-allow-origin: "http://localhost:5173"
     nginx.ingress.kubernetes.io/cors-allow-methods: "GET, PUT, POST, DELETE, OPTIONS"
-    nginx.ingress.kubernetes.io/cors-allow-headers: "Authorization, Content-Type, X-User-Id"
+    nginx.ingress.kubernetes.io/cors-allow-headers: "Authorization, Content-Type, X-User-Id, X-User-Email,X-User-Name,X-User-Is-Admin"
     nginx.ingress.kubernetes.io/cors-allow-credentials: "true"
 spec:
   rules:

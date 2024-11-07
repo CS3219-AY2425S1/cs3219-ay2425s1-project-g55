@@ -5,6 +5,7 @@ import {
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React, { useEffect, useRef, useState } from "react";
 import DefaultAvatarPic from "../assets/Default Avatar Pic.png";
+import { BACKEND_WS_BASE } from "@/lib/common";
 
 interface VideoCallProps {
   showVideo: boolean;
@@ -21,7 +22,7 @@ const VideoCall: React.FC<VideoCallProps> = ({ showVideo }) => {
   const [remoteVideoOn, setRemoteVideoOn] = useState(true); // State for remote video
 
   // WebSocket URL for signaling
-  const signalingServerUrl = "ws://localhost:8080/ws/signaling";
+  const signalingServerUrl = `${BACKEND_WS_BASE}/ws/signaling`;
 
   useEffect(() => {
     // Initialize WebSocket connection
@@ -105,11 +106,9 @@ const VideoCall: React.FC<VideoCallProps> = ({ showVideo }) => {
   };
 
   return (
-    <div className='video-call flex items-center gap-2'>
+    <div className="video-call flex items-center gap-2">
       {showVideo && (
-        <div
-          className="video-container flex gap-2 items-center"
-        >
+        <div className="video-container flex gap-2 items-center">
           <div
             className="local-video-wrapper"
             style={{

@@ -13,6 +13,7 @@ import g55.cs3219.backend.userService.responses.LoginResponse;
 import g55.cs3219.backend.userService.service.AuthenticationService;
 import g55.cs3219.backend.userService.service.JwtService;
 import jakarta.validation.Valid;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -23,6 +24,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -99,9 +101,15 @@ public class AuthenticationController {
         try {
             User currentUser = (User) authentication.getPrincipal();
 
+            HttpHeaders headers = new HttpHeaders();
+            headers.add("X-User-Id", String.valueOf(currentUser.getId()));
+            headers.add("X-User-Email", currentUser.getEmail());
+            headers.add("X-User-Name", currentUser.getName());
+            headers.add("X-User-Is-Admin", String.valueOf(currentUser.isAdmin()));
+
             UserResponse response = new UserResponse(currentUser.getId(), currentUser.getEmail(),
                     currentUser.getName(), currentUser.isAdmin());
-            return ResponseEntity.ok(response);
+            return ResponseEntity.ok().headers(headers).body(response);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred while verifying the token.");
         }
@@ -165,5 +173,41 @@ public class AuthenticationController {
             }
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         }
+    }
+
+    @GetMapping("/check-headers")
+    public ResponseEntity<String> checkHeaders(
+            @RequestHeader(value = "X-User-Id", required = false) String userId,
+            @RequestHeader(value = "X-User-Email", required = false) String userEmail,
+            @RequestHeader(value = "X-User-Name", required = false) String userName,
+            @RequestHeader(value = "X-User-Is-Admin", required = false) String isAdmin) {
+
+        StringBuilder responseMessage = new StringBuilder();
+
+        if (userId != null) {
+            responseMessage.append("X-User-ID: ").append(userId).append("\n");
+        } else {
+            responseMessage.append("X-User-ID header is missing.\n");
+        }
+
+        if (userEmail != null) {
+            responseMessage.append("X-User-Email: ").append(userEmail).append("\n");
+        } else {
+            responseMessage.append("X-User-Email header is missing.\n");
+        }
+
+        if (userName != null) {
+            responseMessage.append("X-User-Name: ").append(userName).append("\n");
+        } else {
+            responseMessage.append("X-User-Name header is missing.\n");
+        }
+
+        if (isAdmin != null) {
+            responseMessage.append("X-User-Is-Admin: ").append(isAdmin).append("\n");
+        } else {
+            responseMessage.append("X-User-Is-Admin header is missing.\n");
+        }
+
+        return ResponseEntity.ok(responseMessage.toString());
     }
 }

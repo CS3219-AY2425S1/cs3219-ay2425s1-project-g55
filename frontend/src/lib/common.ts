@@ -12,6 +12,6 @@ export const BACKEND_WEBSOCKET_ROOM = `${BACKEND_URL_BASE}/ws/rooms`;
 export const BACKEND_URL_MATCHING = `${BACKEND_URL_BASE}/api/matching`;
 export const BACKEND_WEBSOCKET_MATCHING = `${BACKEND_URL_BASE}/ws/matching`;
 
-export const BACKEND_WEBSOCKET_COLLABORATIVE_EDITOR = `ws://localhost:8080/ws/collaborative-editor`;
+export const BACKEND_WEBSOCKET_COLLABORATIVE_EDITOR = `${BACKEND_WS_BASE}/ws/collaborative-editor`;
 
-export const BACKEND_URL_EXECUTE_CODE = `http://localhost:8080/api/code-execution`;
+export const BACKEND_URL_EXECUTE_CODE = `${BACKEND_URL_BASE}/api/code-execution`;
