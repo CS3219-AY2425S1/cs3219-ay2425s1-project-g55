@@ -78,7 +78,10 @@ const MonacoEditor = ({
           language={language}
           value={value}
           onChange={onChange}
-          options={{ automaticLayout: true }}
+          options={{ 
+            formatOnType: true,
+            formatOnPaste: true,
+            automaticLayout: true }}
         />
       </div>
       <div className='flex justify-end m-4'>

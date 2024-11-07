@@ -18,7 +18,7 @@ import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { toast } from 'sonner';
 import LanguageSelector from '@/components/code-editor/language-selector';
-import { CODE_SNIPPETS } from '@/lib/consts';
+import { BOILERPLATE_CODES } from '@/lib/consts';
 
 export default function QuestionRoute() {
   const { questionId: questionIdString } = useParams<{ questionId: string }>();
@@ -27,14 +27,31 @@ export default function QuestionRoute() {
   const auth = useAuth();
   const userId = auth?.user?.userId;
 
-  const [selectedLanguage, setSelectedLanguage] = useState<keyof typeof CODE_SNIPPETS>("typescript");
+  const [selectedLanguage, setSelectedLanguage] = useState<keyof typeof BOILERPLATE_CODES>("typescript");
   const [editorCode, setEditorCode] = useState<string>(
-    CODE_SNIPPETS[selectedLanguage] || ''
+    BOILERPLATE_CODES[selectedLanguage] || ''
   );
+  const [codeByLanguage, setCodeByLanguage] = useState<{ [key in keyof typeof BOILERPLATE_CODES]?: string }>({
+    typescript: BOILERPLATE_CODES.typescript,
+  });
+
+  const handleLanguageChange = (newLanguage: keyof typeof BOILERPLATE_CODES) => {
+    // Save the current code for the current language
+    setCodeByLanguage((prevCode) => ({
+      ...prevCode,
+      [selectedLanguage]: editorCode,
+    }));
+
+    // Set the new selected language
+    setSelectedLanguage(newLanguage);
+
+    // Load the code for the new language, or use boilerplate if not available
+    setEditorCode(codeByLanguage[newLanguage] || BOILERPLATE_CODES[newLanguage]);
+  };
 
   useEffect(() => {
-    setEditorCode(CODE_SNIPPETS[selectedLanguage] || '');
-  }, [selectedLanguage]);
+    setEditorCode(codeByLanguage[selectedLanguage] || BOILERPLATE_CODES[selectedLanguage]);
+  }, [selectedLanguage, codeByLanguage]);
 
   const [codeExecutionResponse, setCodeExecutionResponse] = useState<
     CodeExecutionResponse | undefined
@@ -133,7 +150,10 @@ export default function QuestionRoute() {
           )}
           Run
         </Button>
-        <LanguageSelector language={selectedLanguage} onSelect={(language: string) => setSelectedLanguage(language as keyof typeof CODE_SNIPPETS)} />
+        <LanguageSelector
+          language={selectedLanguage}
+          onChange={handleLanguageChange}
+        />
       </div>
     </div>
   );
