@@ -1,15 +1,15 @@
-import { LANGUAGES } from '@/lib/consts';
+import { BOILERPLATE_CODES, LANGUAGES } from '@/lib/consts';
 import React, { useState } from 'react';
 import { Button } from '../ui/button';
 
 interface LanguageSelectorProps {
     language: string;
-    onSelect: (language: string) => void;
+    onChange: (newLanguage: keyof typeof BOILERPLATE_CODES) => void;
 }
 
 const ACTIVE_COLOR = "text-blue-400";
 
-const LanguageSelector: React.FC<LanguageSelectorProps> = ({ language, onSelect }) => {
+const LanguageSelector: React.FC<LanguageSelectorProps> = ({ language, onChange }) => {
     const [isOpen, setIsOpen] = useState(false);
 
     const toggleDropdown = () => setIsOpen(!isOpen);
@@ -34,7 +34,7 @@ const LanguageSelector: React.FC<LanguageSelectorProps> = ({ language, onSelect 
                                 key={lang}
                                 className={`block px-4 py-2 text-sm w-full text-left ${lang === language ? ACTIVE_COLOR : "text-gray-700"} hover:bg-gray-100`}
                                 onClick={() => {
-                                    onSelect(lang);
+                                    onChange(lang as keyof typeof BOILERPLATE_CODES);
                                     setIsOpen(false);
                                 }}
                             >
