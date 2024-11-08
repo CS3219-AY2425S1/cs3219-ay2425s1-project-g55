@@ -8,21 +8,19 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { useAuth } from '@/hooks/auth/useAuth';
+import { AuthUser } from '@/hooks/auth/useAuth';
 import { LogOut, User } from 'lucide-react';
 
 export function UserMenuAvatar({
   onProfileClick,
+  user,
+  onLogout,
 }: {
   onProfileClick: () => void;
+  user: AuthUser;
+  onLogout: () => void;
 }) {
-  const auth = useAuth();
-
-  if (!auth?.user) {
-    return null;
-  }
-
-  const { email, userName, role } = auth.user;
+  const { email, userName, role } = user;
   const firstLetter = userName.charAt(0).toUpperCase();
 
   return (
@@ -53,7 +51,7 @@ export function UserMenuAvatar({
             <User className='w-4 h-4 mr-2' />
             Profile
           </DropdownMenuItem>
-          <DropdownMenuItem onClick={auth?.logout}>
+          <DropdownMenuItem onClick={onLogout}>
             <LogOut className='w-4 h-4 mr-2' />
             Logout
           </DropdownMenuItem>
