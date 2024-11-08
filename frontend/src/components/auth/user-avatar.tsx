@@ -1,4 +1,5 @@
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Badge } from '@/components/ui/badge';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -21,8 +22,8 @@ export function UserMenuAvatar({
     return null;
   }
 
-  const username = auth?.user?.userName;
-  const firstLetter = username.charAt(0).toUpperCase();
+  const { email, userName, role } = auth.user;
+  const firstLetter = userName.charAt(0).toUpperCase();
 
   return (
     <>
@@ -32,19 +33,26 @@ export function UserMenuAvatar({
             <AvatarFallback>{firstLetter}</AvatarFallback>
           </Avatar>
         </DropdownMenuTrigger>
-        <DropdownMenuContent className='w-56'>
-          <DropdownMenuLabel>My Account</DropdownMenuLabel>
-          <DropdownMenuItem style={{ backgroundColor: 'lightgrey' }} disabled>
-            {auth?.user?.email}
-          </DropdownMenuItem>
-          <DropdownMenuSeparator />
+        <DropdownMenuContent className='w-56 py-4'>
+          <DropdownMenuLabel className='text-base'>
+            <div className='flex flex-col gap-2 pb-4'>
+              <Badge variant='outline' className='w-min rounded-md'>
+                {role.toUpperCase()}
+              </Badge>
+              <div className='flex flex-col gap-1 pl-1'>
+                <div className='text-md'>{userName}</div>
+                <div className='text-sm text-muted-foreground font-normal'>
+                  {email}
+                </div>
+              </div>
+            </div>
+          </DropdownMenuLabel>
+
           <DropdownMenuSeparator />
           <DropdownMenuItem onClick={onProfileClick}>
             <User className='w-4 h-4 mr-2' />
             Profile
           </DropdownMenuItem>
-          <DropdownMenuSeparator />
-
           <DropdownMenuItem onClick={auth?.logout}>
             <LogOut className='w-4 h-4 mr-2' />
             Logout
