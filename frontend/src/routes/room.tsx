@@ -2,42 +2,44 @@ import {
   ResizableHandle,
   ResizablePanel,
   ResizablePanelGroup,
-} from '@/components/ui/resizable';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+} from "@/components/ui/resizable";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
-import useParticipantWebsocket from '@/hooks/useParticipantWebsocket';
-import { useCallback, useState } from 'react';
+import useParticipantWebsocket from "@/hooks/useParticipantWebsocket";
+import { useCallback, useState } from "react";
 
-import CodeExecutionView from '@/components/CodeExecutionView';
-import ParticipantView from '@/components/ParticipantView';
-import QuestionView from '@/components/QuestionView';
-import SubmissionView from '@/components/SubmissionView';
-import VideoCall from '@/components/VideoCall';
+import CodeExecutionView from "@/components/CodeExecutionView";
+import ParticipantView from "@/components/ParticipantView";
+import QuestionView from "@/components/QuestionView";
+import SubmissionView from "@/components/SubmissionView";
+import VideoCall from "@/components/VideoCall";
 import MonacoEditor, {
   SubmitButton,
-} from '@/components/code-editor/MonacoEditor';
-import CollaborativeEditor from '@/components/code-editor/collaborative-code-editor';
-import { LoginPromptView } from '@/components/discuss/views/LoginPromptView';
-import { Button } from '@/components/ui/button';
-import { Switch } from '@/components/ui/switch';
-import { useAuth } from '@/hooks/auth/useAuth';
-import useExecuteCode, { CodeExecutionResponse } from '@/hooks/useExecuteCode';
-import { useRoom } from '@/hooks/useRoom';
-import { BACKEND_WEBSOCKET_COLLABORATIVE_EDITOR } from '@/lib/common';
+} from "@/components/code-editor/MonacoEditor";
+import CollaborativeEditor from "@/components/code-editor/collaborative-code-editor";
+import { LoginPromptView } from "@/components/discuss/views/LoginPromptView";
+import { Button } from "@/components/ui/button";
+import { Switch } from "@/components/ui/switch";
+import { useAuth } from "@/hooks/auth/useAuth";
+import useExecuteCode, { CodeExecutionResponse } from "@/hooks/useExecuteCode";
+import { useRoom } from "@/hooks/useRoom";
+import { BACKEND_WEBSOCKET_COLLABORATIVE_EDITOR } from "@/lib/common";
 import {
   Loader2,
   LogInIcon,
   LogOutIcon,
   PlayIcon,
   VideoIcon,
-} from 'lucide-react';
-import { useParams } from 'react-router-dom';
-import { toast } from 'sonner';
+} from "lucide-react";
+import { useParams } from "react-router-dom";
+import { toast } from "sonner";
+import { getToken } from "@/lib/utils";
 import { Skeleton } from '@/components/ui/skeleton';
+
 
 export default function RoomRoute() {
   const [editorCode, setEditorCode] = useState<string>(
-    '// Write your code here\n'
+    "// Write your code here\n"
   );
   const { roomId } = useParams<{ roomId: string }>();
   const { isLoading, data, error } = useRoom(roomId);
@@ -87,7 +89,7 @@ export default function RoomRoute() {
         [room]
       ),
       onDisconnected: useCallback(() => {
-        toast('You have been disconnected from the room');
+        toast("You have been disconnected from the room");
       }, []),
     });
 
@@ -97,15 +99,15 @@ export default function RoomRoute() {
   const { mutateAsync: executeCodeMutation, isPending: isExecutingCode } =
     useExecuteCode({
       onSuccess: (data) => {
-        if (data.error?.includes('Script execution timed out')) {
-          toast.error('Your code execution timed out');
+        if (data.error?.includes("Script execution timed out")) {
+          toast.error("Your code execution timed out");
         } else {
-          toast.success('Your code has been executed successfully');
+          toast.success("Your code has been executed successfully");
         }
       },
       onError: (error) => {
-        toast.error('Failed to execute your code', {
-          description: error.message || 'Please try again',
+        toast.error("Failed to execute your code", {
+          description: error.message || "Please try again",
         });
       },
     });
@@ -113,7 +115,7 @@ export default function RoomRoute() {
   const handleExecuteCode = async () => {
     const result = await executeCodeMutation({
       code: editorCode,
-      language: 'typescript',
+      language: "typescript",
     });
     setCodeExecutionResponse(result);
   };
@@ -147,15 +149,15 @@ export default function RoomRoute() {
   if (!auth?.user) {
     return (
       <LoginPromptView
-        featureName='rooms'
-        featureUsage='view and solve questions in a room'
+        featureName="rooms"
+        featureUsage="view and solve questions in a room"
       />
     );
   }
 
   return (
-    <div className='border rounded-lg overflow-hidden h-full w-full'>
-      <ResizablePanelGroup direction='horizontal'>
+    <div className="border rounded-lg overflow-hidden h-full w-full">
+      <ResizablePanelGroup direction="horizontal">
         {/* Tabs Panel */}
         <ResizablePanel defaultSize={30} className='' minSize={30}>
           <Tabs defaultValue='participants'>
@@ -163,48 +165,47 @@ export default function RoomRoute() {
               <TabsTrigger value='participants' className='flex-1'>
                 Participants
               </TabsTrigger>
-              <TabsTrigger value='question' className='flex-1'>
+              <TabsTrigger value="question" className="flex-1">
                 Question
               </TabsTrigger>
-              <TabsTrigger value='submissions' className='flex-1'>
+              <TabsTrigger value="submissions" className="flex-1">
                 Submissions
               </TabsTrigger>
-              <TabsTrigger value='execution' className='flex-1'>
+              <TabsTrigger value="execution" className="flex-1">
                 Execution
               </TabsTrigger>
             </TabsList>
 
-            <TabsContent value='participants' className='w-full'>
+            <TabsContent value="participants" className="w-full">
               <ParticipantView
                 allParticipants={room.participants}
                 activeParticipants={activeParticipants}
                 isConnected={isConnected}
               />
             </TabsContent>
-            <TabsContent value='question'>
+            <TabsContent value="question">
               <QuestionView id={questionId} />
             </TabsContent>
-            <TabsContent value='submissions'>
+            <TabsContent value="submissions">
               <SubmissionView questionId={questionId} />
             </TabsContent>
-            <TabsContent value='execution'>
+            <TabsContent value="execution">
               <CodeExecutionView response={codeExecutionResponse} />
             </TabsContent>
           </Tabs>
         </ResizablePanel>
 
         <ResizableHandle withHandle />
-
         {/* Collaborative Editor Panel */}
         <ResizablePanel defaultSize={70}>
           {isConnected ? (
             <CollaborativeEditor
               initialValue={editorCode}
               roomName={roomId}
-              websocketUrl={BACKEND_WEBSOCKET_COLLABORATIVE_EDITOR}
+              websocketUrl={`${BACKEND_WEBSOCKET_COLLABORATIVE_EDITOR}?token=${getToken()}`}
               userName={auth.user.userName}
               onChange={(value: string | undefined) =>
-                setEditorCode(value ?? '')
+                setEditorCode(value ?? "")
               }
             />
           ) : (
@@ -212,7 +213,7 @@ export default function RoomRoute() {
               questionId={questionId}
               value={editorCode}
               onChange={(value: string | undefined) =>
-                setEditorCode(value ?? '')
+                setEditorCode(value ?? "")
               }
             />
           )}
@@ -222,40 +223,40 @@ export default function RoomRoute() {
       <div className='absolute top-2 left-1/2 -translate-x-1/2 flex gap-2 z-30'>
         <Button
           onClick={handleExecuteCode}
-          variant={'outline'}
+          variant={"outline"}
           disabled={isExecutingCode}
         >
           {isExecutingCode ? (
-            <Loader2 className='w-4 h-4 animate-spin mr-2' />
+            <Loader2 className="w-4 h-4 animate-spin mr-2" />
           ) : (
-            <PlayIcon className='w-4 h-4 mr-2' />
+            <PlayIcon className="w-4 h-4 mr-2" />
           )}
           Run
         </Button>
         <SubmitButton questionId={questionId} code={editorCode} />
         {isConnected && (
-          <Button variant={'outline'} onClick={disconnect}>
-            <LogOutIcon className='w-4 h-4 mr-2' />
+          <Button variant={"outline"} onClick={disconnect}>
+            <LogOutIcon className="w-4 h-4 mr-2" />
             Disconnect
           </Button>
         )}
 
         {!isConnected && (
           <Button
-            variant={'outline'}
+            variant={"outline"}
             onClick={() => {
               window.location.reload();
             }}
           >
-            <LogInIcon className='w-4 h-4 mr-2' />
+            <LogInIcon className="w-4 h-4 mr-2" />
             Connect
           </Button>
         )}
 
         {isConnected && (
-          <div className='flex items-center gap-2'>
+          <div className="flex items-center gap-2">
             <Switch checked={isVideoCall} onCheckedChange={setIsVideoCall} />
-            <VideoIcon className='h-4 w-4' />
+            <VideoIcon className="h-4 w-4" />
           </div>
         )}
       </div>

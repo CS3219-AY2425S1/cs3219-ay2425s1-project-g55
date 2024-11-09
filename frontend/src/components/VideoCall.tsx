@@ -5,6 +5,8 @@ import {
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React, { useEffect, useRef, useState } from "react";
 import DefaultAvatarPic from "../assets/Default Avatar Pic.png";
+import { BACKEND_WEBSOCKET_VIDEO } from "@/lib/common";
+import { getToken } from "@/lib/utils";
 
 interface VideoCallProps {
   showVideo: boolean;
@@ -20,12 +22,11 @@ const VideoCall: React.FC<VideoCallProps> = ({ showVideo }) => {
   const [isMicOn, setIsMicOn] = useState(true);
   const [remoteVideoOn, setRemoteVideoOn] = useState(true); // State for remote video
 
-  // WebSocket URL for signaling
-  const signalingServerUrl = "ws://localhost:8080/ws/signaling";
-
   useEffect(() => {
     // Initialize WebSocket connection
-    signalingSocket.current = new WebSocket(signalingServerUrl);
+    signalingSocket.current = new WebSocket(
+      `${BACKEND_WEBSOCKET_VIDEO}?token=${getToken()}`
+    );
 
     // Initialize WebRTC connection
     const pc = new RTCPeerConnection({
@@ -105,7 +106,7 @@ const VideoCall: React.FC<VideoCallProps> = ({ showVideo }) => {
   };
 
   return (
-    <div className='video-call flex items-center gap-2'>
+    <div className="video-call flex items-center gap-2">
       {showVideo && (
         <div
           className="video-container flex gap-2 items-center z-20"

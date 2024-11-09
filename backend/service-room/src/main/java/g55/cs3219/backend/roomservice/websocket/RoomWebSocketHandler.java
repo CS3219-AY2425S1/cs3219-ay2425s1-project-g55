@@ -1,5 +1,6 @@
 package g55.cs3219.backend.roomservice.websocket;
 
+import java.net.URI;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -8,15 +9,22 @@ import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
+import org.springframework.web.util.UriComponentsBuilder;
 import org.springframework.web.util.UriTemplate;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
@@ -44,9 +52,9 @@ public class RoomWebSocketHandler extends TextWebSocketHandler {
     // TODO have different exceptions?
 
     try {
-      String roomId = extractRoomId(session);
       String userId = extractUserId(session);
-
+      String roomId = extractRoomId(session);
+      
       logger.info("WebSocket connection established for room: {} and user: {}", roomId, userId);
 
       boolean canJoinRoom = roomService.checkIfUserCanJoinRoom(roomId, userId);
@@ -126,41 +134,80 @@ public class RoomWebSocketHandler extends TextWebSocketHandler {
   }
 
   private String extractRoomId(WebSocketSession session) {
-    String path = session.getUri().getPath();
+    URI uri = session.getUri();
+    if (uri == null) {
+      logger.warn("Session URI is null");
+      throw new IllegalArgumentException("URI is null");
+    }
+    String path = uri.getPath();
     Map<String, String> variables = new UriTemplate(ROOM_URI_TEMPLATE).match(path);
     return variables.get("roomId");
   }
 
   private String extractUserId(WebSocketSession session) {
-    // TODO integrate API gateway
-    String userId = session.getHandshakeHeaders().getFirst("X-User-Id");
 
-    if (userId != null) {
-      return userId;
-    }
-
-    // throw new IllegalArgumentException("User ID is not present in the request");
-
-    String query = session.getUri().getQuery();
-    if (query == null) {
-      throw new IllegalArgumentException("User ID is not present in the request");
-    }
-
-    String[] params = query.split("&");
-    for (String param : params) {
-      String[] keyValue = param.split("=");
-      if (keyValue.length == 2 && keyValue[0].equals("userId")) {
-        userId = keyValue[1];
-        break;
-      }
-    }
-
-    if (userId == null) {
-      throw new IllegalArgumentException("User ID is not present in the request");
-    }
-
-    return userId;
+    ObjectMapper objectMapper = new ObjectMapper();
+        JsonNode jsonNode = null;
+        try {
+            jsonNode = objectMapper.readTree(authenticateUser(session));
+            if (jsonNode.has("id")) {
+                String userId = jsonNode.get("id").asText();
+                return userId;
+            } else {
+                logger.warn("Response JSON does not contain 'id' field");
+            }
+        } catch (Exception e) {
+            logger.error("Exception occurred during token verification: {}", e.getMessage(), e);
+        }
+    
+    throw new IllegalArgumentException("User ID is not present in the request");
   }
+
+  private String authenticateUser(WebSocketSession session) {
+        URI uri = session.getUri();
+        String token = null;
+        String query = null;
+
+        if (uri != null) {
+            query = uri.getQuery();
+            if (query != null && !query.isEmpty()) {
+                token =  UriComponentsBuilder.newInstance().query(query).build().getQueryParams().getFirst("token");
+            } else {
+                logger.warn("No query parameters found or token parameter missing");
+            }
+        }
+
+        if (token != null) {
+            RestTemplate restTemplate = new RestTemplate();
+            String verifyTokenUrl = "http://user-service.g55.svc.cluster.local:8080/api/auth/verify-token";
+
+            HttpHeaders headers = new HttpHeaders();
+            headers.set("Authorization", "Bearer " + token);
+            HttpEntity<String> entity = new HttpEntity<>(headers);
+
+            try {
+                ResponseEntity<String> response = restTemplate.exchange(
+                        verifyTokenUrl,
+                        HttpMethod.GET,
+                        entity,
+                        String.class
+                );
+
+                logger.info("Response received from verify-token endpoint with status code: {}", response.getStatusCode());
+
+                if (response.getStatusCode().is2xxSuccessful()) {
+                    return response.getBody();
+                } else {
+                    logger.warn("Failed to verify token. Non-successful response received.");
+                }
+            } catch (Exception e) {
+                logger.error("Exception occurred during token verification: {}", e.getMessage(), e);
+            }
+        } else {
+            logger.warn("Token is null, unable to verify");
+        }
+        return null;
+    }
 
   private void broadcastParticipantMessage(String roomId, String userId, String status)
       throws JsonProcessingException {

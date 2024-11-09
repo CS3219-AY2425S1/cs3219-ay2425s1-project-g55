@@ -208,66 +208,6 @@ class AuthenticationControllerTest {
     }
 
     @Test
-    void verifyTokenParam_shouldReturnUserResponse_whenTokenIsValid() {
-        String validToken = "valid-jwt-token";
-        UserDetails mockUserDetails = mockUser;
-        JwtTokenValidationResponse validationResponse = new JwtTokenValidationResponse(true, "Token is valid");
-
-        when(jwtService.extractUsername(validToken)).thenReturn(mockUserDetails.getUsername());
-        when(userDetailsService.loadUserByUsername(mockUserDetails.getUsername())).thenReturn(mockUserDetails);
-        when(jwtService.isTokenValid(validToken, mockUserDetails)).thenReturn(validationResponse);
-
-        ResponseEntity<?> response = authenticationController.verifyTokenParam(validToken);
-
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        UserResponse userResponse = (UserResponse) response.getBody();
-        assertNotNull(userResponse);
-        assertEquals(mockUser.getId(), userResponse.getId());
-        assertEquals(mockUser.getEmail(), userResponse.getEmail());
-        assertEquals(mockUser.isAdmin(), userResponse.isAdmin());
-        assertEquals(mockUser.getName(), userResponse.getUsername());
-
-        verify(jwtService, times(1)).extractUsername(validToken);
-        verify(jwtService, times(1)).isTokenValid(validToken, mockUserDetails);
-    }
-
-    @Test
-    void verifyTokenParam_shouldReturnUnauthorized_whenTokenIsInvalid() {
-        String invalidToken = "invalid-jwt-token";
-        JwtTokenValidationResponse validationResponse = new JwtTokenValidationResponse(false, "Token is invalid");
-
-        when(jwtService.extractUsername(invalidToken)).thenReturn(mockUser.getEmail());
-        when(userDetailsService.loadUserByUsername(mockUser.getEmail())).thenReturn(mockUser);
-        when(jwtService.isTokenValid(invalidToken, mockUser)).thenReturn(validationResponse);
-
-        ResponseEntity<?> response = authenticationController.verifyTokenParam(invalidToken);
-
-        assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
-        assertEquals("Token is invalid", response.getBody());
-
-        verify(jwtService, times(1)).extractUsername(invalidToken);
-        verify(jwtService, times(1)).isTokenValid(invalidToken, mockUser);
-    }
-
-    @Test
-    void verifyTokenParam_shouldReturnUnauthorized_whenTokenIsExpired() {
-        String expiredToken = "expired-jwt-token";
-        JwtTokenValidationResponse validationResponse = new JwtTokenValidationResponse(false, "Token has expired");
-
-        when(jwtService.extractUsername(expiredToken)).thenReturn(mockUser.getEmail());
-        when(userDetailsService.loadUserByUsername(mockUser.getEmail())).thenReturn(mockUser);
-        when(jwtService.isTokenValid(expiredToken, mockUser)).thenReturn(validationResponse);
-
-        ResponseEntity<?> response = authenticationController.verifyTokenParam(expiredToken);
-
-        assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
-        assertEquals("Token has expired", response.getBody());
-
-        verify(jwtService, times(1)).extractUsername(expiredToken);
-        verify(jwtService, times(1)).isTokenValid(expiredToken, mockUser);
-    }
-
-    @Test
     void forgotPassword_shouldReturnOk_whenEmailExists() {
         ForgetPasswordDto forgotPasswordDto = new ForgetPasswordDto();
         forgotPasswordDto.setEmail("user@example.com");

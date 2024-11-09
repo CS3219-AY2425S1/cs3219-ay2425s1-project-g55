@@ -9,6 +9,13 @@ import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
 import org.springframework.web.util.UriComponentsBuilder;
+import org.springframework.web.client.RestTemplate;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.JsonNode;
 
 public class MatchingWebSocketHandler extends TextWebSocketHandler {
 
@@ -48,12 +55,66 @@ public class MatchingWebSocketHandler extends TextWebSocketHandler {
     }
 
     private String extractUserId(WebSocketSession session) {
-        URI uri = session.getUri();
-        if (uri != null) {
-            String query = uri.getQuery();
-            if (query != null && !query.isEmpty()) {
-                return UriComponentsBuilder.newInstance().query(query).build().getQueryParams().getFirst("userId");
+        ObjectMapper objectMapper = new ObjectMapper();
+        JsonNode jsonNode = null;
+        try {
+            jsonNode = objectMapper.readTree(authenticateUser(session));
+            if (jsonNode.has("id")) {
+                String userId = jsonNode.get("id").asText();
+                return userId;
+            } else {
+                logger.warn("Response JSON does not contain 'id' field");
             }
+        } catch (Exception e) {
+            logger.error("Exception occurred during token verification: {}", e.getMessage(), e);
+        }
+
+        logger.warn("Returning null, userId extraction failed");
+        return null;
+    }
+
+    private String authenticateUser(WebSocketSession session) {
+        URI uri = session.getUri();
+        String token = null;
+        String query = null;
+
+        if (uri != null) {
+            query = uri.getQuery();
+            if (query != null && !query.isEmpty()) {
+                token =  UriComponentsBuilder.newInstance().query(query).build().getQueryParams().getFirst("token");
+            } else {
+                logger.warn("No query parameters found or token parameter missing");
+            }
+        }
+
+        if (token != null) {
+            RestTemplate restTemplate = new RestTemplate();
+            String verifyTokenUrl = "http://user-service.g55.svc.cluster.local:8080/api/auth/verify-token";
+
+            HttpHeaders headers = new HttpHeaders();
+            headers.set("Authorization", "Bearer " + token);
+            HttpEntity<String> entity = new HttpEntity<>(headers);
+
+            try {
+                ResponseEntity<String> response = restTemplate.exchange(
+                        verifyTokenUrl,
+                        HttpMethod.GET,
+                        entity,
+                        String.class
+                );
+
+                logger.info("Response received from verify-token endpoint with status code: {}", response.getStatusCode());
+
+                if (response.getStatusCode().is2xxSuccessful()) {
+                    return response.getBody();
+                } else {
+                    logger.warn("Failed to verify token. Non-successful response received.");
+                }
+            } catch (Exception e) {
+                logger.error("Exception occurred during token verification: {}", e.getMessage(), e);
+            }
+        } else {
+            logger.warn("Token is null, unable to verify");
         }
         return null;
     }
