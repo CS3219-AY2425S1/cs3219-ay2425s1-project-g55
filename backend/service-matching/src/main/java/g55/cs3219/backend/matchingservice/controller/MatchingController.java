@@ -3,6 +3,7 @@ package g55.cs3219.backend.matchingservice.controller;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import g55.cs3219.backend.matchingservice.dto.MatchingRequestBodyDto;
 import g55.cs3219.backend.matchingservice.model.MatchingRequest;
 import g55.cs3219.backend.matchingservice.service.MatchingProducer;
 import g55.cs3219.backend.matchingservice.service.MatchingService;
@@ -20,8 +21,15 @@ public class MatchingController {
     }
 
     @PostMapping
-    public ResponseEntity<String> requestMatch(@RequestBody MatchingRequest request) {
-        matchingProducer.sendMatchingRequest(request);
+    public ResponseEntity<String> requestMatch(@RequestHeader("X-User-Id") String userId,
+                                               @RequestBody MatchingRequestBodyDto requestBodyDto) {
+
+        MatchingRequest matchingRequest = new MatchingRequest();
+        matchingRequest.setUserId(userId);
+        matchingRequest.setTopic(requestBodyDto.getTopic());
+        matchingRequest.setDifficultyLevel(requestBodyDto.getDifficultyLevel());
+
+        matchingProducer.sendMatchingRequest(matchingRequest);
         return ResponseEntity.ok("{\"message\": \"Matching request sent\"}");
     }
 
