@@ -21,13 +21,17 @@ public class MatchingController {
     }
 
     @PostMapping
-    public ResponseEntity<String> requestMatch(@RequestHeader("X-User-Id") String userId,
+    public ResponseEntity<String> requestMatch(@RequestHeader("X-User-Id") String userId, 
+                                               @RequestHeader("X-User-Name") String username, 
+                                               @RequestHeader("Authorization") String authorizationHeader,
                                                @RequestBody MatchingRequestBodyDto requestBodyDto) {
 
         MatchingRequest matchingRequest = new MatchingRequest();
         matchingRequest.setUserId(userId);
+        matchingRequest.setUsername(username);
         matchingRequest.setTopic(requestBodyDto.getTopic());
         matchingRequest.setDifficultyLevel(requestBodyDto.getDifficultyLevel());
+        matchingRequest.setAuthToken(authorizationHeader);
 
         matchingProducer.sendMatchingRequest(matchingRequest);
         return ResponseEntity.ok("{\"message\": \"Matching request sent\"}");

@@ -12,6 +12,7 @@ public class MatchingRequest implements Serializable {
     private String username;
     private String topic;
     private String difficultyLevel;
+    private String authToken;
 
     @Override
     public String toString() {
@@ -19,6 +20,7 @@ public class MatchingRequest implements Serializable {
                 "userId='" + userId + '\'' +
                 ", topic='" + topic + '\'' +
                 ", difficultyLevel='" + difficultyLevel + '\'' +
+                ", authToken='" + (authToken != null ? "REDACTED" : null) + '\'' +
                 '}';
     }
 }
