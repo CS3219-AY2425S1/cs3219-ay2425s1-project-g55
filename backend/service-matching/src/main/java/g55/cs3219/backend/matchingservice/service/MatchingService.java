@@ -5,6 +5,10 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
@@ -55,12 +59,25 @@ public class MatchingService {
     public Integer getQuestionIdForMatchRequest(MatchingRequest request) {
         String topic = request.getTopic();
         String difficulty = request.getDifficultyLevel();
+        String authToken = request.getAuthToken();
 
         try {
             this.logger.info("Getting question id for match request: " + request);
             String urlString = questionServiceUrl + "?category=" + topic + "&difficulty=" + difficulty;
-            QuestionDto[] responses = restTemplate.getForObject(
-                    urlString, QuestionDto[].class);
+
+            HttpHeaders headers = new HttpHeaders();
+            headers.set("Authorization", authToken); 
+
+            HttpEntity<String> entity = new HttpEntity<>(headers);
+
+            ResponseEntity<QuestionDto[]> responseEntity = restTemplate.exchange(
+                    urlString,
+                    HttpMethod.GET,
+                    entity,
+                    QuestionDto[].class);
+            
+            QuestionDto[] responses = responseEntity.getBody();
+
             if (responses == null || responses.length == 0) {
                 this.logger.error("No questions found matching criteria");
                 throw new RuntimeException("No questions found matching criteria");
