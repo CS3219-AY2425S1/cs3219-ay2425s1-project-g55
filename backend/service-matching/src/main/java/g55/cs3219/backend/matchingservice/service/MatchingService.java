@@ -58,8 +58,9 @@ public class MatchingService {
 
         try {
             this.logger.info("Getting question id for match request: " + request);
+            String urlString = questionServiceUrl + "?category=" + topic + "&difficulty=" + difficulty;
             QuestionDto[] responses = restTemplate.getForObject(
-                    questionServiceUrl + "?category=" + topic + "&difficulty=" + difficulty, QuestionDto[].class);
+                    urlString, QuestionDto[].class);
             if (responses == null || responses.length == 0) {
                 this.logger.error("No questions found matching criteria");
                 throw new RuntimeException("No questions found matching criteria");

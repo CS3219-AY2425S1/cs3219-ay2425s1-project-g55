@@ -30,7 +30,7 @@ public class RoomService {
     Room room = new Room(
         event.getRoomId(),
         Instant.now().plus(DEFAULT_ROOM_DURATION_HOURS, ChronoUnit.HOURS),
-        event.getParticipantIds(),
+        event.getParticipants(),
         // TODO: Implement question selection logic
         event.getQuestionId(),
         false);
@@ -51,7 +51,8 @@ public class RoomService {
    */
   public boolean checkIfUserCanJoinRoom(String roomId, String userId) {
     Room room = getRoom(roomId);
-    return room.getStatus() == RoomStatus.OPEN && room.getParticipants().contains(userId);
+    return room.getStatus() == RoomStatus.OPEN && room.getParticipants().stream().anyMatch(
+        participant -> participant.getUserId().equals(userId));
   }
 
   /**

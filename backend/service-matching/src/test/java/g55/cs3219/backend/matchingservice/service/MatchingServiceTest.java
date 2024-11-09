@@ -40,8 +40,7 @@ public class MatchingServiceTest {
     questionDto.setDifficulty("Medium");
     mockResponse[0] = questionDto;
 
-    String expectedUrl = "http://backend-service-question:8080/api/questions/filter?category=Algorithms&difficulty=Medium";
-
+    String expectedUrl = "http://question-service.g55.svc.cluster.local:8080/api/questions/filter?category=Algorithms&difficulty=Medium";
     when(restTemplate.getForObject(eq(expectedUrl), eq(QuestionDto[].class)))
         .thenReturn(mockResponse);
 

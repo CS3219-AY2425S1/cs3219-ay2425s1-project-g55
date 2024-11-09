@@ -26,6 +26,7 @@ export default function DiscussRoute() {
 
   const auth = useAuth();
   const userId = auth?.user?.userId;
+  const username = auth?.user?.userName;
 
   const ws = useRef<WebSocket | null>(null);
   const matchSound = useRef<HTMLAudioElement | null>(null);
@@ -97,6 +98,7 @@ export default function DiscussRoute() {
         },
         body: JSON.stringify({
           userId: userId,
+          username: username,
           topic: selectedTopic,
           difficultyLevel: selectedDifficulty,
         }),

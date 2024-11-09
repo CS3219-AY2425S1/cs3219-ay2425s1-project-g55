@@ -17,6 +17,7 @@ import org.springframework.context.annotation.Import;
 import org.springframework.test.web.servlet.MockMvc;
 
 import g55.cs3219.backend.roomservice.config.SecurityConfig;
+import g55.cs3219.backend.roomservice.model.Participant;
 import g55.cs3219.backend.roomservice.model.Room;
 import g55.cs3219.backend.roomservice.service.RoomService;
 
@@ -38,7 +39,9 @@ class RoomControllerTest {
     testRoom = new Room(
         "room-123",
         expiryTime,
-        Arrays.asList("user1", "user2"),
+        Arrays.asList(
+            new Participant("user1", "user1"),
+            new Participant("user2", "user2")),
         1,
         false);
   }
@@ -53,8 +56,10 @@ class RoomControllerTest {
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.roomId").value("room-123"))
         .andExpect(jsonPath("$.expiryTime").value(expiryTime.toString()))
-        .andExpect(jsonPath("$.participants[0]").value("user1"))
-        .andExpect(jsonPath("$.participants[1]").value("user2"))
+        .andExpect(jsonPath("$.participants[0].userId").value("user1"))
+        .andExpect(jsonPath("$.participants[0].username").value("user1"))
+        .andExpect(jsonPath("$.participants[1].userId").value("user2"))
+        .andExpect(jsonPath("$.participants[1].username").value("user2"))
         .andExpect(jsonPath("$.questionId").value(1))
         .andExpect(jsonPath("$.status").value("OPEN"));
   }

@@ -15,7 +15,7 @@ import lombok.Setter;
 public class RoomDTO {
   private String roomId;
   private Instant expiryTime;
-  private List<String> participants;
+  private List<Participant> participants;
   private Integer questionId;
   private RoomStatus status;
 

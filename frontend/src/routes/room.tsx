@@ -40,20 +40,51 @@ export default function RoomRoute() {
   );
   const { roomId } = useParams<{ roomId: string }>();
   const { isLoading, data, error } = useRoom(roomId);
+
+  const room = data;
+  const questionId = room?.questionId;
+
   const auth = useAuth();
   const { activeParticipants, isConnected, disconnect } =
     useParticipantWebsocket({
       roomId,
       userId: auth?.user?.userId?.toString(),
-      onEnteredRoom: useCallback((userId: string) => {
-        toast(`User ${userId} entered the room`);
-      }, []),
-      onExitRoom: useCallback((userId: string) => {
-        toast(`User ${userId} exited the room`);
-      }, []),
-      onReconnected: useCallback((userId: string) => {
-        toast(`User ${userId} reconnected`);
-      }, []),
+      onEnteredRoom: useCallback(
+        (userId: string) => {
+          if (!room) {
+            return;
+          }
+          const username = room?.participants.find(
+            (participant) => participant.userId === userId
+          )?.username;
+          toast(`User ${username} entered the room`);
+        },
+        [room]
+      ),
+      onExitRoom: useCallback(
+        (userId: string) => {
+          if (!room) {
+            return;
+          }
+          const username = room?.participants.find(
+            (participant) => participant.userId === userId
+          )?.username;
+          toast(`User ${username} exited the room`);
+        },
+        [room]
+      ),
+      onReconnected: useCallback(
+        (userId: string) => {
+          if (!room) {
+            return;
+          }
+          const username = room?.participants.find(
+            (participant) => participant.userId === userId
+          )?.username;
+          toast(`User ${username} reconnected`);
+        },
+        [room]
+      ),
       onDisconnected: useCallback(() => {
         toast('You have been disconnected from the room');
       }, []),
@@ -100,8 +131,9 @@ export default function RoomRoute() {
     return <div>Error: {error.message}</div>;
   }
 
-  const room = data!;
-  const questionId = room.questionId;
+  if (!room || !questionId) {
+    return <div>No room or question ID</div>;
+  }
 
   if (isNaN(questionId)) {
     return <div>Invalid question ID</div>;
