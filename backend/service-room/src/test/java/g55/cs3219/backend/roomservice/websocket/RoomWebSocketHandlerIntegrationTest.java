@@ -33,13 +33,21 @@ import org.springframework.web.socket.handler.TextWebSocketHandler;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import g55.cs3219.backend.roomservice.model.Participant;
 import g55.cs3219.backend.roomservice.model.ParticipantMessage;
 import g55.cs3219.backend.roomservice.model.Room;
 import g55.cs3219.backend.roomservice.service.RoomService;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, properties = {
     "spring.profiles.active=test",
-    "spring.test.execute=true"
+    "spring.test.execute=true",
+    "spring.datasource.url=jdbc:postgresql://localhost:5432/postgres",
+    "spring.datasource.username=admin",
+    "spring.datasource.password=password",
+    "spring.rabbitmq.host=localhost",
+    "spring.rabbitmq.port=5672",
+    "spring.rabbitmq.username=guest",
+    "spring.rabbitmq.password=guest"
 })
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @Execution(ExecutionMode.SAME_THREAD)
@@ -54,6 +62,9 @@ public class RoomWebSocketHandlerIntegrationTest {
   private StandardWebSocketClient client;
   private final String ROOM_ID = "test-room";
   private final String USER_ID = "test-user";
+  private final Participant PARTICIPANT = new Participant(
+      "test-user",
+      "test-user");
   private List<WebSocketSession> activeSessions;
 
   @LocalServerPort
@@ -74,7 +85,7 @@ public class RoomWebSocketHandlerIntegrationTest {
     Room mockRoom = new Room(
         ROOM_ID,
         Instant.now().plus(1, ChronoUnit.HOURS),
-        List.of(USER_ID),
+        List.of(PARTICIPANT),
         QUESTION_ID,
         false);
 
@@ -112,10 +123,15 @@ public class RoomWebSocketHandlerIntegrationTest {
   @Test
   void whenMultipleUsersConnect_thenAllReceiveMessages() throws Exception {
     String secondUserId = "test-user-2";
+    Participant secondParticipant = new Participant(
+        secondUserId,
+        secondUserId);
     Room mockRoom = new Room(
         ROOM_ID,
         Instant.now().plus(1, ChronoUnit.HOURS),
-        List.of(USER_ID, secondUserId),
+        List.of(
+            PARTICIPANT,
+            secondParticipant),
         QUESTION_ID,
         false);
     when(roomService.getRoom(ROOM_ID)).thenReturn(mockRoom);
@@ -152,7 +168,7 @@ public class RoomWebSocketHandlerIntegrationTest {
     Room mockRoom = new Room(
         ROOM_ID,
         Instant.now().plus(1, ChronoUnit.HOURS),
-        List.of(USER_ID, "other-user"),
+        List.of(PARTICIPANT, new Participant("other-user", "other-user")),
         QUESTION_ID,
         false);
     when(roomService.getRoom(ROOM_ID)).thenReturn(mockRoom);
@@ -202,7 +218,7 @@ public class RoomWebSocketHandlerIntegrationTest {
     Room mockRoom = new Room(
         ROOM_ID,
         Instant.now().plus(1, ChronoUnit.HOURS),
-        List.of(USER_ID, "other-user"),
+        List.of(PARTICIPANT, new Participant("other-user", "other-user")),
         QUESTION_ID,
         false);
     when(roomService.getRoom(ROOM_ID)).thenReturn(mockRoom);

@@ -21,6 +21,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import g55.cs3219.backend.roomservice.model.MatchFoundEvent;
+import g55.cs3219.backend.roomservice.model.Participant;
 import g55.cs3219.backend.roomservice.model.Room;
 import g55.cs3219.backend.roomservice.repository.RoomRepository;
 
@@ -41,12 +42,14 @@ class RoomServiceTest {
   void handleMatchFoundEvent_ShouldCreateAndSaveRoom() {
     // Arrange
     String roomId = "room-123";
-    List<String> participantIds = Arrays.asList("user1", "user2");
+    List<Participant> participants = Arrays.asList(
+        new Participant("user1", "user1"),
+        new Participant("user2", "user2"));
     Integer questionId = 1;
 
     MatchFoundEvent event = new MatchFoundEvent();
     event.setRoomId(roomId);
-    event.setParticipantIds(participantIds);
+    event.setParticipants(participants);
     event.setQuestionId(questionId);
 
     ArgumentCaptor<Room> roomCaptor = ArgumentCaptor.forClass(Room.class);
@@ -59,7 +62,7 @@ class RoomServiceTest {
     Room savedRoom = roomCaptor.getValue();
 
     assertEquals(roomId, savedRoom.getRoomId());
-    assertEquals(participantIds, savedRoom.getParticipants());
+    assertEquals(participants, savedRoom.getParticipants());
     assertEquals(questionId, savedRoom.getQuestionId());
     assertFalse(savedRoom.isClosed());
     assertNotNull(savedRoom.getExpiryTime());
@@ -69,7 +72,9 @@ class RoomServiceTest {
   void getRoom_ExistingRoom_ShouldReturnRoom() {
     // Arrange
     String roomId = "room-123";
-    Room expectedRoom = new Room(roomId, Instant.now(), Arrays.asList("user1", "user2"), 1, false);
+    Room expectedRoom = new Room(roomId, Instant.now(), Arrays.asList(
+        new Participant("user1", "user1"),
+        new Participant("user2", "user2")), 1, false);
     when(roomRepository.findById(roomId)).thenReturn(Optional.of(expectedRoom));
 
     // Act
@@ -96,7 +101,9 @@ class RoomServiceTest {
     // Arrange
     MatchFoundEvent event = new MatchFoundEvent();
     event.setRoomId("room-123");
-    event.setParticipantIds(Arrays.asList("user1", "user2"));
+    event.setParticipants(Arrays.asList(
+        new Participant("user1", "user1"),
+        new Participant("user2", "user2")));
     event.setQuestionId(1);
 
     ArgumentCaptor<Room> roomCaptor = ArgumentCaptor.forClass(Room.class);
