@@ -3,9 +3,9 @@ import { UserMenuAvatar } from '@/components/auth/user-avatar';
 import { useAuth } from '@/hooks/auth/useAuth';
 import { cn } from '@/lib/utils';
 import { CodeXml } from 'lucide-react';
+import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { EditProfileDialog } from './forms/auth-user-profile';
-import { useState } from 'react';
 
 export function NavbarLink({
   to,
@@ -39,29 +39,33 @@ export default function Navbar() {
   const handleDialogClose = () => setOpen(false);
 
   return (
-    <nav className="col-span-12 bg-background h-14">
-      <div className="mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between h-14">
-          <div className="flex">
-            <div className="flex-shrink-0 flex items-center">
-              <Link to="/">
-                <CodeXml className="h-8 w-auto text-primary" />
+    <nav className='col-span-12 bg-background h-14'>
+      <div className='mx-auto px-4 sm:px-6 lg:px-8'>
+        <div className='flex justify-between h-14'>
+          <div className='flex'>
+            <div className='flex-shrink-0 flex items-center'>
+              <Link to='/'>
+                <CodeXml className='h-8 w-auto text-primary' />
               </Link>
             </div>
-            <div className="hidden sm:ml-6 sm:flex sm:space-x-8">
-              <NavbarLink to="/problems">Problems</NavbarLink>
-              <NavbarLink to="/discuss">Discuss</NavbarLink>
-              <NavbarLink to="/submissions">Submissions</NavbarLink>
+            <div className='hidden sm:ml-6 sm:flex sm:space-x-8'>
+              <NavbarLink to='/problems'>Problems</NavbarLink>
+              <NavbarLink to='/discuss'>Discuss</NavbarLink>
+              <NavbarLink to='/submissions'>Submissions</NavbarLink>
               {role == 'admin' && (
-                <NavbarLink to="/admin/user-management">
+                <NavbarLink to='/admin/user-management'>
                   User Management
                 </NavbarLink>
               )}
             </div>
           </div>
-          <div className="hidden sm:ml-6 sm:flex sm:items-center">
-            {auth ? (
-              <UserMenuAvatar onProfileClick={handleProfileClick} />
+          <div className='hidden sm:ml-6 sm:flex sm:items-center'>
+            {auth?.user ? (
+              <UserMenuAvatar
+                onProfileClick={handleProfileClick}
+                user={auth.user}
+                onLogout={auth.logout}
+              />
             ) : (
               <LoginDialog />
             )}
@@ -72,7 +76,7 @@ export default function Navbar() {
       <EditProfileDialog
         open={open}
         onClose={handleDialogClose}
-        action="edit"
+        action='edit'
       />
     </nav>
   );

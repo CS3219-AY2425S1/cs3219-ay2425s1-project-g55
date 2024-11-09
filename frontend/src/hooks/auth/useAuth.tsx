@@ -1,4 +1,9 @@
-import { LOCAL_STORAGE_KEYS, LoginResponseSchema } from '@/types/auth';
+import { BACKEND_URL_AUTH } from '@/lib/common';
+import {
+  LOCAL_STORAGE_KEYS,
+  LoginResponseSchema,
+  VerifyTokenResponseSchema,
+} from '@/types/auth';
 import { jwtDecode } from 'jwt-decode';
 import { useEffect, useState } from 'react';
 
@@ -15,9 +20,10 @@ const USER_ROLES = {
 type AuthHelper = {
   user: AuthUser;
   logout: () => void;
+  refreshAuth: () => Promise<void>;
 };
 
-type AuthUser = {
+export type AuthUser = {
   role: UserRole;
   userId: number;
   userName: string;
@@ -30,9 +36,12 @@ function clearAuthData() {
 
 export function useAuth(): AuthHelper | null {
   const [user, setUser] = useState<AuthUser | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [authHelper, setAuthHelper] = useState<AuthHelper | null>(null);
 
   useEffect(() => {
     const checkAuth = () => {
+      setIsLoading(true);
       const loginResponse = LoginResponseSchema.safeParse(
         JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEYS.USER) || '{}')
       );
@@ -64,20 +73,75 @@ export function useAuth(): AuthHelper | null {
         clearAuthData();
         setUser(null);
       }
+      setIsLoading(false);
     };
 
     checkAuth();
     // You might want to set up a timer to periodically check the token's validity
   }, []);
 
-  return user
-    ? {
-        user,
-        logout: () => {
-          clearAuthData();
-          setUser(null);
-          window.location.reload();
-        },
+  useEffect(() => {
+    if (isLoading) return;
+
+    if (!user) {
+      setAuthHelper(null);
+      return;
+    }
+
+    const refreshAuth = async () => {
+      const loginResponse = LoginResponseSchema.safeParse(
+        JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEYS.USER) || '{}')
+      );
+
+      if (!loginResponse.success) {
+        clearAuthData();
+        setUser(null);
+        return;
       }
-    : null;
+
+      const response = await fetch(`${BACKEND_URL_AUTH}/verify-token`, {
+        headers: {
+          Authorization: `Bearer ${loginResponse.data.token}`,
+        },
+      });
+
+      if (!response.ok) {
+        clearAuthData();
+        setUser(null);
+      }
+
+      const data = await response.json();
+      const user = VerifyTokenResponseSchema.parse(data);
+      localStorage.setItem(
+        LOCAL_STORAGE_KEYS.USER,
+        JSON.stringify({
+          id: user.id,
+          token: loginResponse.data.token,
+          email: user.email,
+          username: user.username,
+          admin: user.admin,
+        })
+      );
+      console.log('About to update user status');
+      setUser({
+        role: user.admin ? USER_ROLES.admin : USER_ROLES.user,
+        userId: user.id,
+        userName: user.username,
+        email: user.email,
+      });
+      console.log('User state updated');
+    };
+
+    setAuthHelper({
+      user,
+      logout: () => {
+        clearAuthData();
+        setUser(null);
+        window.location.reload();
+      },
+      refreshAuth,
+    });
+  }, [user, isLoading]);
+
+  return authHelper;
 }
