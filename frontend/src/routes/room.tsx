@@ -153,6 +153,7 @@ export default function RoomRoute() {
       <ResizablePanelGroup direction='horizontal'>
         {/* Tabs Panel */}
         <ResizablePanel defaultSize={30} className=''>
+        <ResizablePanel defaultSize={30} className='' minSize={30}>
           <Tabs defaultValue='participants'>
             <TabsList className='w-full'>
               <TabsTrigger value='participants' className='flex-1'>
