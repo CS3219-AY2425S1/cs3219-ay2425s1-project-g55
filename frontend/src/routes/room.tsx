@@ -152,7 +152,6 @@ export default function RoomRoute() {
     <div className='border rounded-lg overflow-hidden h-full w-full'>
       <ResizablePanelGroup direction='horizontal'>
         {/* Tabs Panel */}
-        <ResizablePanel defaultSize={30} className=''>
         <ResizablePanel defaultSize={30} className='' minSize={30}>
           <Tabs defaultValue='participants'>
             <TabsList className='w-full'>
@@ -191,17 +190,8 @@ export default function RoomRoute() {
 
         <ResizableHandle withHandle />
 
-        {/* Video Call Panel */}
-
-        {isConnected && (
-          <div className='absolute bottom-4 left-4'>
-            <VideoCall showVideo={isVideoCall} />
-          </div>
-        )}
-        <ResizableHandle withHandle />
-
         {/* Collaborative Editor Panel */}
-        <ResizablePanel>
+        <ResizablePanel defaultSize={70}>
           {isConnected ? (
             <CollaborativeEditor
               initialValue={editorCode}
@@ -224,7 +214,7 @@ export default function RoomRoute() {
         </ResizablePanel>
       </ResizablePanelGroup>
 
-      <div className='absolute top-2 left-1/2 -translate-x-1/2 flex gap-2'>
+      <div className='absolute top-2 left-1/2 -translate-x-1/2 flex gap-2 z-30'>
         <Button
           onClick={handleExecuteCode}
           variant={'outline'}
@@ -264,6 +254,12 @@ export default function RoomRoute() {
           </div>
         )}
       </div>
+
+      {isConnected && (
+        <div className='absolute bottom-4 left-4'>
+          <VideoCall showVideo={isVideoCall} />
+        </div>
+      )}
     </div>
   );
 }
