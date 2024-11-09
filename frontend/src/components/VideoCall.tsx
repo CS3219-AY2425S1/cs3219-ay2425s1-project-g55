@@ -108,7 +108,7 @@ const VideoCall: React.FC<VideoCallProps> = ({ showVideo }) => {
     <div className='video-call flex items-center gap-2'>
       {showVideo && (
         <div
-          className="video-container flex gap-2 items-center"
+          className="video-container flex gap-2 items-center z-20"
         >
           <div
             className="local-video-wrapper"
