@@ -1,6 +1,7 @@
-import { BACKEND_WEBSOCKET_ROOM } from '@/lib/common';
-import { useEffect, useRef, useState } from 'react';
-import { z } from 'zod';
+import { BACKEND_WEBSOCKET_ROOM } from "@/lib/common";
+import { getToken } from "@/lib/utils";
+import { useEffect, useRef, useState } from "react";
+import { z } from "zod";
 
 const roomSchema = z.object({
   roomId: z.string(),
@@ -13,7 +14,7 @@ const roomSchema = z.object({
 export type Room = z.infer<typeof roomSchema>;
 
 const participantMessageSchema = z.object({
-  type: z.enum(['ENTERED_ROOM', 'EXIT_ROOM', 'RECONNECTED']),
+  type: z.enum(["ENTERED_ROOM", "EXIT_ROOM", "RECONNECTED"]),
   userId: z.string(),
   timestamp: z.number(),
   activeParticipants: z.array(z.string()),
@@ -74,47 +75,48 @@ const useParticipantWebSocket = ({
     const initializeWebSocket = async () => {
       while (cleanupIsInProgressRef.current) {
         console.log(
-          'Websocket cleanup in progress. Waiting for cleanup to complete...'
+          "Websocket cleanup in progress. Waiting for cleanup to complete..."
         );
         await new Promise((resolve) => setTimeout(resolve, 200));
       }
 
       try {
+        const token = getToken();
         wsRef.current = new WebSocket(
-          `${BACKEND_WEBSOCKET_ROOM}/${roomId}?userId=${userId}`
+          `${BACKEND_WEBSOCKET_ROOM}/${roomId}?token=${token}`
         );
 
         wsRef.current.onopen = () => {
           setIsConnected(true);
-          console.log('WebSocket connected');
+          console.log("WebSocket connected");
         };
 
         wsRef.current.onmessage = (event) => {
           try {
-            console.log('Received message:', event.data);
+            console.log("Received message:", event.data);
             const jsonMessage = JSON.parse(event.data);
             const parsedMessage = participantMessageSchema.parse(jsonMessage);
             setActiveParticipants(parsedMessage.activeParticipants);
 
-            if (parsedMessage.type === 'ENTERED_ROOM') {
+            if (parsedMessage.type === "ENTERED_ROOM") {
               onEnteredRoom?.(parsedMessage.userId);
-            } else if (parsedMessage.type === 'EXIT_ROOM') {
+            } else if (parsedMessage.type === "EXIT_ROOM") {
               onExitRoom?.(parsedMessage.userId);
-            } else if (parsedMessage.type === 'RECONNECTED') {
+            } else if (parsedMessage.type === "RECONNECTED") {
               onReconnected?.(parsedMessage.userId);
             }
           } catch (error) {
-            console.error('Error parsing WebSocket message:', error);
+            console.error("Error parsing WebSocket message:", error);
           }
         };
 
         wsRef.current.onerror = (error) => {
-          console.error('WebSocket error:', error);
+          console.error("WebSocket error:", error);
         };
 
         wsRef.current.onclose = (event: CloseEvent) => {
           setIsConnected(false);
-          console.log('WebSocket connection closed:', {
+          console.log("WebSocket connection closed:", {
             wasClean: event.wasClean,
             code: event.code,
             reason: event.reason,
@@ -125,7 +127,7 @@ const useParticipantWebSocket = ({
           const shouldNotReconnectIfUserIsConnectingFromElsewhere =
             event.wasClean &&
             event.code === 1000 &&
-            event.reason.includes('User is connecting a second time');
+            event.reason.includes("User is connecting a second time");
 
           if (shouldNotReconnectIfUserIsConnectingFromElsewhere) {
             shouldReconnectRef.current = false;
@@ -133,7 +135,7 @@ const useParticipantWebSocket = ({
           cleanupIsInProgressRef.current = false;
         };
       } catch (error) {
-        console.error('Error initializing WebSocket:', error);
+        console.error("Error initializing WebSocket:", error);
         cleanupIsInProgressRef.current = false;
       }
     };

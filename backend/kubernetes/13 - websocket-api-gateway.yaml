@@ -4,8 +4,6 @@ metadata:
   name: websocket-api-gateway
   namespace: g55
   annotations:
-    nginx.ingress.kubernetes.io/auth-url: "http://user-service.g55.svc.cluster.local:8080/api/auth/verify-token"
-    nginx.ingress.kubernetes.io/auth-response-headers: "X-User-Id,X-User-Email,X-User-Name,X-User-Is-Admin"
     nginx.ingress.kubernetes.io/enable-cors: "true"
     nginx.ingress.kubernetes.io/cors-allow-origin: "http://localhost:5173"
     nginx.ingress.kubernetes.io/enable-websocket: "true"

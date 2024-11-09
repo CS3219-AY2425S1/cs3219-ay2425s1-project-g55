@@ -35,9 +35,10 @@ export default function DiscussRoute() {
   }, []);
 
   const setupWebSocket = async () => {
+    const accessToken = getToken() || "";
     return new Promise((resolve, reject) => {
       ws.current = new WebSocket(
-        `${BACKEND_WEBSOCKET_MATCHING}?userId=${userId}`
+        `${BACKEND_WEBSOCKET_MATCHING}?token=${accessToken}`
       );
 
       ws.current.onopen = () => {
