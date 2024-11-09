@@ -70,7 +70,7 @@ const MonacoEditor = ({
   questionId: number;
 }) => {
   return (
-    <div className='flex flex-col h-full gap-4'>
+    <div className='flex flex-col h-full gap-4 pt-2'>
       <div className='flex-grow'>
         <Editor
           defaultLanguage='typescript'

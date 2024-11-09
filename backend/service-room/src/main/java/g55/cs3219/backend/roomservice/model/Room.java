@@ -2,6 +2,7 @@ package g55.cs3219.backend.roomservice.model;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.ArrayList;
 
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
@@ -30,7 +31,7 @@ public class Room {
 
   @Column(nullable = false)
   @JdbcTypeCode(SqlTypes.JSON)
-  private List<String> participants;
+  private List<Participant> participants = new ArrayList<>();
 
   @Column(nullable = false)
   private Integer questionId;

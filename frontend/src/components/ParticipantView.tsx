@@ -1,7 +1,8 @@
 import { Badge } from '@/components/ui/badge';
+import { RoomParticipant } from '@/hooks/useRoom';
 
 type ParticipantViewProps = {
-  allParticipants: string[];
+  allParticipants: RoomParticipant[];
   activeParticipants: string[];
   isConnected: boolean;
 };
@@ -23,20 +24,22 @@ export default function ParticipantView({
       </div>
       <div className='space-y-2'>
         {allParticipants.map((participant) => (
-          <div key={participant} className='flex items-center gap-2'>
+          <div key={participant.userId} className='flex items-center gap-2'>
             <div
               className={`w-2 h-2 rounded-full ${
-                activeParticipants.includes(participant)
+                activeParticipants.includes(participant.userId)
                   ? 'bg-primary'
                   : 'bg-gray-300'
               }`}
             />
             <span
               className={
-                activeParticipants.includes(participant) ? '' : 'text-gray-400'
+                activeParticipants.includes(participant.userId)
+                  ? ''
+                  : 'text-gray-400'
               }
             >
-              {participant}
+              {participant.username}
             </span>
           </div>
         ))}

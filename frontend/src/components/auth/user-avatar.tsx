@@ -1,41 +1,62 @@
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Badge } from '@/components/ui/badge';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { useAuth } from "@/hooks/auth/useAuth";
+} from '@/components/ui/dropdown-menu';
+import { AuthUser } from '@/hooks/auth/useAuth';
+import { LogOut, User } from 'lucide-react';
 
 export function UserMenuAvatar({
   onProfileClick,
+  user,
+  onLogout,
 }: {
   onProfileClick: () => void;
+  user: AuthUser;
+  onLogout: () => void;
 }) {
-  const auth = useAuth();
+  const { email, userName, role } = user;
+  const firstLetter = userName.charAt(0).toUpperCase();
 
   return (
+    <>
+      <DropdownMenu>
+        <DropdownMenuTrigger>
+          <Avatar>
+            <AvatarFallback>{firstLetter}</AvatarFallback>
+          </Avatar>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent className='w-56 py-4'>
+          <DropdownMenuLabel className='text-base'>
+            <div className='flex flex-col gap-2 pb-4'>
+              <Badge variant='outline' className='w-min rounded-md'>
+                {role.toUpperCase()}
+              </Badge>
+              <div className='flex flex-col gap-1 pl-1'>
+                <div className='text-md'>{userName}</div>
+                <div className='text-sm text-muted-foreground font-normal'>
+                  {email}
+                </div>
+              </div>
+            </div>
+          </DropdownMenuLabel>
 
-<>
-    <DropdownMenu>
-      <DropdownMenuTrigger>
-        <Avatar>
-          <AvatarImage
-            src='https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?fm=jpg&q=60&w=3000&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8cHJvZmlsZXxlbnwwfHwwfHx8MA%3D%3D'
-            alt='@john'
-          />
-          <AvatarFallback>JD</AvatarFallback>
-        </Avatar>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent>
-        <DropdownMenuItem style={{ backgroundColor: 'lightgrey' }} disabled>
-          {auth?.user?.email}
-        </DropdownMenuItem>
-        <DropdownMenuItem onClick={onProfileClick}>Profile</DropdownMenuItem>
-        <DropdownMenuItem onClick={auth?.logout}>Logout</DropdownMenuItem>
-      </DropdownMenuContent>
-    </DropdownMenu>
-</>
-
+          <DropdownMenuSeparator />
+          <DropdownMenuItem onClick={onProfileClick}>
+            <User className='w-4 h-4 mr-2' />
+            Profile
+          </DropdownMenuItem>
+          <DropdownMenuItem onClick={onLogout}>
+            <LogOut className='w-4 h-4 mr-2' />
+            Logout
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+    </>
   );
 }

@@ -90,6 +90,7 @@ export function AuthLoginForm({
           />
           <div className="flex justify-end">
             <Button
+              type='button'
               variant="link"
               onClick={onForgotPassword}
               className="text-sm underline"

@@ -225,7 +225,7 @@ const CollaborativeEditor: React.FC<CollaborativeEditorProps> = ({
   }, [ydoc, provider, editor, userName]);
 
   return (
-    <div className=''>
+    <div className='pt-2'>
       {/* It's not possible to pass in tailwind classes to the beforeContentClassname
       so we need to use inline styles to style the cursor. */}
       <style>

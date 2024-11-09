@@ -12,6 +12,7 @@ import org.springframework.stereotype.Component;
 
 import g55.cs3219.backend.matchingservice.model.MatchFoundEvent;
 import g55.cs3219.backend.matchingservice.model.MatchingRequest;
+import g55.cs3219.backend.matchingservice.model.RoomParticipant;
 
 @Component
 public class MatchingConsumer {
@@ -45,11 +46,14 @@ public class MatchingConsumer {
             notificationService.notifyMatched(request.getUserId(), matchedUser.getUserId(), roomId);
             notificationService.notifyMatched(matchedUser.getUserId(), request.getUserId(), roomId);
 
-            List<String> participantIds = Arrays.asList(request.getUserId(), matchedUser.getUserId());
+            List<RoomParticipant> participants = Arrays.asList(
+                    new RoomParticipant(request.getUserId(), request.getUsername()),
+                    new RoomParticipant(matchedUser.getUserId(), matchedUser.getUsername()));
+
             Integer questionId = matchingService.getQuestionIdForMatchRequest(request);
             System.out.println("Sending match found event for room " + roomId + " with participants "
-                    + participantIds + " and question id " + questionId);
-            matchFoundProducer.sendMatchFoundEvent(new MatchFoundEvent(roomId, participantIds, questionId));
+                    + participants + " and question id " + questionId);
+            matchFoundProducer.sendMatchFoundEvent(new MatchFoundEvent(roomId, participants, questionId));
         } else {
             // No immediate match, start timeout
             startMatchingTimeout(request);

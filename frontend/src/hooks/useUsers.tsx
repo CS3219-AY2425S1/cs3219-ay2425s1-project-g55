@@ -7,6 +7,7 @@ import {
 } from "@/types/user";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { getToken } from "@/lib/utils";
+import { useAuth } from "@/hooks/auth/useAuth";
 
 interface RawUser {
   id: string;
@@ -49,6 +50,7 @@ export function useUsers() {
 
 export function useUpdateUser() {
   const queryClient = useQueryClient();
+  const auth = useAuth();
 
   return useMutation({
     mutationFn: async (data: UserUpdateData) => {
@@ -81,7 +83,7 @@ export function useUpdateUser() {
 
       return UserSchema.parse(transformedData);
     },
-    onSuccess: (data) => {
+    onSuccess: async (data) => {
       // Print the cached data for debugging
       console.log(
         "Cached data for 'user':",
@@ -96,6 +98,7 @@ export function useUpdateUser() {
         "Cached data for 'user':",
         queryClient.getQueryData(["user", data.id])
       );
+      await auth?.refreshAuth();
     },
   });
 }

@@ -6,7 +6,10 @@ import { z } from "zod";
 const roomSchema = z.object({
   roomId: z.string(),
   expiryTime: z.number(),
-  participants: z.array(z.string()),
+  participants: z.array(z.object({
+    userId: z.string(),
+    username: z.string(),
+  })),
   questionId: z.number(),
   status: z.string(),
 });

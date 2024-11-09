@@ -21,7 +21,7 @@ public class MatchFoundEvent {
   /**
    * The participant ids
    */
-  private List<String> participantIds;
+  private List<RoomParticipant> participants;
 
   /**
    * The question id

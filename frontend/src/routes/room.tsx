@@ -34,6 +34,8 @@ import {
 import { useParams } from "react-router-dom";
 import { toast } from "sonner";
 import { getToken } from "@/lib/utils";
+import { Skeleton } from '@/components/ui/skeleton';
+
 
 export default function RoomRoute() {
   const [editorCode, setEditorCode] = useState<string>(
@@ -41,20 +43,51 @@ export default function RoomRoute() {
   );
   const { roomId } = useParams<{ roomId: string }>();
   const { isLoading, data, error } = useRoom(roomId);
+
+  const room = data;
+  const questionId = room?.questionId;
+
   const auth = useAuth();
   const { activeParticipants, isConnected, disconnect } =
     useParticipantWebsocket({
       roomId,
       userId: auth?.user?.userId?.toString(),
-      onEnteredRoom: useCallback((userId: string) => {
-        toast(`User ${userId} entered the room`);
-      }, []),
-      onExitRoom: useCallback((userId: string) => {
-        toast(`User ${userId} exited the room`);
-      }, []),
-      onReconnected: useCallback((userId: string) => {
-        toast(`User ${userId} reconnected`);
-      }, []),
+      onEnteredRoom: useCallback(
+        (userId: string) => {
+          if (!room) {
+            return;
+          }
+          const username = room?.participants.find(
+            (participant) => participant.userId === userId
+          )?.username;
+          toast(`User ${username} entered the room`);
+        },
+        [room]
+      ),
+      onExitRoom: useCallback(
+        (userId: string) => {
+          if (!room) {
+            return;
+          }
+          const username = room?.participants.find(
+            (participant) => participant.userId === userId
+          )?.username;
+          toast(`User ${username} exited the room`);
+        },
+        [room]
+      ),
+      onReconnected: useCallback(
+        (userId: string) => {
+          if (!room) {
+            return;
+          }
+          const username = room?.participants.find(
+            (participant) => participant.userId === userId
+          )?.username;
+          toast(`User ${username} reconnected`);
+        },
+        [room]
+      ),
       onDisconnected: useCallback(() => {
         toast("You have been disconnected from the room");
       }, []),
@@ -94,15 +127,20 @@ export default function RoomRoute() {
   }
 
   if (isLoading) {
-    return <div>Loading...</div>;
+    return (
+      <div className='w-full h-full px-4 py-2'>
+        <Skeleton className='w-full h-full' />
+      </div>
+    );
   }
 
   if (error) {
     return <div>Error: {error.message}</div>;
   }
 
-  const room = data!;
-  const questionId = room.questionId;
+  if (!room || !questionId) {
+    return <div>No room or question ID</div>;
+  }
 
   if (isNaN(questionId)) {
     return <div>Invalid question ID</div>;
@@ -121,10 +159,10 @@ export default function RoomRoute() {
     <div className="border rounded-lg overflow-hidden h-full w-full">
       <ResizablePanelGroup direction="horizontal">
         {/* Tabs Panel */}
-        <ResizablePanel defaultSize={30} className="">
-          <Tabs defaultValue="participants">
-            <TabsList className="w-full">
-              <TabsTrigger value="participants" className="flex-1">
+        <ResizablePanel defaultSize={30} className='' minSize={30}>
+          <Tabs defaultValue='participants'>
+            <TabsList className='w-full'>
+              <TabsTrigger value='participants' className='flex-1'>
                 Participants
               </TabsTrigger>
               <TabsTrigger value="question" className="flex-1">
@@ -158,18 +196,8 @@ export default function RoomRoute() {
         </ResizablePanel>
 
         <ResizableHandle withHandle />
-
-        {/* Video Call Panel */}
-
-        {isConnected && (
-          <div className="absolute bottom-4 left-4">
-            <VideoCall showVideo={isVideoCall} />
-          </div>
-        )}
-        <ResizableHandle withHandle />
-
         {/* Collaborative Editor Panel */}
-        <ResizablePanel>
+        <ResizablePanel defaultSize={70}>
           {isConnected ? (
             <CollaborativeEditor
               initialValue={editorCode}
@@ -192,7 +220,7 @@ export default function RoomRoute() {
         </ResizablePanel>
       </ResizablePanelGroup>
 
-      <div className="absolute top-2 left-1/2 -translate-x-1/2 flex gap-2">
+      <div className='absolute top-2 left-1/2 -translate-x-1/2 flex gap-2 z-30'>
         <Button
           onClick={handleExecuteCode}
           variant={"outline"}
@@ -232,6 +260,12 @@ export default function RoomRoute() {
           </div>
         )}
       </div>
+
+      {isConnected && (
+        <div className='absolute bottom-4 left-4'>
+          <VideoCall showVideo={isVideoCall} />
+        </div>
+      )}
     </div>
   );
 }
