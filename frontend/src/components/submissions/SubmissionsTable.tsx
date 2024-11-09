@@ -168,7 +168,7 @@ export function SubmissionsTable({
   return (
     <div className="container mx-auto p-4">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold">Submissions</h1>
+        <h1 className="text-2xl font-bold">Submissions</h1>
       </div>
       <div className="relative overflow-x-auto shadow-md sm:rounded-lg">
         <div className="max-h-[70vh] overflow-y-auto">

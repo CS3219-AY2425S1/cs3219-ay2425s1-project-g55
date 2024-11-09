@@ -11,7 +11,7 @@ export default function CodeExecutionView({
     return (
       <Card className='h-screen overflow-scroll'>
         <CardHeader className='p-4'>
-          <CardTitle className='text-sm text-muted-foreground'>
+          <CardTitle className='text-2xl font-bold'>
             Code Execution Results
           </CardTitle>
         </CardHeader>
@@ -28,11 +28,11 @@ export default function CodeExecutionView({
     <Card className='h-[85vh] overflow-scroll'>
       <CardHeader className='p-4'>
         <CardTitle className='text-sm'>
-          Code Execution Results
-          <span className='ml-2 text-xs text-muted-foreground'>
+          <div className='text-2xl font-bold'>Code Execution Results</div>
+          <div className='ml-2 text-xs text-muted-foreground'>
             ({(response.executionTime / 1000).toFixed(2)}
             s, {Math.round(response.memoryUsage / 1024)}KB)
-          </span>
+          </div>
         </CardTitle>
       </CardHeader>
       <CardContent className=''>
