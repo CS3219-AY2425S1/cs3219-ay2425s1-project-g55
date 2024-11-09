@@ -39,7 +39,7 @@ export default function Navbar() {
   const handleDialogClose = () => setOpen(false);
 
   return (
-    <nav className='col-span-12 bg-background h-14'>
+    <nav className='col-span-12 bg-background h-14 z-20'>
       <div className='mx-auto px-4 sm:px-6 lg:px-8'>
         <div className='flex justify-between h-14'>
           <div className='flex'>

@@ -33,6 +33,7 @@ import {
 } from 'lucide-react';
 import { useParams } from 'react-router-dom';
 import { toast } from 'sonner';
+import { Skeleton } from '@/components/ui/skeleton';
 
 export default function RoomRoute() {
   const [editorCode, setEditorCode] = useState<string>(
@@ -124,7 +125,11 @@ export default function RoomRoute() {
   }
 
   if (isLoading) {
-    return <div>Loading...</div>;
+    return (
+      <div className='w-full h-full px-4 py-2'>
+        <Skeleton className='w-full h-full' />
+      </div>
+    );
   }
 
   if (error) {
@@ -152,7 +157,7 @@ export default function RoomRoute() {
     <div className='border rounded-lg overflow-hidden h-full w-full'>
       <ResizablePanelGroup direction='horizontal'>
         {/* Tabs Panel */}
-        <ResizablePanel defaultSize={30} className=''>
+        <ResizablePanel defaultSize={30} className='' minSize={30}>
           <Tabs defaultValue='participants'>
             <TabsList className='w-full'>
               <TabsTrigger value='participants' className='flex-1'>
@@ -190,17 +195,8 @@ export default function RoomRoute() {
 
         <ResizableHandle withHandle />
 
-        {/* Video Call Panel */}
-
-        {isConnected && (
-          <div className='absolute bottom-4 left-4'>
-            <VideoCall showVideo={isVideoCall} />
-          </div>
-        )}
-        <ResizableHandle withHandle />
-
         {/* Collaborative Editor Panel */}
-        <ResizablePanel>
+        <ResizablePanel defaultSize={70}>
           {isConnected ? (
             <CollaborativeEditor
               initialValue={editorCode}
@@ -223,7 +219,7 @@ export default function RoomRoute() {
         </ResizablePanel>
       </ResizablePanelGroup>
 
-      <div className='absolute top-2 left-1/2 -translate-x-1/2 flex gap-2'>
+      <div className='absolute top-2 left-1/2 -translate-x-1/2 flex gap-2 z-30'>
         <Button
           onClick={handleExecuteCode}
           variant={'outline'}
@@ -263,6 +259,12 @@ export default function RoomRoute() {
           </div>
         )}
       </div>
+
+      {isConnected && (
+        <div className='absolute bottom-4 left-4'>
+          <VideoCall showVideo={isVideoCall} />
+        </div>
+      )}
     </div>
   );
 }
