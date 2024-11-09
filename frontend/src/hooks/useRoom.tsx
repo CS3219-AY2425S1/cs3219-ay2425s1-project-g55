@@ -3,10 +3,15 @@ import { BACKEND_URL_ROOM } from "@/lib/common";
 import { getToken } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
 
+export interface RoomParticipant {
+  userId: string;
+  username: string;
+}
+
 interface Room {
   roomId: string;
   expiryTime: number; // ISO timestamp number
-  participants: string[];
+  participants: RoomParticipant[];
   questionId: number;
   status: "OPEN" | "CLOSED" | "EXPIRED";
 }
