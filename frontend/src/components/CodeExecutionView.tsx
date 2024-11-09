@@ -1,6 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { CodeExecutionResponse } from '@/hooks/useExecuteCode';
 import { cn } from '@/lib/utils';
+import { Code, PlayIcon } from 'lucide-react';
 
 export default function CodeExecutionView({
   response,
@@ -16,8 +17,9 @@ export default function CodeExecutionView({
           </CardTitle>
         </CardHeader>
         <CardContent className='p-4'>
-          <div className='flex items-center justify-center h-full text-muted-foreground italic'>
-            You must run your code first
+          <div className='flex flex-col gap-3 items-center justify-center h-40 text-muted-foreground'>
+            <Code className='h-8 w-8 mr-2 text-muted-foreground' />
+            <div>You must run your code first</div>
           </div>
         </CardContent>
       </Card>
@@ -29,8 +31,8 @@ export default function CodeExecutionView({
       <CardHeader className='p-4'>
         <CardTitle className='text-sm'>
           <div className='text-2xl font-bold'>Code Execution Results</div>
-          <div className='ml-2 text-xs text-muted-foreground'>
-            ({(response.executionTime / 1000).toFixed(2)}
+          <div className='text-xs text-muted-foreground mt-4'>
+            Usage: ({(response.executionTime / 1000).toFixed(2)}
             s, {Math.round(response.memoryUsage / 1024)}KB)
           </div>
         </CardTitle>

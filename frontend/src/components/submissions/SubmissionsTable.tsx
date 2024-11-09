@@ -1,27 +1,27 @@
-import { useState } from 'react';
-import { useQuestion } from '@/hooks/useQuestion';
-import { useAllSubmissions, useSubmissions } from '@/hooks/useSubmissions';
-import {
-  Table,
-  TableHeader,
-  TableBody,
-  TableRow,
-  TableCell,
-  TableHead,
-} from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogDescription,
 } from '@/components/ui/dialog';
-import { Link } from 'react-router-dom';
-import { Loader2 } from 'lucide-react';
+import { Skeleton } from '@/components/ui/skeleton';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+import { useQuestion } from '@/hooks/useQuestion';
+import { useAllSubmissions, useSubmissions } from '@/hooks/useSubmissions';
 import { Submission } from '@/types/submission';
-import { Copy } from 'lucide-react';
+import { Copy, FileX2 } from 'lucide-react';
+import { useState } from 'react';
+import { Link } from 'react-router-dom';
 
 type VisibleColumns = {
   id?: boolean;
@@ -158,9 +158,8 @@ export function SubmissionsTable({
 
   if (isLoading) {
     return (
-      <div className="flex flex-col items-center justify-center h-full">
-        <Loader2 className="w-8 h-8 animate-spin" />
-        <p className="mt-2">Loading submissions...</p>
+      <div className="flex flex-col items-center justify-center h-full px-2">
+        <Skeleton className="mt-2 w-full h-full" />
       </div>
     );
   }
@@ -170,7 +169,7 @@ export function SubmissionsTable({
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">Submissions</h1>
       </div>
-      <div className="relative overflow-x-auto shadow-md sm:rounded-lg">
+      <div className="relative overflow-x-auto shadow-sm sm:rounded-lg">
         <div className="max-h-[70vh] overflow-y-auto">
           <Table>
             <TableHeader>
@@ -196,6 +195,18 @@ export function SubmissionsTable({
               </TableRow>
             </TableHeader>
             <TableBody>
+              {submissions?.length === 0 && (
+                <TableRow>
+                  <TableCell
+                    colSpan={Object.keys(visibleColumns).length}
+                    className="text-center text-muted-foreground h-80"
+                  >
+                    <FileX2 className="w-12 h-12 mx-auto mb-2 text-muted-foreground" />
+                    No submissions found. <br /> Submit your code to see your results.
+                  </TableCell>
+                </TableRow>
+              )}
+
               {submissions?.map((submission) => (
                 <SubmissionRow
                   key={submission.id}

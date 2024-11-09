@@ -13,6 +13,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import { Badge } from '@/components/ui/badge';
 import { Button, buttonVariants } from '@/components/ui/button';
+import { Skeleton } from '@/components/ui/skeleton';
 import { useAuth } from '@/hooks/auth/useAuth';
 import {
   useDeleteQuestion,
@@ -158,9 +159,8 @@ export default function QuestionView({ id }: QuestionViewProps) {
 
   if (isLoading || !question) {
     return (
-      <div className="flex flex-col items-center justify-center h-full">
-        <Loader2 className="w-8 h-8 animate-spin" />
-        <p className="mt-2">Loading...</p>
+      <div className="flex flex-col items-center justify-center h-full px-2">
+        <Skeleton className="mt-2 w-full h-80" />
       </div>
     );
   }

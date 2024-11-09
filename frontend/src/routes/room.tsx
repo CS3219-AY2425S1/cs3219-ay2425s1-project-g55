@@ -33,6 +33,7 @@ import {
 } from 'lucide-react';
 import { useParams } from 'react-router-dom';
 import { toast } from 'sonner';
+import { Skeleton } from '@/components/ui/skeleton';
 
 export default function RoomRoute() {
   const [editorCode, setEditorCode] = useState<string>(
@@ -124,7 +125,11 @@ export default function RoomRoute() {
   }
 
   if (isLoading) {
-    return <div>Loading...</div>;
+    return (
+      <div className='w-full h-full px-4 py-2'>
+        <Skeleton className='w-full h-full' />
+      </div>
+    );
   }
 
   if (error) {
