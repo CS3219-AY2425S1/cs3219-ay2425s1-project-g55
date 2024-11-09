@@ -33,9 +33,7 @@ import {
 } from "lucide-react";
 import { useParams } from "react-router-dom";
 import { toast } from "sonner";
-import { getToken } from "@/lib/utils";
-import { Skeleton } from '@/components/ui/skeleton';
-
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function RoomRoute() {
   const [editorCode, setEditorCode] = useState<string>(
@@ -128,8 +126,8 @@ export default function RoomRoute() {
 
   if (isLoading) {
     return (
-      <div className='w-full h-full px-4 py-2'>
-        <Skeleton className='w-full h-full' />
+      <div className="w-full h-full px-4 py-2">
+        <Skeleton className="w-full h-full" />
       </div>
     );
   }
@@ -159,10 +157,10 @@ export default function RoomRoute() {
     <div className="border rounded-lg overflow-hidden h-full w-full">
       <ResizablePanelGroup direction="horizontal">
         {/* Tabs Panel */}
-        <ResizablePanel defaultSize={30} className='' minSize={30}>
-          <Tabs defaultValue='participants'>
-            <TabsList className='w-full'>
-              <TabsTrigger value='participants' className='flex-1'>
+        <ResizablePanel defaultSize={30} className="" minSize={30}>
+          <Tabs defaultValue="participants">
+            <TabsList className="w-full">
+              <TabsTrigger value="participants" className="flex-1">
                 Participants
               </TabsTrigger>
               <TabsTrigger value="question" className="flex-1">
@@ -202,7 +200,7 @@ export default function RoomRoute() {
             <CollaborativeEditor
               initialValue={editorCode}
               roomName={roomId}
-              websocketUrl={`${BACKEND_WEBSOCKET_COLLABORATIVE_EDITOR}?token=${getToken()}`}
+              websocketUrl={`${BACKEND_WEBSOCKET_COLLABORATIVE_EDITOR}`}
               userName={auth.user.userName}
               onChange={(value: string | undefined) =>
                 setEditorCode(value ?? "")
@@ -220,7 +218,7 @@ export default function RoomRoute() {
         </ResizablePanel>
       </ResizablePanelGroup>
 
-      <div className='absolute top-2 left-1/2 -translate-x-1/2 flex gap-2 z-30'>
+      <div className="absolute top-2 left-1/2 -translate-x-1/2 flex gap-2 z-30">
         <Button
           onClick={handleExecuteCode}
           variant={"outline"}
@@ -262,7 +260,7 @@ export default function RoomRoute() {
       </div>
 
       {isConnected && (
-        <div className='absolute bottom-4 left-4'>
+        <div className="absolute bottom-4 left-4">
           <VideoCall showVideo={isVideoCall} />
         </div>
       )}
