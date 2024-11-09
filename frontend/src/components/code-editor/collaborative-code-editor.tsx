@@ -1,9 +1,10 @@
-import Editor from '@monaco-editor/react';
-import * as monaco from 'monaco-editor';
-import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { MonacoBinding } from 'y-monaco';
-import { WebsocketProvider } from 'y-websocket';
-import * as Y from 'yjs';
+import { getToken } from "@/lib/utils";
+import Editor from "@monaco-editor/react";
+import * as monaco from "monaco-editor";
+import React, { useEffect, useMemo, useRef, useState } from "react";
+import { MonacoBinding } from "y-monaco";
+import { WebsocketProvider } from "y-websocket";
+import * as Y from "yjs";
 
 interface CollaborativeEditorProps {
   initialValue?: string;
@@ -20,9 +21,9 @@ interface EditorCursorWidget extends monaco.editor.IContentWidget {
 }
 
 const CollaborativeEditor: React.FC<CollaborativeEditorProps> = ({
-  initialValue = '// some comment',
-  language = 'typescript',
-  theme = 'vs-light',
+  initialValue = "// some comment",
+  language = "typescript",
+  theme = "vs-light",
   roomName,
   websocketUrl,
   onChange,
@@ -38,7 +39,9 @@ const CollaborativeEditor: React.FC<CollaborativeEditorProps> = ({
 
   // this effect manages the lifetime of the Yjs document and the provider
   useEffect(() => {
-    const provider = new WebsocketProvider(websocketUrl, roomName, ydoc);
+    const provider = new WebsocketProvider(websocketUrl, roomName, ydoc, {
+      params: { token: getToken() || "" },
+    });
     const awareness = provider.awareness;
     setProvider(provider);
     return () => {
@@ -54,7 +57,7 @@ const CollaborativeEditor: React.FC<CollaborativeEditorProps> = ({
     if (provider == null || editor == null) {
       return;
     }
-    console.log('reached', provider);
+    console.log("reached", provider);
     const awareness = provider.awareness;
 
     const binding = new MonacoBinding(
@@ -66,19 +69,19 @@ const CollaborativeEditor: React.FC<CollaborativeEditorProps> = ({
     setBinding(binding);
 
     // Set the current user to awareness
-    awareness.setLocalStateField('user', {
+    awareness.setLocalStateField("user", {
       name: userName,
     });
 
     // Send cursor and selection state to awareness
     const disposable1 = editor.onDidChangeCursorPosition((e) => {
-      awareness.setLocalStateField('cursor', {
+      awareness.setLocalStateField("cursor", {
         column: e.position.column,
         lineNumber: e.position.lineNumber,
       });
     });
     const disposable2 = editor.onDidChangeCursorSelection((e) => {
-      awareness.setLocalStateField('selection', {
+      awareness.setLocalStateField("selection", {
         startColumn: e.selection.startColumn,
         startLineNumber: e.selection.startLineNumber,
         endColumn: e.selection.endColumn,
@@ -91,15 +94,15 @@ const CollaborativeEditor: React.FC<CollaborativeEditorProps> = ({
     // Monaco editor will use any object that implements EditorCursorWidget interface
     // and manage the position and lifecycle of the widget
     const creatCursorUserLabelWidget = (
-      name: string = 'Anonymous'
+      name: string = "Anonymous"
     ): EditorCursorWidget => ({
-      getId: () => 'cursor-widget',
+      getId: () => "cursor-widget",
       getDomNode: () => {
-        const element = document.createElement('div');
+        const element = document.createElement("div");
         element.className =
-          'px-2 py-1 text-xs text-white rounded-md whitespace-nowrap bg-primary/80 -ml-2 pointer-events-none';
-        element.style.position = 'absolute';
-        element.style.zIndex = '100';
+          "px-2 py-1 text-xs text-white rounded-md whitespace-nowrap bg-primary/80 -ml-2 pointer-events-none";
+        element.style.position = "absolute";
+        element.style.zIndex = "100";
         element.textContent = name;
         return element;
       },
@@ -109,7 +112,7 @@ const CollaborativeEditor: React.FC<CollaborativeEditorProps> = ({
 
     // Listen to changes in awareness state
     awareness.on(
-      'change',
+      "change",
       ({ added, updated }: { added: number[]; updated: number[] }) => {
         const combinedClientIds = Array.from(new Set([...added, ...updated]));
 
@@ -146,9 +149,9 @@ const CollaborativeEditor: React.FC<CollaborativeEditorProps> = ({
                 stickiness:
                   monaco.editor.TrackedRangeStickiness
                     .NeverGrowsWhenTypingAtEdges,
-                beforeContentClassName: 'cursor-decoration',
+                beforeContentClassName: "cursor-decoration",
                 hoverMessage: {
-                  value: state?.user?.name ?? 'Anonymous',
+                  value: state?.user?.name ?? "Anonymous",
                 },
               },
             });
@@ -165,7 +168,7 @@ const CollaborativeEditor: React.FC<CollaborativeEditorProps> = ({
                   state.selection.endColumn
                 ),
                 options: {
-                  className: 'selection-decoration',
+                  className: "selection-decoration",
                   stickiness:
                     monaco.editor.TrackedRangeStickiness
                       .NeverGrowsWhenTypingAtEdges,
@@ -185,7 +188,7 @@ const CollaborativeEditor: React.FC<CollaborativeEditorProps> = ({
             const isCursorWidgetCreated = !!cursorUserLabelWidgetRef.current;
             if (!isCursorWidgetCreated) {
               const cursorWidget = creatCursorUserLabelWidget(
-                state?.user?.name ?? 'Anonymous'
+                state?.user?.name ?? "Anonymous"
               );
               editor.addContentWidget(cursorWidget);
               cursorUserLabelWidgetRef.current = cursorWidget;
@@ -225,7 +228,7 @@ const CollaborativeEditor: React.FC<CollaborativeEditorProps> = ({
   }, [ydoc, provider, editor, userName]);
 
   return (
-    <div className='pt-2'>
+    <div className="pt-2">
       {/* It's not possible to pass in tailwind classes to the beforeContentClassname
       so we need to use inline styles to style the cursor. */}
       <style>
@@ -246,7 +249,7 @@ const CollaborativeEditor: React.FC<CollaborativeEditorProps> = ({
         `}
       </style>
       <Editor
-        height='90vh'
+        height="90vh"
         defaultValue={initialValue}
         defaultLanguage={language}
         theme={theme}
