@@ -27,17 +27,33 @@ public class MatchingService {
     }
 
     public Optional<MatchingRequest> findMatch(MatchingRequest request) {
-        Optional<MatchingRequest> match = waitingUsers.values().stream()
+        // Priority 1: Exact match (same topic and difficulty)
+        Optional<MatchingRequest> exactMatch = waitingUsers.values().stream()
                 .filter(user -> user.getTopic().equals(request.getTopic())
                         && user.getDifficultyLevel().equals(request.getDifficultyLevel()))
                 .findFirst();
-        if (match.isPresent()) {
-            waitingUsers.remove(match.get().getUserId());
-            return match;
-        } else {
-            waitingUsers.put(request.getUserId(), request);
-            return Optional.empty();
+        
+        if (exactMatch.isPresent()) {
+            waitingUsers.remove(exactMatch.get().getUserId());
+            logger.info("Found exact match for user: " + request.getUserId());
+            return exactMatch;
         }
+
+        // Priority 2: Same topic, any difficulty
+        Optional<MatchingRequest> topicMatch = waitingUsers.values().stream()
+                .filter(user -> user.getTopic().equals(request.getTopic()))
+                .findFirst();
+
+        if (topicMatch.isPresent()) {
+            waitingUsers.remove(topicMatch.get().getUserId());
+            logger.info("Found topic match with different difficulty for user: " + request.getUserId());
+            return topicMatch;
+        }
+
+        // No match found, add to waiting pool
+        waitingUsers.put(request.getUserId(), request);
+        logger.info("No match found, added user to waiting pool: " + request.getUserId());
+        return Optional.empty();
     }
 
     public boolean removeFromWaiting(String userId) {
