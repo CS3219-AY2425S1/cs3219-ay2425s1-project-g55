@@ -14,9 +14,11 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAuth } from '@/hooks/auth/useAuth';
 import useExecuteCode, { CodeExecutionResponse } from '@/hooks/useExecuteCode';
 import { Loader2, PlayIcon } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { toast } from 'sonner';
+import LanguageSelector from '@/components/code-editor/language-selector';
+import { BOILERPLATE_CODES } from '@/lib/consts';
 
 export default function QuestionRoute() {
   const { questionId: questionIdString } = useParams<{ questionId: string }>();
@@ -25,9 +27,31 @@ export default function QuestionRoute() {
   const auth = useAuth();
   const userId = auth?.user?.userId;
 
+  const [selectedLanguage, setSelectedLanguage] = useState<keyof typeof BOILERPLATE_CODES>("typescript");
   const [editorCode, setEditorCode] = useState<string>(
-    '// Write your code here\n'
+    BOILERPLATE_CODES[selectedLanguage] || ''
   );
+  const [codeByLanguage, setCodeByLanguage] = useState<{ [key in keyof typeof BOILERPLATE_CODES]?: string }>({
+    typescript: BOILERPLATE_CODES.typescript,
+  });
+
+  const handleLanguageChange = (newLanguage: keyof typeof BOILERPLATE_CODES) => {
+    // Save the current code for the current language
+    setCodeByLanguage((prevCode) => ({
+      ...prevCode,
+      [selectedLanguage]: editorCode,
+    }));
+
+    // Set the new selected language
+    setSelectedLanguage(newLanguage);
+
+    // Load the code for the new language, or use boilerplate if not available
+    setEditorCode(codeByLanguage[newLanguage] || BOILERPLATE_CODES[newLanguage]);
+  };
+
+  useEffect(() => {
+    setEditorCode(codeByLanguage[selectedLanguage] || BOILERPLATE_CODES[selectedLanguage]);
+  }, [selectedLanguage, codeByLanguage]);
 
   const [codeExecutionResponse, setCodeExecutionResponse] = useState<
     CodeExecutionResponse | undefined
@@ -51,7 +75,7 @@ export default function QuestionRoute() {
   const handleExecuteCode = async () => {
     const result = await executeCodeMutation({
       code: editorCode,
-      language: 'typescript',
+      language: selectedLanguage,
     });
     setCodeExecutionResponse(result);
   };
@@ -103,26 +127,31 @@ export default function QuestionRoute() {
         <ResizableHandle withHandle />
         <ResizablePanel>
           <MonacoEditor
+            language={selectedLanguage}
             questionId={questionId}
             value={editorCode}
             onChange={(value: string | undefined) => setEditorCode(value ?? '')}
           />
         </ResizablePanel>
       </ResizablePanelGroup>
-
-      <Button
-        onClick={handleExecuteCode}
-        variant={'outline'}
-        disabled={isExecutingCode}
-        className='absolute top-2 left-1/2 -translate-x-1/2'
-      >
-        {isExecutingCode ? (
-          <Loader2 className='w-4 h-4 animate-spin mr-2' />
-        ) : (
-          <PlayIcon className='w-4 h-4 mr-2' />
-        )}
-        Run
-      </Button>
+      <div className='absolute top-2 left-1/2 -translate-x-1/2 flex space-x-2'>
+        <Button
+          onClick={handleExecuteCode}
+          variant={'outline'}
+          disabled={isExecutingCode}
+        >
+          {isExecutingCode ? (
+            <Loader2 className='w-4 h-4 animate-spin mr-2' />
+          ) : (
+            <PlayIcon className='w-4 h-4 mr-2' />
+          )}
+          Run
+        </Button>
+        <LanguageSelector
+          language={selectedLanguage}
+          onChange={handleLanguageChange}
+        />
+      </div>
     </div>
   );
 }

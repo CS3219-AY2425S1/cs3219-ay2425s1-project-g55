@@ -210,6 +210,7 @@ export default function RoomRoute() {
             <MonacoEditor
               questionId={questionId}
               value={editorCode}
+              language='typescript'
               onChange={(value: string | undefined) =>
                 setEditorCode(value ?? "")
               }
