@@ -1,7 +1,7 @@
-import { useAuth } from "@/hooks/auth/useAuth";
-import { BACKEND_URL_ROOM } from "@/lib/common";
-import { getToken } from "@/lib/utils";
-import { useQuery } from "@tanstack/react-query";
+import { useAuth } from '@/hooks/auth/useAuth';
+import { BACKEND_URL_ROOM } from '@/lib/common';
+import { getToken } from '@/lib/utils';
+import { useMutation, useQuery } from '@tanstack/react-query';
 
 export interface RoomParticipant {
   userId: string;
@@ -13,7 +13,7 @@ interface Room {
   expiryTime: number; // ISO timestamp number
   participants: RoomParticipant[];
   questionId: number;
-  status: "OPEN" | "CLOSED" | "EXPIRED";
+  status: 'OPEN' | 'CLOSED' | 'EXPIRED';
 }
 
 /**
@@ -23,14 +23,14 @@ interface Room {
 export function useRoom(roomId: string | undefined) {
   const auth = useAuth();
   return useQuery({
-    queryKey: ["room", roomId],
+    queryKey: ['room', roomId],
     queryFn: async (): Promise<Room> => {
       if (!roomId) {
-        throw new Error("Room ID is required");
+        throw new Error('Room ID is required');
       }
 
       if (!auth) {
-        throw new Error("useRoom must be used by an authenticated user");
+        throw new Error('useRoom must be used by an authenticated user');
       }
 
       console.log(`ID is ${roomId}`);
@@ -42,7 +42,7 @@ export function useRoom(roomId: string | undefined) {
       });
 
       if (!response.ok) {
-        throw new Error("Failed to fetch room");
+        throw new Error('Failed to fetch room');
       }
 
       const data = await response.json();
@@ -51,5 +51,31 @@ export function useRoom(roomId: string | undefined) {
     },
     // Don't fetch if no roomId is provided
     enabled: !!roomId,
+  });
+}
+
+export function useCloseRoom() {
+  const token = getToken();
+
+  return useMutation({
+    mutationFn: async (roomId: string) => {
+      if (!token) {
+        throw new Error('useCloseRoom must be used by an authenticated user');
+      }
+
+      const response = await fetch(`${BACKEND_URL_ROOM}/${roomId}/close`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        method: 'POST',
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to close room');
+      }
+
+      return await response.json();
+    },
+    // TODO: check if invalidating the query is a problem 
   });
 }

@@ -2,11 +2,14 @@ package g55.cs3219.backend.roomservice.service;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
+import g55.cs3219.backend.roomservice.event.RoomEventListener;
 import g55.cs3219.backend.roomservice.model.MatchFoundEvent;
 import g55.cs3219.backend.roomservice.model.Room;
 import g55.cs3219.backend.roomservice.model.RoomStatus;
@@ -15,14 +18,13 @@ import g55.cs3219.backend.roomservice.repository.RoomRepository;
 @Service
 public class RoomService {
   private final RoomRepository roomRepository;
-  // private final RoomWebSocketHandler webSocketHandler;
+  private final List<RoomEventListener> listeners = new ArrayList<>();
 
   private static final long DEFAULT_ROOM_DURATION_HOURS = 1;
   private static final Logger logger = LoggerFactory.getLogger(RoomService.class);
 
   public RoomService(RoomRepository roomRepository) {
     this.roomRepository = roomRepository;
-    // this.webSocketHandler = webSocketHandler;
   }
 
   public void handleMatchFoundEvent(MatchFoundEvent event) {
@@ -31,7 +33,6 @@ public class RoomService {
         event.getRoomId(),
         Instant.now().plus(DEFAULT_ROOM_DURATION_HOURS, ChronoUnit.HOURS),
         event.getParticipants(),
-        // TODO: Implement question selection logic
         event.getQuestionId(),
         false);
 
@@ -60,13 +61,24 @@ public class RoomService {
    * 
    * @param roomId
    */
-  public void closeRoom(String roomId) {
+  public void closeRoom(String roomId, String userWhoClosedRoomId) {
+    logger.info("Closing room: {}", roomId);
+    
     Room room = getRoom(roomId);
     room.setClosed(true);
     roomRepository.save(room);
+
+    logger.info("Notifying listeners");
+    // Notify all listeners
+    listeners.forEach(listener -> listener.onRoomClosed(roomId, userWhoClosedRoomId));
+    logger.info("Notified listeners");
   }
 
-  // public void broadcastToRoom(String roomId, String message) {
-  // webSocketHandler.broadcastToRoom(roomId, message);
-  // }
+  public void addListener(RoomEventListener listener) {
+    listeners.add(listener);
+  }
+
+  public void removeListener(RoomEventListener listener) {
+    listeners.remove(listener);
+  }
 }
