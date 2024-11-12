@@ -1,5 +1,6 @@
 package g55.cs3219.backend.roomservice.websocket;
 
+import java.io.IOException;
 import java.net.URI;
 import java.util.Map;
 import java.util.Optional;
@@ -21,12 +22,13 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
+import g55.cs3219.backend.roomservice.event.RoomEventListener;
 import g55.cs3219.backend.roomservice.model.ParticipantMessage;
 import g55.cs3219.backend.roomservice.model.RoomDTO;
 import g55.cs3219.backend.roomservice.service.RoomService;
 
 @Service
-public class RoomWebSocketHandler extends TextWebSocketHandler {
+public class RoomWebSocketHandler extends TextWebSocketHandler implements RoomEventListener {
   private static final Logger logger = LoggerFactory.getLogger(RoomWebSocketHandler.class);
   public static final String ROOM_URI_TEMPLATE = "/ws/rooms/{roomId}";
 
@@ -38,6 +40,8 @@ public class RoomWebSocketHandler extends TextWebSocketHandler {
 
   public RoomWebSocketHandler(RoomService roomService) {
     this.roomService = roomService;
+    // Register this class as a listener for room events
+    roomService.addListener(this);
   }
 
   @Override
@@ -200,6 +204,38 @@ public class RoomWebSocketHandler extends TextWebSocketHandler {
           logger.error("Error broadcasting message to session", e);
         }
       });
+    }
+  }
+
+  @Override
+  public void onRoomClosed(String roomId, String userWhoClosedRoomId) {
+    try {
+      // Broadcast room closed message
+      RoomDTO room = RoomDTO.fromRoom(roomService.getRoom(roomId));
+      ParticipantMessage message = ParticipantMessage.roomClosed(userWhoClosedRoomId, room);
+
+      logger.info("Broadcasting room closed message: {}", message);
+      broadcastToRoom(roomId, objectMapper.writeValueAsString(message));
+
+      // Sleep for 15 seconds first to allow all clients to receive the message
+      Thread.sleep(15000);
+
+      // Close all connections for this room
+      Map<String, SessionInfo> sessions = roomSessions.get(roomId);
+      if (sessions != null) {
+        sessions.values().forEach(sessionInfo -> {
+          try {
+            sessionInfo.getSession().close(new CloseStatus(1000, "Room has been closed"));
+          } catch (IOException e) {
+            logger.error("Error closing session", e);
+          }
+        });
+        roomSessions.remove(roomId);
+      }
+    } catch (JsonProcessingException e) {
+      logger.error("Error broadcasting room closed message", e);
+    } catch (InterruptedException e) {
+      logger.error("Error sleeping", e);
     }
   }
 }
