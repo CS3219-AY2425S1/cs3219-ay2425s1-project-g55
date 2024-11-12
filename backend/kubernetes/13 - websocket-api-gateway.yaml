@@ -6,11 +6,54 @@ metadata:
   annotations:
     nginx.ingress.kubernetes.io/enable-cors: "true"
     nginx.ingress.kubernetes.io/cors-allow-origin: "http://localhost:5173"
-    nginx.ingress.kubernetes.io/enable-websocket: "true"
+    nginx.ingress.kubernetes.io/configuration-snippet: |
+      set $auth_token $arg_token;
+
+      proxy_set_header Upgrade $http_upgrade;
+      proxy_set_header Connection "upgrade";
+
+      # Auth request configuration
+      auth_request /_auth_websocket;
+      
+      # Capture auth response headers
+      auth_request_set $auth_user_id $upstream_http_x_user_id;
+      auth_request_set $auth_user_email $upstream_http_x_user_email;
+      auth_request_set $auth_user_name $upstream_http_x_user_name;
+      auth_request_set $auth_user_is_admin $upstream_http_x_user_is_admin;
+      
+      # Forward these headers to the backend service
+      proxy_set_header X-User-Id $auth_user_id;
+      proxy_set_header X-User-Email $auth_user_email;
+      proxy_set_header X-User-Name $auth_user_name;
+      proxy_set_header X-User-Is-Admin $auth_user_is_admin;
+
+    nginx.ingress.kubernetes.io/server-snippet: |
+      # Define the auth location
+      location = /_auth_websocket {
+        internal;
+        proxy_pass http://user-service.g55.svc.cluster.local:8080/api/auth/verify-token;
+        
+        # Standard auth proxy settings
+        proxy_pass_request_body off;
+        proxy_set_header Content-Length "";
+        
+        # Forward original request details
+        proxy_set_header X-Original-URI $request_uri;
+        proxy_set_header X-Original-Method $request_method;
+        proxy_set_header Host $host;
+        
+        if ($auth_token = "") {
+          return 401;
+        }
+        
+        # Forward original headers that might be needed for auth
+        proxy_set_header Authorization "Bearer $auth_token";
+        proxy_pass_request_headers on;
+      }
+
     nginx.ingress.kubernetes.io/proxy-read-timeout: "3600"
     nginx.ingress.kubernetes.io/proxy-send-timeout: "3600"
     nginx.ingress.kubernetes.io/proxy-http-version: "1.1"
-    nginx.org/websocket-services: "matching-service,room-service,collaborative-editor-service"
 spec:
   rules:
     - host: localhost

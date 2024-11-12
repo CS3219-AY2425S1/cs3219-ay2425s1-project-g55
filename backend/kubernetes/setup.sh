@@ -3,6 +3,7 @@
 # Variables
 DOCKER_USERNAME="your_docker_username"
 NAMESPACE="g55"
+INGRESS_NAMESPACE="ingress-nginx"
 SERVICE_NAMES=("service-user" "service-question" "service-matching" "mongoDB" "service-room" "service-history" "service-code-execution" "service-collaborative-editor" "service-video")
 IMAGE_NAMES=("user_service" "question_service" "matching_service" "mongodb" "room_service" "history_service" "code_execution_service" "collaborative_editor_service" "video_service")
 
@@ -42,7 +43,10 @@ for yaml_file in *.yaml; do
   sed -i '' "s/docker_username/$DOCKER_USERNAME/g" "$yaml_file"
 done
 
-# Apply Kubernetes configurations
+echo "Apply API Gateway configuration"
+kubectl apply -f ./nginx/0-nginx-config-map.yaml -n $INGRESS_NAMESPACE
+
+echo "Applying Kubernetes configurations"
 kubectl apply -f . -n $NAMESPACE
 
 # Port-forward Ingress-Nginx service (keep terminal open)

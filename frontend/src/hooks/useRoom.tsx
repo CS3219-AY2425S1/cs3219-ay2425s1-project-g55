@@ -37,7 +37,6 @@ export function useRoom(roomId: string | undefined) {
       const token = getToken();
       const response = await fetch(`${BACKEND_URL_ROOM}/${roomId}`, {
         headers: {
-          "X-User-Id": auth.user.userId.toString(),
           Authorization: `Bearer ${token}`,
         },
       });
