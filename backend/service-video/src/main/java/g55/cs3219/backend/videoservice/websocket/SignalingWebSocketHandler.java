@@ -1,19 +1,14 @@
 package g55.cs3219.backend.videoservice.websocket;
 
+import java.util.concurrent.ConcurrentHashMap;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.lang.NonNull;
+import org.springframework.web.socket.CloseStatus;
+import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
-import org.springframework.web.util.UriComponentsBuilder;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.client.RestTemplate;
-import org.springframework.web.socket.TextMessage;
-
-import java.net.URI;
-import java.util.concurrent.ConcurrentHashMap;
 
 public class SignalingWebSocketHandler extends TextWebSocketHandler {
 
@@ -21,7 +16,7 @@ public class SignalingWebSocketHandler extends TextWebSocketHandler {
     private ConcurrentHashMap<String, WebSocketSession> sessions = new ConcurrentHashMap<>();
 
     @Override
-    public void handleTextMessage(WebSocketSession session, TextMessage message) throws Exception {
+    public void handleTextMessage(@NonNull WebSocketSession session, @NonNull TextMessage message) throws Exception {
         logger.info("Received message from session {}: {}", session.getId(), message.getPayload());
         // Forward the signaling message to all connected peers
         for (WebSocketSession s : sessions.values()) {
@@ -33,8 +28,9 @@ public class SignalingWebSocketHandler extends TextWebSocketHandler {
     }
 
     @Override
-    public void afterConnectionEstablished(WebSocketSession session) {
-        if (authenticateUser(session) == null) {
+    public void afterConnectionEstablished(@NonNull WebSocketSession session) {
+        String userId = extractUserId(session);
+        if (userId == null) {
             logger.warn("Failed to authenticate user, closing connection");
             try {
                 session.close();
@@ -46,57 +42,20 @@ public class SignalingWebSocketHandler extends TextWebSocketHandler {
         sessions.put(session.getId(), session);
         logger.info("Connection established: session {}", session.getId());
     }
-    
+
+    private String extractUserId(WebSocketSession session) {
+        String userIdString = session.getHandshakeHeaders().getFirst("X-User-Id");
+        if (userIdString != null) {
+            return userIdString;
+        }
+        logger.warn("No userId found in WebSocket handshake headers");
+        return null;
+    }
 
     @Override
-    public void afterConnectionClosed(WebSocketSession session, org.springframework.web.socket.CloseStatus status) {
+    public void afterConnectionClosed(@NonNull WebSocketSession session, @NonNull CloseStatus status) {
         sessions.remove(session.getId());
         logger.info("Connection closed: session {} with status {}", session.getId(), status);
     }
 
-    private String authenticateUser(WebSocketSession session) {
-        URI uri = session.getUri();
-        String token = null;
-        String query = null;
-
-        if (uri != null) {
-            query = uri.getQuery();
-            if (query != null && !query.isEmpty()) {
-                token =  UriComponentsBuilder.newInstance().query(query).build().getQueryParams().getFirst("token");
-            } else {
-                logger.warn("No query parameters found or token parameter missing");
-            }
-        }
-
-        if (token != null) {
-            RestTemplate restTemplate = new RestTemplate();
-            String verifyTokenUrl = "http://user-service.g55.svc.cluster.local:8080/api/auth/verify-token";
-
-            HttpHeaders headers = new HttpHeaders();
-            headers.set("Authorization", "Bearer " + token);
-            HttpEntity<String> entity = new HttpEntity<>(headers);
-
-            try {
-                ResponseEntity<String> response = restTemplate.exchange(
-                        verifyTokenUrl,
-                        HttpMethod.GET,
-                        entity,
-                        String.class
-                );
-
-                logger.info("Response received from verify-token endpoint with status code: {}", response.getStatusCode());
-
-                if (response.getStatusCode().is2xxSuccessful()) {
-                    return response.getBody();
-                } else {
-                    logger.warn("Failed to verify token. Non-successful response received.");
-                }
-            } catch (Exception e) {
-                logger.error("Exception occurred during token verification: {}", e.getMessage(), e);
-            }
-        } else {
-            logger.warn("Token is null, unable to verify");
-        }
-        return null;
-    }
 }
