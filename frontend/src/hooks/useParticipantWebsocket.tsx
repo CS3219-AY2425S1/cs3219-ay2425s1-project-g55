@@ -17,7 +17,7 @@ const roomSchema = z.object({
 export type Room = z.infer<typeof roomSchema>;
 
 const participantMessageSchema = z.object({
-  type: z.enum(["ENTERED_ROOM", "EXIT_ROOM", "RECONNECTED"]),
+  type: z.enum(["ENTERED_ROOM", "EXIT_ROOM", "RECONNECTED", "ROOM_CLOSED"]),
   userId: z.string(),
   timestamp: z.number(),
   activeParticipants: z.array(z.string()),
@@ -47,6 +47,12 @@ interface UseParticipantWebSocketProps {
    * Should be memoized to infinite loops.
    */
   onDisconnected?: () => void;
+  /**
+   * Callback function that is called when a room is closed.
+   * Note: a room closed is permanent and cannot be reopened.
+   * Should be memoized to infinite loops.
+   */
+  onRoomClosed?: (userWhoClosedRoomId: string) => void;
 }
 
 interface UseParticipantWebSocketReturn {
@@ -62,6 +68,7 @@ const useParticipantWebSocket = ({
   onExitRoom,
   onReconnected,
   onDisconnected,
+  onRoomClosed,
 }: UseParticipantWebSocketProps): UseParticipantWebSocketReturn => {
   const [activeParticipants, setActiveParticipants] = useState<string[]>([]);
   const [isConnected, setIsConnected] = useState(false);
@@ -107,6 +114,8 @@ const useParticipantWebSocket = ({
               onExitRoom?.(parsedMessage.userId);
             } else if (parsedMessage.type === "RECONNECTED") {
               onReconnected?.(parsedMessage.userId);
+            } else if (parsedMessage.type === "ROOM_CLOSED") {
+              onRoomClosed?.(parsedMessage.userId);
             }
           } catch (error) {
             console.error("Error parsing WebSocket message:", error);
@@ -182,6 +191,7 @@ const useParticipantWebSocket = ({
     onExitRoom,
     onReconnected,
     onDisconnected,
+    onRoomClosed,
   ]);
 
   const disconnect = () => {

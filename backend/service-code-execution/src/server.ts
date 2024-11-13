@@ -9,7 +9,7 @@ app.use(express.json());
 
 const isolatedExecutionService = new IsolatedExecutionService();
 
-const supportedLanguages = ['javascript', 'typescript'] as const;
+const supportedLanguages = ['java', 'javascript', 'typescript', 'python'] as const;
 const executionSchema = z.object({
   code: z.string(),
   language: z.enum(supportedLanguages),

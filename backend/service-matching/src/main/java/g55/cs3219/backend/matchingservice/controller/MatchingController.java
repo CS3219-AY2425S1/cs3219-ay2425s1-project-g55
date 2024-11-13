@@ -26,6 +26,10 @@ public class MatchingController {
                                                @RequestHeader("Authorization") String authorizationHeader,
                                                @RequestBody MatchingRequestBodyDto requestBodyDto) {
 
+        if (requestBodyDto.getTopic() == null || requestBodyDto.getDifficultyLevel() == null) {
+            return ResponseEntity.badRequest().body("{\"message\": \"Topic and difficulty level are required\"}");
+        }
+        
         MatchingRequest matchingRequest = new MatchingRequest();
         matchingRequest.setUserId(userId);
         matchingRequest.setUsername(username);

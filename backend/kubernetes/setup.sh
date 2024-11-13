@@ -3,6 +3,7 @@
 # Variables
 DOCKER_USERNAME="your_docker_username"
 NAMESPACE="g55"
+INGRESS_NAMESPACE="ingress-nginx"
 DB_SERVICE_NAMES=("service-user" "service-room" "service-question" "service-history")
 SEED_CONFIG_NAMES=("userdb-seed-config" "roomdb-seed-config" "questiondb-seed-config" "historydb-seed-config")
 INIT_FILE_NAMES=("./seed/init.sql" "./seed/init.sql" "./seed/init-mongo.js" "./seed/init-mongo.js")
@@ -54,7 +55,10 @@ for yaml_file in *.yaml; do
   sed -i '' "s/docker_username/$DOCKER_USERNAME/g" "$yaml_file"
 done
 
-# Apply Kubernetes configurations
+echo "Apply API Gateway configuration"
+kubectl apply -f ./nginx/0-nginx-config-map.yaml -n $INGRESS_NAMESPACE
+
+echo "Applying Kubernetes configurations"
 kubectl apply -f . -n $NAMESPACE
 
 # Port-forward Ingress-Nginx service (keep terminal open)

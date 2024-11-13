@@ -1,23 +1,41 @@
 services:
-  frontend:
-    build:
-      context: ./frontend
-    container_name: frontend
+  # frontend:
+  #   build:
+  #     context: ./frontend
+  #   container_name: frontend
+  #   ports:
+  #     - '5173:5173'
+  #   networks:
+  #     - app-network
+  #   depends_on:
+  #     - backend-service-question
+  #     - backend-service-user
+  #     - backend-service-matching
+
+  nginx:
+    image: nginx:alpine
     ports:
-      - '5173:5173'
+      - '8080:80'
+    volumes:
+      - ./backend/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./backend/nginx/conf.d:/etc/nginx/conf.d:ro
+      - ./backend/nginx/includes:/etc/nginx/includes:ro
     networks:
       - app-network
     depends_on:
-      - backend-service-question
       - backend-service-user
+      - backend-service-question
       - backend-service-matching
+      - backend-service-room
+      - backend-service-history
+      - backend-service-collaborative-editor
+      - backend-service-code-execution
+      - backend-service-video
 
   backend-service-question:
     build:
       context: ./backend/service-question
     container_name: backend-service-question
-    ports:
-      - '8080:8080'
     networks:
       - app-network
     environment:
@@ -29,8 +47,6 @@ services:
   mongodb:
     image: mongo:latest
     container_name: mongodb
-    ports:
-      - '27017:27017'
     networks:
       - app-network
     environment:
@@ -44,8 +60,6 @@ services:
     build:
       context: ./backend/service-user
     container_name: backend-service-user
-    ports:
-      - '8081:8080'
     networks:
       - app-network
     depends_on:
@@ -58,8 +72,6 @@ services:
   backend-service-user-db:
     image: postgres:16-alpine
     container_name: backend-service-user-db
-    ports:
-      - '5433:5432'
     networks:
       - app-network
     environment:
@@ -74,13 +86,12 @@ services:
     build:
       context: ./backend/service-matching
     container_name: backend-service-matching
-    ports:
-      - '8082:8080'
     networks:
       - app-network
     environment:
       SPRING_RABBITMQ_HOST: rabbitmq
       SPRING_RABBITMQ_PORT: 5672
+      DEPLOYMENT_ENV: docker
     depends_on:
       - rabbitmq
 
@@ -88,8 +99,6 @@ services:
     build:
       context: ./backend/service-room
     container_name: backend-service-room
-    ports:
-      - '8083:8080'
     networks:
       - app-network
     depends_on:
@@ -107,8 +116,6 @@ services:
   backend-service-room-db:
     image: postgres:16-alpine
     container_name: backend-service-room-db
-    ports:
-      - '5434:5432'
     networks:
       - app-network
     environment:
@@ -122,9 +129,6 @@ services:
   rabbitmq:
     image: rabbitmq:4.0-management
     container_name: rabbitmq
-    ports:
-      - '5672:5672'
-      - '15672:15672'
     networks:
       - app-network
     environment:
@@ -135,8 +139,6 @@ services:
     build:
       context: ./backend/service-history
     container_name: backend-service-history
-    ports:
-      - '8084:8080'
     networks:
       - app-network
     environment:
@@ -148,8 +150,6 @@ services:
   backend-service-history-db:
     image: mongo:latest
     container_name: backend-service-history-db
-    ports:
-      - '27018:27017'
     networks:
       - app-network
     environment:
@@ -163,8 +163,6 @@ services:
     build:
       context: ./backend/service-collaborative-editor
     container_name: backend-service-collaborative-editor
-    ports:
-      - '8085:8080'
     networks:
       - app-network
 
@@ -175,8 +173,6 @@ services:
       NODE_ENV: production
       PORT: 8080
     container_name: backend-service-code-execution
-    ports:
-      - '8086:8080'
     networks:
       - app-network
     deploy:
@@ -190,11 +186,8 @@ services:
     build:
       context: ./backend/service-video
     container_name: backend-service-video
-    ports:
-      - '8087:8080'
     networks:
       - app-network
-
 
 networks:
   app-network:

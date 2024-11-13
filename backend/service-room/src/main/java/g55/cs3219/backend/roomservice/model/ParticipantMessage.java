@@ -1,6 +1,7 @@
 package g55.cs3219.backend.roomservice.model;
 
 import java.time.Instant;
+import java.util.Collections;
 import java.util.Set;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -40,5 +41,22 @@ public class ParticipantMessage {
 
   public static ParticipantMessage reconnected(String userId, Set<String> activeParticipants, RoomDTO room) {
     return new ParticipantMessage("RECONNECTED", userId, Instant.now(), activeParticipants, room);
+  }
+
+  /**
+   * Create a message to indicate that a room has been closed permanently.
+   * 
+   * @param userWhoClosedRoomId user who closed the room
+   * @param room                room that was closed
+   * @return
+   */
+  public static ParticipantMessage roomClosed(String userWhoClosedRoomId, RoomDTO room) {
+    return new ParticipantMessage(
+        "ROOM_CLOSED",
+        userWhoClosedRoomId, // user who closed the room
+        Instant.now(),
+        Collections.emptySet(), // no active participants
+        room // room is closed
+    );
   }
 }

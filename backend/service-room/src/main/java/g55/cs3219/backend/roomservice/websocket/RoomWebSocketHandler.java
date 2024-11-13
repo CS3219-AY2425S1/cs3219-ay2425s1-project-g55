@@ -1,5 +1,6 @@
 package g55.cs3219.backend.roomservice.websocket;
 
+import java.io.IOException;
 import java.net.URI;
 import java.util.Map;
 import java.util.Optional;
@@ -9,31 +10,25 @@ import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.ResponseEntity;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
 import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
-import org.springframework.web.util.UriComponentsBuilder;
 import org.springframework.web.util.UriTemplate;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
+import g55.cs3219.backend.roomservice.event.RoomEventListener;
 import g55.cs3219.backend.roomservice.model.ParticipantMessage;
 import g55.cs3219.backend.roomservice.model.RoomDTO;
 import g55.cs3219.backend.roomservice.service.RoomService;
 
 @Service
-public class RoomWebSocketHandler extends TextWebSocketHandler {
+public class RoomWebSocketHandler extends TextWebSocketHandler implements RoomEventListener {
   private static final Logger logger = LoggerFactory.getLogger(RoomWebSocketHandler.class);
   public static final String ROOM_URI_TEMPLATE = "/ws/rooms/{roomId}";
 
@@ -45,6 +40,8 @@ public class RoomWebSocketHandler extends TextWebSocketHandler {
 
   public RoomWebSocketHandler(RoomService roomService) {
     this.roomService = roomService;
+    // Register this class as a listener for room events
+    roomService.addListener(this);
   }
 
   @Override
@@ -54,7 +51,7 @@ public class RoomWebSocketHandler extends TextWebSocketHandler {
     try {
       String userId = extractUserId(session);
       String roomId = extractRoomId(session);
-      
+
       logger.info("WebSocket connection established for room: {} and user: {}", roomId, userId);
 
       boolean canJoinRoom = roomService.checkIfUserCanJoinRoom(roomId, userId);
@@ -145,69 +142,13 @@ public class RoomWebSocketHandler extends TextWebSocketHandler {
   }
 
   private String extractUserId(WebSocketSession session) {
-
-    ObjectMapper objectMapper = new ObjectMapper();
-        JsonNode jsonNode = null;
-        try {
-            jsonNode = objectMapper.readTree(authenticateUser(session));
-            if (jsonNode.has("id")) {
-                String userId = jsonNode.get("id").asText();
-                return userId;
-            } else {
-                logger.warn("Response JSON does not contain 'id' field");
-            }
-        } catch (Exception e) {
-            logger.error("Exception occurred during token verification: {}", e.getMessage(), e);
-        }
-    
-    throw new IllegalArgumentException("User ID is not present in the request");
-  }
-
-  private String authenticateUser(WebSocketSession session) {
-        URI uri = session.getUri();
-        String token = null;
-        String query = null;
-
-        if (uri != null) {
-            query = uri.getQuery();
-            if (query != null && !query.isEmpty()) {
-                token =  UriComponentsBuilder.newInstance().query(query).build().getQueryParams().getFirst("token");
-            } else {
-                logger.warn("No query parameters found or token parameter missing");
-            }
-        }
-
-        if (token != null) {
-            RestTemplate restTemplate = new RestTemplate();
-            String verifyTokenUrl = "http://user-service.g55.svc.cluster.local:8080/api/auth/verify-token";
-
-            HttpHeaders headers = new HttpHeaders();
-            headers.set("Authorization", "Bearer " + token);
-            HttpEntity<String> entity = new HttpEntity<>(headers);
-
-            try {
-                ResponseEntity<String> response = restTemplate.exchange(
-                        verifyTokenUrl,
-                        HttpMethod.GET,
-                        entity,
-                        String.class
-                );
-
-                logger.info("Response received from verify-token endpoint with status code: {}", response.getStatusCode());
-
-                if (response.getStatusCode().is2xxSuccessful()) {
-                    return response.getBody();
-                } else {
-                    logger.warn("Failed to verify token. Non-successful response received.");
-                }
-            } catch (Exception e) {
-                logger.error("Exception occurred during token verification: {}", e.getMessage(), e);
-            }
-        } else {
-            logger.warn("Token is null, unable to verify");
-        }
-        return null;
+    String userIdString = session.getHandshakeHeaders().getFirst("X-User-Id");
+    if (userIdString != null) {
+      return userIdString;
     }
+    logger.warn("No userId found in WebSocket handshake headers");
+    return null;
+  }
 
   private void broadcastParticipantMessage(String roomId, String userId, String status)
       throws JsonProcessingException {
@@ -263,6 +204,38 @@ public class RoomWebSocketHandler extends TextWebSocketHandler {
           logger.error("Error broadcasting message to session", e);
         }
       });
+    }
+  }
+
+  @Override
+  public void onRoomClosed(String roomId, String userWhoClosedRoomId) {
+    try {
+      // Broadcast room closed message
+      RoomDTO room = RoomDTO.fromRoom(roomService.getRoom(roomId));
+      ParticipantMessage message = ParticipantMessage.roomClosed(userWhoClosedRoomId, room);
+
+      logger.info("Broadcasting room closed message: {}", message);
+      broadcastToRoom(roomId, objectMapper.writeValueAsString(message));
+
+      // Sleep for 15 seconds first to allow all clients to receive the message
+      Thread.sleep(15000);
+
+      // Close all connections for this room
+      Map<String, SessionInfo> sessions = roomSessions.get(roomId);
+      if (sessions != null) {
+        sessions.values().forEach(sessionInfo -> {
+          try {
+            sessionInfo.getSession().close(new CloseStatus(1000, "Room has been closed"));
+          } catch (IOException e) {
+            logger.error("Error closing session", e);
+          }
+        });
+        roomSessions.remove(roomId);
+      }
+    } catch (JsonProcessingException e) {
+      logger.error("Error broadcasting room closed message", e);
+    } catch (InterruptedException e) {
+      logger.error("Error sleeping", e);
     }
   }
 }
