@@ -134,7 +134,7 @@ export default function QuestionRoute() {
           />
         </ResizablePanel>
       </ResizablePanelGroup>
-      <div className='absolute top-2 left-1/2 -translate-x-1/2 flex space-x-2'>
+      <div className='absolute top-2 left-1/2 -translate-x-1/2 flex space-x-2 z-30'>
         <Button
           onClick={handleExecuteCode}
           variant={'outline'}
