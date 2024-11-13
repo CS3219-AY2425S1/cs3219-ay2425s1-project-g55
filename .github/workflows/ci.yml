@@ -19,11 +19,22 @@ jobs:
         java-version: '21'
         distribution: 'temurin'
         cache: maven
+
+    - name: Create .env file for question service
+      run: |
+        cd backend/service-question/src/main/resources
+        echo "SPRING_DATASOURCE_URL=${{ secrets.SPRING_DATASOURCE_URL }}" >> .env
         
     - name: Build and test service-question
       run: |
         cd backend/service-question
         mvn clean verify
+
+    - name: Clean up .env file for question service
+      if: always()
+      run: |
+        cd backend/service-question/src/main/resources
+        rm -f .env
         
     - name: Create .env file
       run: |

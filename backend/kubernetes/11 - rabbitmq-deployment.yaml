@@ -1,0 +1,30 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: rabbitmq
+  name: rabbitmq
+  namespace: g55
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: rabbitmq
+  template:
+    metadata:
+      labels:
+        app: rabbitmq
+    spec:
+      containers:
+        - name: matching-service
+          image: rabbitmq:4.0-management  # This will pull the image from Docker Hub
+          ports:
+            - containerPort: 5672  # AMQP port for messaging
+            - containerPort: 15672 # Management port for web UI
+          env:
+            - name: RABBITMQ_DEFAULT_USER
+              value: "guest"
+            - name: RABBITMQ_DEFAULT_PASS
+              value: "guest"
+      restartPolicy: Always
+status: {}

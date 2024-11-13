@@ -1,0 +1,28 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: collaborative-editor-service
+  name: collaborative-editor-service
+  namespace: g55
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: collaborative-editor-service
+  strategy:
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app: collaborative-editor-service
+    spec:
+      containers:
+        - image: docker_username/collaborative_editor_service:latest
+          imagePullPolicy: IfNotPresent
+          name: collaborative-editor-service
+      restartPolicy: Always
+status: {}

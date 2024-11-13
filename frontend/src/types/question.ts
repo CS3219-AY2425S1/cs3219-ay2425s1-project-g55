@@ -1,10 +1,5 @@
 import { z } from 'zod';
 
-export const ExampleSchema = z.object({
-  input: z.string(),
-  output: z.string(),
-});
-
 export const DIFFICULTY_ENUM = ['Easy', 'Medium', 'Hard'] as const;
 export const CATEGORY_ENUM = [
   'Strings',
@@ -23,16 +18,15 @@ export const QuestionSchema = z.object({
   id: z.number(),
   title: z.string(),
   description: z.string(),
-  examples: z.array(ExampleSchema),
-  constraints: z.array(z.string()),
+  examples: z.array(z.string()),
+  constraints: z.array(z.string()).nullable(),
   categories: z.array(z.string()),
-  difficulty: z.enum(['Easy', 'Medium', 'Hard']),
+  difficulty: z.enum(DIFFICULTY_ENUM),
   link: z.string().url(),
 });
 
 export const QuestionsArraySchema = z.array(QuestionSchema);
 
-export type Example = z.infer<typeof ExampleSchema>;
 export type Question = z.infer<typeof QuestionSchema>;
 
 /**
@@ -45,14 +39,11 @@ export type Question = z.infer<typeof QuestionSchema>;
 export const createQuestionSchema = z.object({
   title: z.string().min(1, 'Title is required'),
   description: z.string().min(1, 'Description is required'),
-  examples: z
-    .array(
-      z.object({
-        input: z.string().min(1, 'Input is required'),
-        output: z.string().min(1, 'Output is required'),
-      })
-    )
-    .min(1, 'At least one example is required'),
+  examples: z.array(
+    z.object({
+      example: z.string()
+    })
+  ).min(1, 'At least one example is required'),
   constraints: z.array(
     z.object({
       constraint: z.string().min(1),
@@ -69,13 +60,14 @@ export const createQuestionSchema = z.object({
 });
 
 export type CreateQuestionData = z.infer<typeof createQuestionSchema>;
-
 export const updateQuestionSchema = z.object({
   id: z.number(),
   title: z.string().min(1, 'Title is required'),
   description: z.string().min(1, 'Description is required'),
+  examples: z.array(z.string()).min(1, 'At least one example is required'),
+  constraints: z.array(z.string()).min(1, 'At least one constraint is required'),
   categories: z.array(z.string()).min(1, 'At least one category is required'),
-  difficulty: z.enum(['Easy', 'Medium', 'Hard']),
+  difficulty: z.enum(DIFFICULTY_ENUM),
 });
 
 export type UpdateQuestionData = z.infer<typeof updateQuestionSchema>;

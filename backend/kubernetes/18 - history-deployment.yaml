@@ -1,0 +1,47 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: history-service
+  name: history-service
+  namespace: g55
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: history-service
+  strategy:
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app: history-service
+    spec:
+      initContainers:
+        - name: wait-for-db
+          image: busybox
+          command:
+            [
+              "sh",
+              "-c",
+              "until nc -z historydb 27017; do echo waiting for database; sleep 2; done;",
+            ]
+      containers:
+        - image: docker_username/history_service:latest
+          imagePullPolicy: IfNotPresent
+          name: history-service
+          env:
+            - name: SPRING_DATA_MONGODB_URI
+              value: "mongodb://root:example@historydb:27017/history_db?authSource=admin"
+          resources:
+            requests:
+              memory: '1Gi'
+              cpu: '500m'
+            limits:
+              memory: '1Gi'
+              cpu: '1000m'
+      restartPolicy: Always
+status: {}

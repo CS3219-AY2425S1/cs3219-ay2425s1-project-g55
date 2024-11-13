@@ -11,7 +11,8 @@ import {
 import { Input } from '@/components/ui/input';
 import { RegisterUser, RegisterUserSchema } from '@/types/auth';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Loader2 } from 'lucide-react';
+import { Eye, EyeOff, Loader2 } from 'lucide-react';
+import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 
 const formDefaultValues: RegisterUser = {
@@ -26,6 +27,9 @@ type AuthRegisterFormProps = {
 };
 
 export function AuthRegisterForm({ onSubmit }: AuthRegisterFormProps) {
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
   const form = useForm<RegisterUser>({
     resolver: zodResolver(RegisterUserSchema),
     defaultValues: formDefaultValues,
@@ -79,7 +83,23 @@ export function AuthRegisterForm({ onSubmit }: AuthRegisterFormProps) {
               <FormItem>
                 <FormLabel>Password</FormLabel>
                 <FormControl>
-                  <Input type='password' {...field} />
+                  <div className='relative'>
+                    <Input
+                      type={showPassword ? 'text' : 'password'}
+                      {...field}
+                    />
+                    <button
+                      type='button'
+                      className='absolute inset-y-0 right-0 pr-3 flex items-center text-sm leading-5'
+                      onClick={() => setShowPassword(!showPassword)}
+                    >
+                      {showPassword ? (
+                        <EyeOff className='h-5 w-5 text-gray-400' />
+                      ) : (
+                        <Eye className='h-5 w-5 text-gray-400' />
+                      )}
+                    </button>
+                  </div>
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -93,7 +113,23 @@ export function AuthRegisterForm({ onSubmit }: AuthRegisterFormProps) {
               <FormItem>
                 <FormLabel>Confirm Password</FormLabel>
                 <FormControl>
-                  <Input type='password' {...field} />
+                  <div className='relative'>
+                    <Input
+                      type={showConfirmPassword ? 'text' : 'password'}
+                      {...field}
+                    />
+                    <button
+                      type='button'
+                      className='absolute inset-y-0 right-0 pr-3 flex items-center text-sm leading-5'
+                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    >
+                      {showConfirmPassword ? (
+                        <EyeOff className='h-5 w-5 text-gray-400' />
+                      ) : (
+                        <Eye className='h-5 w-5 text-gray-400' />
+                      )}
+                    </button>
+                  </div>
                 </FormControl>
                 <FormMessage />
               </FormItem>

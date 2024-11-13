@@ -1,4 +1,9 @@
-import { LOCAL_STORAGE_KEYS } from '@/types/auth';
+import { BACKEND_URL_AUTH } from '@/lib/common';
+import {
+  LOCAL_STORAGE_KEYS,
+  LoginResponseSchema,
+  VerifyTokenResponseSchema,
+} from '@/types/auth';
 import { jwtDecode } from 'jwt-decode';
 import { useEffect, useState } from 'react';
 
@@ -12,57 +17,131 @@ const USER_ROLES = {
   admin: 'admin',
 } as const;
 
-type AuthenticatedUser = {
-  role: UserRole;
+type AuthHelper = {
+  user: AuthUser;
   logout: () => void;
+  refreshAuth: () => Promise<void>;
+};
+
+export type AuthUser = {
+  role: UserRole;
+  userId: number;
+  userName: string;
+  email: string;
 };
 
 function clearAuthData() {
-  localStorage.removeItem(LOCAL_STORAGE_KEYS.TOKEN);
-  localStorage.removeItem(LOCAL_STORAGE_KEYS.USER_ID);
-  localStorage.removeItem(LOCAL_STORAGE_KEYS.EXPIRES_IN);
+  localStorage.removeItem(LOCAL_STORAGE_KEYS.USER);
 }
 
-export function useAuth(): AuthenticatedUser | null {
-  const [userRole, setUserRole] = useState<UserRole | null>(null);
+export function useAuth(): AuthHelper | null {
+  const [user, setUser] = useState<AuthUser | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [authHelper, setAuthHelper] = useState<AuthHelper | null>(null);
 
   useEffect(() => {
     const checkAuth = () => {
-      const token = localStorage.getItem(LOCAL_STORAGE_KEYS.TOKEN);
-      if (!token) {
+      setIsLoading(true);
+      const loginResponse = LoginResponseSchema.safeParse(
+        JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEYS.USER) || '{}')
+      );
+
+      if (!loginResponse.success) {
         clearAuthData();
-        setUserRole(null);
+        setUser(null);
         return;
       }
 
+      const user = loginResponse.data;
+
       try {
-        const decodedToken = jwtDecode<DecodedToken>(token);
+        const decodedToken = jwtDecode<DecodedToken>(user.token);
         if (decodedToken.exp * 1000 > Date.now()) {
-          setUserRole(USER_ROLES.user);
+          setUser({
+            role: user.admin ? USER_ROLES.admin : USER_ROLES.user,
+            userId: user.id,
+            userName: user.username,
+            email: user.email,
+          });
         } else {
           // Token has expired
           clearAuthData();
-          setUserRole(null);
+          setUser(null);
         }
       } catch (error) {
         console.error('Failed to decode token:', error);
         clearAuthData();
-        setUserRole(null);
+        setUser(null);
       }
+      setIsLoading(false);
     };
 
     checkAuth();
     // You might want to set up a timer to periodically check the token's validity
   }, []);
 
-  return userRole
-    ? {
-        role: userRole,
-        logout: () => {
-          clearAuthData();
-          setUserRole(null);
-          window.location.reload();
-        },
+  useEffect(() => {
+    if (isLoading) return;
+
+    if (!user) {
+      setAuthHelper(null);
+      return;
+    }
+
+    const refreshAuth = async () => {
+      const loginResponse = LoginResponseSchema.safeParse(
+        JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEYS.USER) || '{}')
+      );
+
+      if (!loginResponse.success) {
+        clearAuthData();
+        setUser(null);
+        return;
       }
-    : null;
+
+      const response = await fetch(`${BACKEND_URL_AUTH}/verify-token`, {
+        headers: {
+          Authorization: `Bearer ${loginResponse.data.token}`,
+        },
+      });
+
+      if (!response.ok) {
+        clearAuthData();
+        setUser(null);
+      }
+
+      const data = await response.json();
+      const user = VerifyTokenResponseSchema.parse(data);
+      localStorage.setItem(
+        LOCAL_STORAGE_KEYS.USER,
+        JSON.stringify({
+          id: user.id,
+          token: loginResponse.data.token,
+          email: user.email,
+          username: user.username,
+          admin: user.admin,
+        })
+      );
+      console.log('About to update user status');
+      setUser({
+        role: user.admin ? USER_ROLES.admin : USER_ROLES.user,
+        userId: user.id,
+        userName: user.username,
+        email: user.email,
+      });
+      console.log('User state updated');
+    };
+
+    setAuthHelper({
+      user,
+      logout: () => {
+        clearAuthData();
+        setUser(null);
+        window.location.reload();
+      },
+      refreshAuth,
+    });
+  }, [user, isLoading]);
+
+  return authHelper;
 }

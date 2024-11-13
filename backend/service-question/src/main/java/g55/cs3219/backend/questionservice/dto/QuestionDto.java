@@ -27,7 +27,7 @@ public class QuestionDto implements Serializable {
     private List<String> categories;
 
     @NotNull
-    private List<HashMap<String, String>> examples;
+    private List<String> examples;
 
     @NotNull
     private List<String> constraints;

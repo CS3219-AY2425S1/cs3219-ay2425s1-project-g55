@@ -17,4 +17,6 @@ public interface QuestionRepository extends MongoRepository<Question, Integer> {
 
     @Query(value = "{}", fields = "{ 'categories' : 1 }")
     List<Question> findDistinctCategories();
+    List<Question> findByTitle(String title);
+    List<Question> findByTitleIgnoreCase(String title);
 }

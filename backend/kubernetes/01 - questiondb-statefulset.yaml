@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: questiondb
+  namespace: g55
+spec:
+  serviceName: questiondb
+  replicas: 1
+  selector:
+    matchLabels:
+      app: questiondb
+  template:
+    metadata:
+      labels:
+        app: questiondb
+    spec:
+      containers:
+        - name: questiondb
+          image: mongo:6.0
+          ports:
+            - containerPort: 27017
+          env:
+            - name: MONGO_INITDB_ROOT_USERNAME
+              value: "root"
+            - name: MONGO_INITDB_ROOT_PASSWORD
+              value: "example"
+          volumeMounts:
+            - name: mongo-data
+              mountPath: /data/db
+            - name: questiondb-seed-volume
+              mountPath: /docker-entrypoint-initdb.d
+      volumes:
+        - name: questiondb-seed-volume
+          configMap:
+            name: questiondb-seed-config
+  volumeClaimTemplates:
+    - metadata:
+        name: mongo-data
+      spec:
+        accessModes: [ "ReadWriteOnce" ]
+        resources:
+          requests:
+            storage: 1Gi

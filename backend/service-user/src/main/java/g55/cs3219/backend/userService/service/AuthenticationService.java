@@ -126,6 +126,8 @@ public class AuthenticationService {
         User userToUpdate = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
+        boolean emailChanged = false;
+
         if (!currentUser.isAdmin() && !userToUpdate.getId().equals(currentUser.getId())) {
             throw new RuntimeException("Forbidden: You can only update your own information.");
         }
@@ -134,9 +136,16 @@ public class AuthenticationService {
             userToUpdate.setUsername((String) updates.get("username"));
         }
         if (updates.containsKey("email")) {
-            userToUpdate.setEmail((String) updates.get("email"));
+            String newEmail = (String) updates.get("email");
+            if (!newEmail.equals(userToUpdate.getEmail())) {
+                userToUpdate.setEmail(newEmail);
+                userToUpdate.setEnabled(false);
+                userToUpdate.setVerificationCode(generateVerificationCode());
+                userToUpdate.setVerificationCodeExpiredAt(LocalDateTime.now().plusMinutes(15));
+                emailChanged = true;
+            }
         }
-        if (updates.containsKey("password")) {
+        if (updates.containsKey("password") && currentUser.isAdmin()) {
             userToUpdate.setPassword(passwordEncoder.encode((String) updates.get("password")));
         }
 
@@ -144,7 +153,74 @@ public class AuthenticationService {
             userToUpdate.setAdmin((Boolean) updates.get("isAdmin"));
         }
 
-        return userRepository.save(userToUpdate);
+        userRepository.save(userToUpdate);
+
+        if (emailChanged) {
+            sendVerificationEmail(userToUpdate);
+        }
+
+        return userToUpdate;
+    }
+
+    public void initiatePasswordReset(String email) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        if (!user.isEnabled()) {
+            throw new RuntimeException("User is not verified. Please verify your account first.");
+        }
+
+        String resetCode = generateVerificationCode();
+        user.setResetPasswordToken(resetCode);
+        user.setResetTokenExpiry(LocalDateTime.now().plusMinutes(30));  // Set expiry for 30 minutes
+        userRepository.save(user);
+
+        sendResetEmail(user);
+    }
+
+    public void resetPassword(String email, String resetCode, String newPassword) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        if (!user.isEnabled()) {
+            throw new RuntimeException("User is not verified. Please verify your account first.");
+        }
+
+        if (user.getResetPasswordToken() == null || !user.getResetPasswordToken().equals(resetCode) ||
+                user.getResetTokenExpiry().isBefore(LocalDateTime.now())) {
+            throw new RuntimeException("Invalid or expired reset code");
+        }
+
+        user.setPassword(passwordEncoder.encode(newPassword));
+        user.setResetPasswordToken(null); // Clear reset code after successful reset
+        user.setResetTokenExpiry(null);
+        userRepository.save(user);
+    }
+
+    public void changePassword(User user, String oldPassword, String newPassword) {
+        if (!passwordEncoder.matches(oldPassword, user.getPassword())) {
+            throw new RuntimeException("Incorrect old password.");
+        }
+
+        user.setPassword(passwordEncoder.encode(newPassword));
+        userRepository.save(user);
+    }
+
+    private void sendResetEmail(User user) {
+        String subject = "Password Reset Request";
+        String resetCode = user.getResetPasswordToken();
+        String text = "<html><body>"
+                + "<h1>Password Reset</h1>"
+                + "<p>Please use the following code to reset your password:</p>"
+                + "<p><b>Reset Code: " + resetCode + "</b></p>"
+                + "<p>If you did not request a password reset, please ignore this email.</p>"
+                + "</body></html>";
+
+        try {
+            emailService.sendVerificationEmail(user.getEmail(), subject, text);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     private  String generateVerificationCode() {

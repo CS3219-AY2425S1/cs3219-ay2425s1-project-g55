@@ -1,11 +1,9 @@
 package g55.cs3219.backend.userService.controller;
 
-import g55.cs3219.backend.userService.dto.RegisterUserDto;
-import g55.cs3219.backend.userService.responses.UserResponse;
-import g55.cs3219.backend.userService.model.User;
-import g55.cs3219.backend.userService.service.AuthenticationService;
-import g55.cs3219.backend.userService.service.UserService;
-import jakarta.validation.Valid;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -20,9 +18,13 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
+import g55.cs3219.backend.userService.dto.RegisterUserDto;
+import g55.cs3219.backend.userService.model.User;
+import g55.cs3219.backend.userService.responses.UserAdminResponse;
+import g55.cs3219.backend.userService.responses.UserResponse;
+import g55.cs3219.backend.userService.service.AuthenticationService;
+import g55.cs3219.backend.userService.service.UserService;
+import jakarta.validation.Valid;
 
 @RequestMapping("/api/users")
 @RestController
@@ -36,16 +38,17 @@ public class UserController {
     }
 
     @GetMapping
-    public ResponseEntity<List<User>> getAllUsers(Authentication authentication) {
-        // Check if the authenticated user is an admin
+    public ResponseEntity<List<UserAdminResponse>> getAllUsers(Authentication authentication) {
         User currentUser = (User) authentication.getPrincipal();
         if (!currentUser.isAdmin()) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(null);
         }
 
-        // Fetch all users from the database
         List<User> users = userService.getAllUsers();
-        return ResponseEntity.ok(users);
+        List<UserAdminResponse> userAdminResponses = users.stream()
+                .map(user -> new UserAdminResponse(user.getId(), user.getEmail(), user.getName(), user.isAdmin(), user.getPassword()))
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(userAdminResponses);
     }
 
     @GetMapping("/{userId}")
@@ -72,7 +75,9 @@ public class UserController {
         try {
             User currentUser = (User) authentication.getPrincipal();
 
-            if (updates.containsKey("isAdmin")) {
+            Boolean isAdminChanged = updates.containsKey("isAdmin")
+                    && ((Boolean) updates.get("isAdmin") != currentUser.isAdmin());
+            if (isAdminChanged) {
                 if (!currentUser.isAdmin()) {
                     return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Access denied. Only admin users can update privileges.");
                 }
@@ -90,7 +95,7 @@ public class UserController {
         }
     }
 
-    @PostMapping
+    @PostMapping("/create")
     public ResponseEntity<?> createUser(@Valid @RequestBody RegisterUserDto registerUserDto) {
         try {
             User createdUser = authenticationService.signup(registerUserDto);

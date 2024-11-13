@@ -27,10 +27,25 @@ export const LoginUserSchema = z.object({
 
 export type LoginUser = z.infer<typeof LoginUserSchema>;
 
+
+/**
+ * Schema for the /api/auth/verify-token endpoint
+ */
+export const VerifyTokenResponseSchema = z.object({
+  id: z.number(),
+  email: z.string().email(),
+  username: z.string(),
+  admin: z.boolean(),
+});
+
+export type VerifyTokenResponse = z.infer<typeof VerifyTokenResponseSchema>;
+
 export const LoginResponseSchema = z.object({
   id: z.number(),
   token: z.string(),
-  expiresIn: z.number(),
+  email: z.string().email(),
+  username: z.string(),
+  admin: z.boolean(),
 });
 
 export type LoginResponse = z.infer<typeof LoginResponseSchema>;
@@ -47,11 +62,51 @@ export const VerifyUserCodeSchema = VerifyUserSchema.pick({
 });
 export type VerifyUserCode = z.infer<typeof VerifyUserCodeSchema>;
 
+export const ChangePasswordSchema = z
+  .object({
+    oldPassword: z.string(),
+    newPassword: z
+      .string()
+      .min(8, 'New password must be at least 8 characters'),
+    confirmPassword: z
+      .string()
+      .min(8, 'Confirm password must be at least 8 characters'),
+  })
+  .refine((data) => data.newPassword === data.confirmPassword, {
+    message: 'New passwords do not match',
+    path: ['confirmPassword'],
+  });
+
+export type ChangePasswordData = z.infer<typeof ChangePasswordSchema>;
+
+export const ForgotPasswordSchema = z.object({
+  email: z.string().email('Invalid email address'),
+});
+
+export type ForgotPasswordData = z.infer<typeof ForgotPasswordSchema>;
+
+export const ResetPasswordSchema = z
+  .object({
+    resetCode: z.string().min(6, 'Reset code must be at least 6 characters'),
+    newPassword: z
+      .string()
+      .min(8, 'New password must be at least 8 characters'),
+    confirmPassword: z
+      .string()
+      .min(8, 'Confirm password must be at least 8 characters'),
+  })
+  .refine((data) => data.newPassword === data.confirmPassword, {
+    message: 'New passwords do not match',
+    path: ['confirmPassword'],
+  });
+
+export type ResetPasswordData = z.infer<typeof ResetPasswordSchema> & {
+  email: string;
+};
+
 /**
  * Keys for auth related data in local storage
  */
 export const LOCAL_STORAGE_KEYS = {
-  TOKEN: 'token',
-  USER_ID: 'userId',
-  EXPIRES_IN: 'expiresIn',
+  USER: 'user',
 } as const;

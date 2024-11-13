@@ -1,0 +1,28 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: video-service
+  name: video-service
+  namespace: g55
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: video-service
+  strategy:
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app: video-service
+    spec:
+      containers:
+        - image: docker_username/video_service:latest
+          imagePullPolicy: IfNotPresent
+          name: video-service
+      restartPolicy: Always
+status: {}

@@ -2,6 +2,7 @@ package g55.cs3219.backend.userService.controller;
 
 import g55.cs3219.backend.userService.dto.RegisterUserDto;
 import g55.cs3219.backend.userService.model.User;
+import g55.cs3219.backend.userService.responses.UserAdminResponse;
 import g55.cs3219.backend.userService.responses.UserResponse;
 import g55.cs3219.backend.userService.service.AuthenticationService;
 import g55.cs3219.backend.userService.service.UserService;
@@ -76,7 +77,7 @@ class UserControllerTest {
         when(authentication.getPrincipal()).thenReturn(adminUser);
         when(userService.getAllUsers()).thenReturn(userList);
 
-        ResponseEntity<List<User>> response = userController.getAllUsers(authentication);
+        ResponseEntity<List<UserAdminResponse>> response = userController.getAllUsers(authentication);
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertEquals(2, response.getBody().size());
@@ -87,7 +88,7 @@ class UserControllerTest {
     void getAllUsers_shouldReturnForbidden_whenNotAdmin() {
         when(authentication.getPrincipal()).thenReturn(regularUser);
 
-        ResponseEntity<List<User>> response = userController.getAllUsers(authentication);
+        ResponseEntity<List<UserAdminResponse>> response = userController.getAllUsers(authentication);
 
         assertEquals(HttpStatus.FORBIDDEN, response.getStatusCode());
         verify(userService, times(0)).getAllUsers();

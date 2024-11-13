@@ -5,13 +5,13 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Transient;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-import java.util.HashMap;
 import java.util.List;
 
 @Document(collection = "questions")
@@ -20,6 +20,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @ToString
+@Builder
 public class Question {
 
     @Transient
@@ -31,7 +32,7 @@ public class Question {
 
     private String title;
     private String description;
-    private List<HashMap<String, String>> examples;
+    private List<String> examples;
     private List<String> constraints;
     private List<String> categories;
     private String difficulty;

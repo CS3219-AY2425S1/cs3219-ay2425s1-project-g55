@@ -1,8 +1,18 @@
 package g55.cs3219.backend.questionservice.service;
 
-import static org.springframework.data.mongodb.core.query.Query.query;
-import static org.springframework.data.mongodb.core.query.Criteria.where;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import org.springframework.beans.factory.annotation.Autowired;
 import static org.springframework.data.mongodb.core.FindAndModifyOptions.options;
+import org.springframework.data.mongodb.core.MongoOperations;
+import static org.springframework.data.mongodb.core.query.Criteria.where;
+import static org.springframework.data.mongodb.core.query.Query.query;
+import org.springframework.data.mongodb.core.query.Update;
+import org.springframework.stereotype.Service;
 
 import g55.cs3219.backend.questionservice.dto.QuestionDto;
 import g55.cs3219.backend.questionservice.exception.InvalidQuestionException;
@@ -10,16 +20,6 @@ import g55.cs3219.backend.questionservice.exception.QuestionNotFoundException;
 import g55.cs3219.backend.questionservice.model.DatabaseSequence;
 import g55.cs3219.backend.questionservice.model.Question;
 import g55.cs3219.backend.questionservice.repository.QuestionRepository;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.mongodb.core.MongoOperations;
-import org.springframework.data.mongodb.core.query.Update;
-import org.springframework.stereotype.Service;
-
-import java.util.List;
-import java.util.Objects;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-import java.util.Set;
 
 @Service
 public class QuestionService {
@@ -81,8 +81,15 @@ public class QuestionService {
         return questions.stream().map(this::convertToDTO).collect(Collectors.toList());
     }
 
-    public QuestionDto createQuestion(QuestionDto questionDto) {
+    public QuestionDto createQuestion(QuestionDto questionDto) {       
         validateQuestion(questionDto);
+        trimWhitespace(questionDto);
+        
+        List<Question> existingQuestions = questionRepository.findByTitleIgnoreCase(questionDto.getTitle());
+    
+        if (!existingQuestions.isEmpty()) {
+            throw new InvalidQuestionException("Duplicate question found with title: " + questionDto.getTitle());
+        }
 
         Question newQuestion = convertToDocument(questionDto);
         newQuestion.setId(generateSequence(Question.SEQUENCE_NAME));
@@ -91,32 +98,22 @@ public class QuestionService {
 
         return convertToDTO(createdQuestion);
     }
-
-    private void validateQuestion(QuestionDto question) {
-        List<String> missingFields = Stream.of(
-                question.getTitle() == null ? "title" : null,
-                question.getDescription() == null ? "description" : null,
-                question.getCategories() == null ? "categories" : null,
-                question.getDifficulty() == null ? "difficulty" : null,
-                question.getExamples() == null ? "examples" : null,
-                question.getConstraints() == null ? "constraints" : null,
-                question.getLink() == null ? "link" : null
-        ).filter(Objects::nonNull).collect(Collectors.toList());
-
-        if (!missingFields.isEmpty()) {
-            throw new InvalidQuestionException("Missing required fields: " + String.join(", ", missingFields));
-        }
-    }
-
+    
     public QuestionDto updateQuestion(Integer id, QuestionDto updatedQuestionDto) {
         Question existingQuestion = questionRepository.findById(id)
                 .orElseThrow(() -> new QuestionNotFoundException("Question with ID " + id + " not found."));
 
+        // Check if the new title already exists in the database
         if (updatedQuestionDto.getTitle() != null) {
-            existingQuestion.setTitle(updatedQuestionDto.getTitle());
+            List<Question> questionsWithTitle = questionRepository.findByTitleIgnoreCase(updatedQuestionDto.getTitle());
+            if (!questionsWithTitle.isEmpty() && !questionsWithTitle.get(0).getId().equals(id)) {
+                throw new InvalidQuestionException("Duplicate question found with title: " + updatedQuestionDto.getTitle());
+            }
+            existingQuestion.setTitle(updatedQuestionDto.getTitle().trim());
         }
+
         if (updatedQuestionDto.getDescription() != null) {
-            existingQuestion.setDescription(updatedQuestionDto.getDescription());
+            existingQuestion.setDescription(updatedQuestionDto.getDescription().trim());
         }
         if (updatedQuestionDto.getDifficulty() != null) {
             existingQuestion.setDifficulty(updatedQuestionDto.getDifficulty());
@@ -131,7 +128,7 @@ public class QuestionService {
             existingQuestion.setConstraints(updatedQuestionDto.getConstraints());
         }
         if (updatedQuestionDto.getLink() != null) {
-            existingQuestion.setLink(updatedQuestionDto.getLink());
+            existingQuestion.setLink(updatedQuestionDto.getLink().trim());
         }
 
         Question updatedQuestion = questionRepository.save(existingQuestion);
@@ -186,6 +183,31 @@ public class QuestionService {
         question.setLink(questionDto.getLink());
 
         return question;
+    }
+
+    private void validateQuestion(QuestionDto question) {
+        List<String> missingFields = Stream.of(
+                question.getTitle() == null ? "title" : null,
+                question.getDescription() == null ? "description" : null,
+                question.getCategories() == null ? "categories" : null,
+                question.getDifficulty() == null ? "difficulty" : null,
+                question.getExamples() == null ? "examples" : null,
+                question.getConstraints() == null ? "constraints" : null,
+                question.getLink() == null ? "link" : null
+        ).filter(Objects::nonNull).collect(Collectors.toList());
+
+        if (!missingFields.isEmpty()) {
+            throw new InvalidQuestionException("Missing required fields: " + String.join(", ", missingFields));
+        }
+    }
+
+    private void trimWhitespace(QuestionDto questionDto) {
+        questionDto.setTitle(questionDto.getTitle().trim());
+        questionDto.setDescription(questionDto.getDescription().trim());
+        questionDto.setDifficulty(questionDto.getDifficulty().trim());
+        questionDto.setCategories(questionDto.getCategories().stream().map(String::trim).collect(Collectors.toList()));
+        questionDto.setConstraints(questionDto.getConstraints().stream().map(String::trim).collect(Collectors.toList()));
+        questionDto.setLink(questionDto.getLink().trim());
     }
 
     public Set<String> getDistinctCategories() {

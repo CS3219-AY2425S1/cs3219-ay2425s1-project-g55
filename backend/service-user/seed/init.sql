@@ -1,4 +1,7 @@
 -- The seed script for the users table
+
+DROP TABLE IF EXISTS public.users;
+
 CREATE TABLE
     public.users (
         id bigint NOT NULL PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
@@ -7,13 +10,11 @@ CREATE TABLE
         password character varying(255),
         enabled boolean,
         verification_code character varying(255),
-        verification_expiration timestamp
-        with
-            time zone,
-            created_at timestamp
-        with
-            time zone DEFAULT now () NOT NULL,
-            is_admin boolean DEFAULT false
+        verification_expiration timestamp with time zone,
+        created_at timestamp with time zone DEFAULT now() NOT NULL,
+        is_admin boolean DEFAULT false,
+        reset_password_token character varying(255),
+        reset_token_expiry timestamp with time zone
     );
 
 INSERT INTO
@@ -25,7 +26,9 @@ INSERT INTO
         verification_code,
         verification_expiration,
         created_at,
-        is_admin
+        is_admin,
+        reset_password_token,
+        reset_token_expiry
     )
 VALUES
     (
@@ -36,7 +39,9 @@ VALUES
         NULL,
         NULL,
         '2024-10-01 17:00:20.503',
-        true
+        true,
+        NULL,
+        NULL
     ),
     (
         'hocanet993',
@@ -46,7 +51,9 @@ VALUES
         NULL,
         NULL,
         '2024-10-03 20:17:50.486',
-        false
+        false,
+        NULL,
+        NULL
     ),
     (
         'yalifel533',
@@ -56,5 +63,7 @@ VALUES
         '122215',
         '2024-10-05 23:26:52.907',
         '2024-10-05 23:11:56.920',
-        false
+        false,
+        NULL,
+        NULL
     );

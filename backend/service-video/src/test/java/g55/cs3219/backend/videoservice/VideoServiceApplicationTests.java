@@ -1,10 +1,10 @@
-package g55.cs3219.backend;
+package g55.cs3219.backend.videoservice;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
-class QuestionApplicationTests {
+class VideoServiceApplicationTests {
 
 	@Test
 	void contextLoads() {

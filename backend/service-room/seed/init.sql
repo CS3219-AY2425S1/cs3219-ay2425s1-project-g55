@@ -1,0 +1,1 @@
+-- Blank seed script
