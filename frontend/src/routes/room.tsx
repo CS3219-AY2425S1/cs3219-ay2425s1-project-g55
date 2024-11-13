@@ -28,13 +28,7 @@ import { useAuth } from '@/hooks/auth/useAuth';
 import useExecuteCode, { CodeExecutionResponse } from '@/hooks/useExecuteCode';
 import { useCloseRoom, useRoom } from '@/hooks/useRoom';
 import { BACKEND_WEBSOCKET_COLLABORATIVE_EDITOR } from '@/lib/common';
-import {
-  Loader2,
-  LogInIcon,
-  LogOutIcon,
-  PlayIcon,
-  VideoIcon,
-} from 'lucide-react';
+import { Loader2, PlayIcon, Plug, Unplug, VideoIcon } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { toast } from 'sonner';
 
@@ -274,7 +268,7 @@ export default function RoomRoute() {
 
         {isConnected && (
           <Button variant={'outline'} onClick={disconnect}>
-            <LogOutIcon className='w-4 h-4 mr-2' />
+            <Unplug className='w-4 h-4 mr-2' />
             Disconnect
           </Button>
         )}
@@ -298,7 +292,7 @@ export default function RoomRoute() {
               window.location.reload();
             }}
           >
-            <LogInIcon className='w-4 h-4 mr-2' />
+            <Plug className='w-4 h-4 mr-2' />
             Connect
           </Button>
         )}
