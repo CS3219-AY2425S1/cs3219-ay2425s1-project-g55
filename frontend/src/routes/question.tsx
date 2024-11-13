@@ -4,6 +4,7 @@ import {
   ResizablePanelGroup,
 } from '@/components/ui/resizable';
 
+import LanguageSelector from '@/components/code-editor/language-selector';
 import MonacoEditor from '@/components/code-editor/MonacoEditor';
 import CodeExecutionView from '@/components/CodeExecutionView';
 import { LoginPromptView } from '@/components/discuss/views/LoginPromptView';
@@ -13,12 +14,11 @@ import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAuth } from '@/hooks/auth/useAuth';
 import useExecuteCode, { CodeExecutionResponse } from '@/hooks/useExecuteCode';
+import { BOILERPLATE_CODES } from '@/lib/consts';
 import { Loader2, PlayIcon } from 'lucide-react';
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { toast } from 'sonner';
-import LanguageSelector from '@/components/code-editor/language-selector';
-import { BOILERPLATE_CODES } from '@/lib/consts';
 
 export default function QuestionRoute() {
   const { questionId: questionIdString } = useParams<{ questionId: string }>();
@@ -27,15 +27,20 @@ export default function QuestionRoute() {
   const auth = useAuth();
   const userId = auth?.user?.userId;
 
-  const [selectedLanguage, setSelectedLanguage] = useState<keyof typeof BOILERPLATE_CODES>("typescript");
+  const [selectedLanguage, setSelectedLanguage] =
+    useState<keyof typeof BOILERPLATE_CODES>('typescript');
   const [editorCode, setEditorCode] = useState<string>(
     BOILERPLATE_CODES[selectedLanguage] || ''
   );
-  const [codeByLanguage, setCodeByLanguage] = useState<{ [key in keyof typeof BOILERPLATE_CODES]?: string }>({
+  const [codeByLanguage, setCodeByLanguage] = useState<{
+    [key in keyof typeof BOILERPLATE_CODES]?: string;
+  }>({
     typescript: BOILERPLATE_CODES.typescript,
   });
 
-  const handleLanguageChange = (newLanguage: keyof typeof BOILERPLATE_CODES) => {
+  const handleLanguageChange = (
+    newLanguage: keyof typeof BOILERPLATE_CODES
+  ) => {
     // Save the current code for the current language
     setCodeByLanguage((prevCode) => ({
       ...prevCode,
@@ -46,11 +51,15 @@ export default function QuestionRoute() {
     setSelectedLanguage(newLanguage);
 
     // Load the code for the new language, or use boilerplate if not available
-    setEditorCode(codeByLanguage[newLanguage] || BOILERPLATE_CODES[newLanguage]);
+    setEditorCode(
+      codeByLanguage[newLanguage] || BOILERPLATE_CODES[newLanguage]
+    );
   };
 
   useEffect(() => {
-    setEditorCode(codeByLanguage[selectedLanguage] || BOILERPLATE_CODES[selectedLanguage]);
+    setEditorCode(
+      codeByLanguage[selectedLanguage] || BOILERPLATE_CODES[selectedLanguage]
+    );
   }, [selectedLanguage, codeByLanguage]);
 
   const [codeExecutionResponse, setCodeExecutionResponse] = useState<
@@ -134,7 +143,7 @@ export default function QuestionRoute() {
           />
         </ResizablePanel>
       </ResizablePanelGroup>
-      <div className='absolute top-2 left-1/2 -translate-x-1/2 flex space-x-2 z-30'>
+      <div className='absolute bottom-8 left-1/2 -translate-x-1/2 flex gap-2 z-30 shadow-md px-4 py-2 rounded-md border'>
         <Button
           onClick={handleExecuteCode}
           variant={'outline'}
