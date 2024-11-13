@@ -97,8 +97,12 @@ export default function RoomRoute() {
         [room]
       ),
       onDisconnected: useCallback(() => {
+        if (!room) {
+          return;
+        }
+
         toast('You have been disconnected from the room');
-      }, []),
+      }, [room]),
       onRoomClosed: useCallback(
         (userIdWhoClosedRoom: string) => {
           const username = room?.participants.find(
