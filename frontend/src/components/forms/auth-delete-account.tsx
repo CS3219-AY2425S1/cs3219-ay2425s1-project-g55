@@ -1,31 +1,31 @@
 import {
-    Dialog,
-    DialogContent,
-    DialogDescription,
-    DialogHeader,
-    DialogTitle,
-} from '@/components/ui/dialog';
-import { useAuth } from '@/hooks/auth/useAuth';
-import { useDeleteAccount } from '@/hooks/auth/useDeleteAccount';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { Loader2 } from 'lucide-react';
-import { useState } from 'react';
-import { FieldErrors, SubmitHandler, useForm } from 'react-hook-form';
-import { toast } from 'sonner';
-import { z } from 'zod';
-import { Button } from '../ui/button';
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { useAuth } from "@/hooks/auth/useAuth";
+import { useDeleteAccount } from "@/hooks/auth/useDeleteAccount";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Loader2 } from "lucide-react";
+import { useState } from "react";
+import { FieldErrors, SubmitHandler, useForm } from "react-hook-form";
+import { toast } from "sonner";
+import { z } from "zod";
+import { Button } from "../ui/button";
 import {
-    Form,
-    FormControl,
-    FormField,
-    FormItem,
-    FormLabel,
-    FormMessage,
-} from '../ui/form';
-import { Input } from '../ui/input';
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "../ui/form";
+import { Input } from "../ui/input";
 
 const DeleteAccountSchema = z.object({
-  confirmation: z.string().refine((val) => val === 'DELETE', {
+  confirmation: z.string().refine((val) => val === "DELETE", {
     message: 'Please type "DELETE" to confirm',
   }),
 });
@@ -36,12 +36,16 @@ type DeleteAccountDialogProps = {
   open: boolean;
   onClose: () => void;
   userId: number;
+  userName?: string;
+  email?: string;
 };
 
 export function DeleteAccountDialog({
   open,
   onClose,
   userId,
+  userName,
+  email,
 }: DeleteAccountDialogProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const auth = useAuth();
@@ -60,15 +64,19 @@ export function DeleteAccountDialog({
     setIsSubmitting(true);
     try {
       await deleteAccount({ userId });
-      toast.success('Account deleted successfully');
+      toast.success("Account deleted successfully");
       onClose();
-      auth.logout();
+      if (!email && !userName) {
+        auth.logout();
+      } else {
+        window.location.reload();
+      }
     } catch (error) {
       console.error(error);
       if (error instanceof Error) {
-        toast.error('Failed to delete account: ' + error.message);
+        toast.error("Failed to delete account: " + error.message);
       } else {
-        toast.error('Failed to delete account. Please try again.');
+        toast.error("Failed to delete account. Please try again.");
       }
     } finally {
       setIsSubmitting(false);
@@ -81,21 +89,37 @@ export function DeleteAccountDialog({
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className='max-h-[90vh] overflow-y-auto'>
+      <DialogContent className="max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Delete Account</DialogTitle>
           <DialogDescription>
             This action cannot be undone. Please type DELETE to confirm.
           </DialogDescription>
+          {userName && email && (
+            <DialogDescription>
+              Deleting{" "}
+              <strong>
+                {userName} ({email})
+              </strong>
+              .
+            </DialogDescription>
+          )}
+
+          {auth && auth.user?.userId == userId && (
+            <p className="text-red-600 mt-2">
+              Warning: You are attempting to delete your own account. This
+              action will remove all of your data.
+            </p>
+          )}
         </DialogHeader>
         <Form {...form}>
           <form
             onSubmit={form.handleSubmit(onSubmit, onErrors)}
-            className='space-y-4'
+            className="space-y-4"
           >
             <FormField
               control={form.control}
-              name='confirmation'
+              name="confirmation"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Confirmation</FormLabel>
@@ -111,16 +135,16 @@ export function DeleteAccountDialog({
               )}
             />
 
-            <div className='flex justify-end'>
+            <div className="flex justify-end">
               <Button
-                type='submit'
+                type="submit"
                 disabled={isSubmitting}
-                variant='destructive'
+                variant="destructive"
               >
                 {isSubmitting && (
-                  <Loader2 className='w-4 h-4 mr-2 animate-spin' />
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                 )}
-                {isSubmitting ? 'Deleting...' : 'Delete Account'}
+                {isSubmitting ? "Deleting..." : "Delete Account"}
               </Button>
             </div>
           </form>
