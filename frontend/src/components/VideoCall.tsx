@@ -7,6 +7,7 @@ import React, { useEffect, useRef, useState } from "react";
 import DefaultAvatarPic from "../assets/Default Avatar Pic.png";
 import { BACKEND_WEBSOCKET_VIDEO } from "@/lib/common";
 import { getToken } from "@/lib/utils";
+import { useAuth } from "@/hooks/auth/useAuth";
 
 interface VideoCallProps {
   showVideo: boolean;
@@ -16,19 +17,32 @@ const VideoCall: React.FC<VideoCallProps> = ({ showVideo }) => {
   const localVideoRef = useRef<HTMLVideoElement>(null);
   const remoteVideoRef = useRef<HTMLVideoElement>(null);
   const [localStream, setLocalStream] = useState<MediaStream | null>(null);
-  const [peerConnection, setPeerConnection] =
-    useState<RTCPeerConnection | null>(null);
+  const [peerConnection, setPeerConnection] = useState<RTCPeerConnection | null>(null);
   const signalingSocket = useRef<WebSocket | null>(null);
   const [isMicOn, setIsMicOn] = useState(true);
-  const [remoteVideoOn, setRemoteVideoOn] = useState(true); // State for remote video
+  const [remoteVideoOn, setRemoteVideoOn] = useState(true);
+  const auth = useAuth();
+  const localUserName = auth?.user?.userName || "Local User";
+  const remoteUserName = "Partner";
 
   useEffect(() => {
-    // Initialize WebSocket connection
+    if (!showVideo) {
+      // If showVideo is false, clean up connections and streams
+      peerConnection?.close();
+      signalingSocket.current?.close();
+      if (localStream) {
+        localStream.getTracks().forEach((track) => track.stop());
+      }
+      setLocalStream(null);
+      setPeerConnection(null);
+      return;
+    }
+
+    // Set up WebSocket and WebRTC connection if showVideo is true
     signalingSocket.current = new WebSocket(
       `${BACKEND_WEBSOCKET_VIDEO}?token=${getToken()}`
     );
 
-    // Initialize WebRTC connection
     const pc = new RTCPeerConnection({
       iceServers: [{ urls: "stun:stun.l.google.com:19302" }],
     });
@@ -39,7 +53,7 @@ const VideoCall: React.FC<VideoCallProps> = ({ showVideo }) => {
       if (remoteVideoRef.current) {
         const [remoteStream] = event.streams;
         remoteVideoRef.current.srcObject = remoteStream;
-        setRemoteVideoOn(true); // Ensure remote video is marked as on
+        setRemoteVideoOn(true);
       }
     };
 
@@ -59,7 +73,7 @@ const VideoCall: React.FC<VideoCallProps> = ({ showVideo }) => {
         setLocalStream(stream);
         if (localVideoRef.current) {
           localVideoRef.current.srcObject = stream;
-          localVideoRef.current.muted = true; // Mute self to avoid feedback
+          localVideoRef.current.muted = true;
         }
         stream.getTracks().forEach((track) => pc.addTrack(track, stream));
 
@@ -74,6 +88,7 @@ const VideoCall: React.FC<VideoCallProps> = ({ showVideo }) => {
       })
       .catch((error) => console.error("Error accessing media devices:", error));
 
+    // Handle WebSocket signaling messages
     signalingSocket.current.onmessage = async (message) => {
       const data = JSON.parse(message.data);
       if (data.type === "offer") {
@@ -91,10 +106,16 @@ const VideoCall: React.FC<VideoCallProps> = ({ showVideo }) => {
     };
 
     return () => {
+      // Clean up connections and streams on component unmount
       pc.close();
       signalingSocket.current?.close();
+      if (localStream) {
+        localStream.getTracks().forEach((track) => track.stop());
+      }
+      setLocalStream(null);
+      setPeerConnection(null);
     };
-  }, []);
+  }, [showVideo]); // Re-run the effect when showVideo changes
 
   const toggleMic = () => {
     if (localStream) {
@@ -108,18 +129,29 @@ const VideoCall: React.FC<VideoCallProps> = ({ showVideo }) => {
   return (
     <div className="video-call flex items-center gap-2">
       {showVideo && (
-        <div
-          className="video-container flex gap-2 items-center z-20"
-        >
+        <div className="video-container flex gap-2 items-center z-20">
           <div
-            className="local-video-wrapper"
+            className="local-video-wrapper relative"
             style={{
-              position: "relative",
               width: "240px",
               height: "180px",
               border: "2px solid #ccc",
             }}
           >
+            <div
+              style={{
+                position: "absolute",
+                top: "8px",
+                left: "8px",
+                backgroundColor: "rgba(0, 0, 0, 0.5)",
+                color: "white",
+                padding: "4px 8px",
+                borderRadius: "4px",
+                fontSize: "0.85rem",
+              }}
+            >
+              {localUserName}
+            </div>
             <video
               ref={localVideoRef}
               autoPlay
@@ -145,13 +177,27 @@ const VideoCall: React.FC<VideoCallProps> = ({ showVideo }) => {
             </div>
           </div>
           <div
-            className="remote-video-wrapper"
+            className="remote-video-wrapper relative"
             style={{
               width: "240px",
               height: "180px",
               border: "2px solid #ccc",
             }}
           >
+            <div
+              style={{
+                position: "absolute",
+                top: "8px",
+                left: "8px",
+                backgroundColor: "rgba(0, 0, 0, 0.5)",
+                color: "white",
+                padding: "4px 8px",
+                borderRadius: "4px",
+                fontSize: "0.85rem",
+              }}
+            >
+              {remoteUserName}
+            </div>
             {remoteVideoOn ? (
               <video
                 ref={remoteVideoRef}
