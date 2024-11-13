@@ -1,0 +1,45 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: roomdb
+  namespace: g55
+spec:
+  serviceName: roomdb
+  replicas: 1
+  selector:
+    matchLabels:
+      app: roomdb
+  template:
+    metadata:
+      labels:
+        app: roomdb
+    spec:
+      containers:
+        - name: postgres
+          image: postgres:16-alpine
+          ports:
+            - containerPort: 5432
+          env:
+            - name: POSTGRES_DB
+              value: "room_db"
+            - name: POSTGRES_USER
+              value: "postgres"
+            - name: POSTGRES_PASSWORD
+              value: "password"
+          volumeMounts:
+            - name: postgres-data
+              mountPath: /var/lib/postgresql/data
+            - name: roomdb-seed-volume
+              mountPath: /docker-entrypoint-initdb.d
+      volumes:
+        - name: roomdb-seed-volume
+          configMap:
+            name: roomdb-seed-config
+  volumeClaimTemplates:
+    - metadata:
+        name: postgres-data
+      spec:
+        accessModes: [ "ReadWriteOnce" ]
+        resources:
+          requests:
+            storage: 1Gi

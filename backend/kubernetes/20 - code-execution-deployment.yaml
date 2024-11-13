@@ -1,0 +1,28 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: code-execution-service
+  name: code-execution-service
+  namespace: g55
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: code-execution-service
+  strategy:
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app: code-execution-service
+    spec:
+      containers:
+        - image: docker_username/code_execution_service:latest
+          imagePullPolicy: IfNotPresent
+          name: code-execution-service
+      restartPolicy: Always
+status: {}

@@ -1,0 +1,64 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: room-service
+  name: room-service
+  namespace: g55
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: room-service
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: room-service
+    spec:
+      initContainers:
+        - name: wait-for-db
+          image: busybox
+          command:
+            [
+              "sh",
+              "-c",
+              "until nc -z roomdb 5432; do echo waiting for database; sleep 2; done;",
+            ]
+        - name: wait-for-rabbitmq
+          image: busybox
+          command:
+            [
+              "sh",
+              "-c",
+              "until nc -z rabbitmq.g55.svc.cluster.local 5672; do echo waiting for rabbitmq; sleep 2; done;",
+            ]
+      containers:
+        - image: docker_username/room_service:latest
+          imagePullPolicy: IfNotPresent
+          name: room-service
+          env:
+            - name: SPRING_DATASOURCE_URL
+              value: "jdbc:postgresql://roomdb.g55.svc.cluster.local:5432/room_db"
+            - name: SPRING_DATASOURCE_USERNAME
+              value: "postgres"
+            - name: SPRING_DATASOURCE_PASSWORD
+              value: "password"
+            - name: SPRING_RABBITMQ_HOST
+              value: "rabbitmq"
+            - name: SPRING_RABBITMQ_PORT
+              value: "5672"
+            - name: SPRING_RABBITMQ_USERNAME
+              value: "guest"
+            - name: SPRING_RABBITMQ_PASSWORD
+              value: "guest"
+          resources:
+            requests:
+              memory: "1Gi"
+              cpu: "500m"
+            limits:
+              memory: "1Gi"
+              cpu: "1000m"
+      restartPolicy: Always
+status: {}
