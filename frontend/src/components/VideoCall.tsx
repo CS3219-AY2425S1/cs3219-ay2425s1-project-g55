@@ -157,7 +157,7 @@ const VideoCall: React.FC<VideoCallProps> = ({ showVideo }) => {
               autoPlay
               muted
               className="local-video"
-              style={{ width: "100%", height: "100%" }}
+              style={{ width: "100%", height: "100%", backgroundColor: 'white' }}
             ></video>
             <div
               className="icon-controls"
@@ -203,7 +203,7 @@ const VideoCall: React.FC<VideoCallProps> = ({ showVideo }) => {
                 ref={remoteVideoRef}
                 autoPlay
                 className="remote-video"
-                style={{ width: "100%", height: "100%" }}
+                style={{ width: "100%", height: "100%", backgroundColor: 'white' }}
               ></video>
             ) : (
               <img
