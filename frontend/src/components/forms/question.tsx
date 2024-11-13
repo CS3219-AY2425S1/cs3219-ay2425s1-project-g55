@@ -343,9 +343,7 @@ export function QuestionForm({
           type='submit'
           className='w-full'
           disabled={
-            form.formState.isSubmitting ||
-            !form.formState.isValid ||
-            !form.formState.dirtyFields
+            form.formState.isSubmitting
           }
         >
           {form.formState.isSubmitting && (
