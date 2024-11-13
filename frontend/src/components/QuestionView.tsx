@@ -21,7 +21,7 @@ import {
   useUpdateQuestion,
 } from '@/hooks/useQuestion';
 import { CreateQuestionData, UpdateQuestionData } from '@/types/question';
-import { Edit, Loader2, Trash2 } from 'lucide-react';
+import { Edit, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import { SubmitHandler } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
@@ -43,25 +43,25 @@ function QuestionActions({
   onDelete,
 }: QuestionActionsProps) {
   return (
-    <div className="absolute top-1 right-6">
+    <div className='absolute top-1 right-6'>
       <QuestionDialog
-        action="edit"
+        action='edit'
         open={open}
         onClose={() => setOpen(false)}
         onSubmit={onEdit}
         defaultValues={dataForForm}
       />
 
-      <div className="flex gap-4">
-        <Button size="icon" variant="secondary" onClick={() => setOpen(true)}>
-          <Edit className="w-4 h-4" />
+      <div className='flex gap-4'>
+        <Button size='icon' variant='secondary' onClick={() => setOpen(true)}>
+          <Edit className='w-4 h-4' />
         </Button>
 
         {/* Delete question dialog */}
         <AlertDialog>
           <AlertDialogTrigger asChild>
-            <Button size="icon" variant="secondary">
-              <Trash2 className="w-4 h-4" />
+            <Button size='icon' variant='secondary'>
+              <Trash2 className='w-4 h-4' />
             </Button>
           </AlertDialogTrigger>
           <AlertDialogContent>
@@ -150,7 +150,8 @@ export default function QuestionView({ id }: QuestionViewProps) {
       toast.success('Question updated successfully');
     } catch (error) {
       console.error(error);
-      const errorMessage = error instanceof Error ? error.message : "Unknown error";
+      const errorMessage =
+        error instanceof Error ? error.message : 'Unknown error';
       toast.error(`${errorMessage}`, {
         style: { backgroundColor: '#FFCCCB', color: 'black' },
       });
@@ -159,19 +160,19 @@ export default function QuestionView({ id }: QuestionViewProps) {
 
   if (isLoading || !question) {
     return (
-      <div className="flex flex-col items-center justify-center h-full px-2">
-        <Skeleton className="mt-2 w-full h-80" />
+      <div className='flex flex-col items-center justify-center h-full px-2'>
+        <Skeleton className='mt-2 w-full h-80' />
       </div>
     );
   }
 
   return (
-    <div className="relative w-full max-w-3xl p-4 space-y-4 overflow-y-auto">
-      <div className="mb-2 text-2xl font-bold">
-        <span className="mr-2">{question.id}.</span>
+    <div className='relative w-full max-w-3xl p-4 space-y-4 overflow-y-auto'>
+      <div className='mb-2 text-2xl font-bold'>
+        <span className='mr-2'>{question.id}.</span>
         <span>{question.title}</span>
       </div>
-      <div className="">
+      <div className=''>
         <Badge
           difficulty={
             question.difficulty.toLowerCase() as 'easy' | 'medium' | 'hard'
@@ -180,7 +181,7 @@ export default function QuestionView({ id }: QuestionViewProps) {
           {question.difficulty}
         </Badge>
         {question.categories.map((category, index) => (
-          <Badge key={index} variant="outline" className="ml-2">
+          <Badge key={index} variant='outline' className='ml-2'>
             {category}
           </Badge>
         ))}
@@ -192,12 +193,12 @@ export default function QuestionView({ id }: QuestionViewProps) {
 
       <br />
 
-      <section className="space-y-6">
+      <section className='space-y-6'>
         {question.examples.map((example, index) => (
-          <div key={index} className="mb-2">
-            <p className="font-bold">Example {index + 1}</p>
-            <blockquote className="mt-2 border-l-2 pl-6">
-              <p className="font-mono text-sm whitespace-pre-wrap">{example}</p>
+          <div key={index} className='mb-2'>
+            <p className='font-bold'>Example {index + 1}</p>
+            <blockquote className='mt-2 border-l-2 pl-6'>
+              <p className='font-mono text-sm whitespace-pre-wrap'>{example}</p>
             </blockquote>
           </div>
         ))}
@@ -207,8 +208,8 @@ export default function QuestionView({ id }: QuestionViewProps) {
 
       {question.constraints && question.constraints.length > 0 && (
         <>
-          <div className="text font-bold mt-4 mb-2">Constraints:</div>
-          <ul className="list-disc pl-5">
+          <div className='text font-bold mt-4 mb-2'>Constraints:</div>
+          <ul className='list-disc pl-5'>
             {question.constraints.map((constraint, index) => (
               <li key={index}>{constraint}</li>
             ))}
@@ -216,18 +217,18 @@ export default function QuestionView({ id }: QuestionViewProps) {
         </>
       )}
 
-      <div className="w-full text-right">
+      <div className='w-full text-right'>
         <a
           href={question.link}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="inline-block text-blue-600 hover:underline"
+          target='_blank'
+          rel='noopener noreferrer'
+          className='inline-block text-blue-600 hover:underline'
         >
           View on LeetCode
         </a>
       </div>
 
-      {role == 'admin' &&
+      {role == 'admin' && (
         <QuestionActions
           open={open}
           setOpen={setOpen}
@@ -235,7 +236,7 @@ export default function QuestionView({ id }: QuestionViewProps) {
           onEdit={onEdit}
           onDelete={onDelete}
         />
-      }
+      )}
     </div>
   );
 }
