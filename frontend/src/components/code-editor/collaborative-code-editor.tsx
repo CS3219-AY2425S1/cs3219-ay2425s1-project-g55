@@ -252,6 +252,7 @@ const CollaborativeEditor: React.FC<CollaborativeEditorProps> = ({
         height="90vh"
         defaultValue={initialValue}
         defaultLanguage={language}
+        language={language}
         theme={theme}
         onMount={(editor) => {
           setEditor(editor);

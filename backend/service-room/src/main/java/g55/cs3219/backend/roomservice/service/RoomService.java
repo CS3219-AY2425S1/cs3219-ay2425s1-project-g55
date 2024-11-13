@@ -10,6 +10,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import g55.cs3219.backend.roomservice.event.RoomEventListener;
+import g55.cs3219.backend.roomservice.exception.RoomNotFoundException;
 import g55.cs3219.backend.roomservice.model.MatchFoundEvent;
 import g55.cs3219.backend.roomservice.model.Room;
 import g55.cs3219.backend.roomservice.model.RoomStatus;
@@ -42,7 +43,7 @@ public class RoomService {
   // TODO have a specific exception for room not found?
   public Room getRoom(String roomId) {
     return roomRepository.findById(roomId)
-        .orElseThrow(() -> new RuntimeException("Room not found"));
+        .orElseThrow(() -> new RoomNotFoundException(roomId, "Room not found"));
   }
 
   /**
@@ -63,7 +64,7 @@ public class RoomService {
    */
   public void closeRoom(String roomId, String userWhoClosedRoomId) {
     logger.info("Closing room: {}", roomId);
-    
+
     Room room = getRoom(roomId);
     room.setClosed(true);
     roomRepository.save(room);

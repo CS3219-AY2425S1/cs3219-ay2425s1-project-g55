@@ -5,8 +5,9 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.http.HttpHeaders;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -17,13 +18,29 @@ import g55.cs3219.backend.matchingservice.model.MatchingRequest;
 
 @Service
 public class MatchingService {
+    @Value("${deployment.environment}")
+    private String deploymentEnvironment;
+
     private final ConcurrentHashMap<String, MatchingRequest> waitingUsers = new ConcurrentHashMap<>();
     private final RestTemplate restTemplate;
     private final Logger logger = LoggerFactory.getLogger(MatchingService.class);
-    private final String questionServiceUrl = "http://question-service.g55.svc.cluster.local:8080/api/questions/filter";
 
     public MatchingService(RestTemplate restTemplate) {
         this.restTemplate = restTemplate;
+    }
+
+    /**
+     * Returns the URL of the question service based on the deployment environment.
+     * 
+     * @return the URL of the question service
+     */
+    private String getQuestionServiceUrl() {
+        if (deploymentEnvironment != null && deploymentEnvironment.equals("docker")) {
+            logger.info("Using Question Service running on Docker");
+            return "http://backend-service-question:8080/api/questions/filter";
+        }
+        logger.info("Using Question Service running on Kubernetes");
+        return "http://question-service.g55.svc.cluster.local:8080/api/questions/filter";
     }
 
     public Optional<MatchingRequest> findMatch(MatchingRequest request) {
@@ -32,7 +49,7 @@ public class MatchingService {
                 .filter(user -> user.getTopic().equals(request.getTopic())
                         && user.getDifficultyLevel().equals(request.getDifficultyLevel()))
                 .findFirst();
-        
+
         if (exactMatch.isPresent()) {
             waitingUsers.remove(exactMatch.get().getUserId());
             logger.info("Found exact match for user: " + request.getUserId());
@@ -79,10 +96,10 @@ public class MatchingService {
 
         try {
             this.logger.info("Getting question id for match request: " + request);
-            String urlString = questionServiceUrl + "?category=" + topic + "&difficulty=" + difficulty;
+            String urlString = getQuestionServiceUrl() + "?category=" + topic + "&difficulty=" + difficulty;
 
             HttpHeaders headers = new HttpHeaders();
-            headers.set("Authorization", authToken); 
+            headers.set("Authorization", authToken);
 
             HttpEntity<String> entity = new HttpEntity<>(headers);
 
@@ -91,7 +108,7 @@ public class MatchingService {
                     HttpMethod.GET,
                     entity,
                     QuestionDto[].class);
-            
+
             QuestionDto[] responses = responseEntity.getBody();
 
             if (responses == null || responses.length == 0) {

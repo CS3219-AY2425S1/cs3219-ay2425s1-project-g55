@@ -20,6 +20,7 @@ import MonacoEditor, {
   SubmitButton,
 } from '@/components/code-editor/MonacoEditor';
 import CollaborativeEditor from '@/components/code-editor/collaborative-code-editor';
+import LanguageSelector from '@/components/code-editor/language-selector';
 import { LoginPromptView } from '@/components/discuss/views/LoginPromptView';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -28,13 +29,8 @@ import { useAuth } from '@/hooks/auth/useAuth';
 import useExecuteCode, { CodeExecutionResponse } from '@/hooks/useExecuteCode';
 import { useCloseRoom, useRoom } from '@/hooks/useRoom';
 import { BACKEND_WEBSOCKET_COLLABORATIVE_EDITOR } from '@/lib/common';
-import {
-  Loader2,
-  LogInIcon,
-  LogOutIcon,
-  PlayIcon,
-  VideoIcon,
-} from 'lucide-react';
+import { BOILERPLATE_CODES } from '@/lib/consts';
+import { Loader2, PlayIcon, Plug, Unplug, VideoIcon } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { toast } from 'sonner';
 
@@ -47,6 +43,9 @@ export default function RoomRoute() {
   const { isLoading, data, error } = useRoom(roomId);
   const { mutateAsync: closeRoomMutation, isPending: isClosingRoom } =
     useCloseRoom();
+
+  const [selectedLanguage, setSelectedLanguage] =
+    useState<keyof typeof BOILERPLATE_CODES>('typescript');
 
   const room = data;
   const questionId = room?.questionId;
@@ -97,8 +96,12 @@ export default function RoomRoute() {
         [room]
       ),
       onDisconnected: useCallback(() => {
+        if (!room) {
+          return;
+        }
+
         toast('You have been disconnected from the room');
-      }, []),
+      }, [room]),
       onRoomClosed: useCallback(
         (userIdWhoClosedRoom: string) => {
           const username = room?.participants.find(
@@ -135,7 +138,7 @@ export default function RoomRoute() {
   const handleExecuteCode = async () => {
     const result = await executeCodeMutation({
       code: editorCode,
-      language: 'typescript',
+      language: selectedLanguage,
     });
     setCodeExecutionResponse(result);
   };
@@ -233,6 +236,7 @@ export default function RoomRoute() {
           {isConnected ? (
             <CollaborativeEditor
               initialValue={editorCode}
+              language={selectedLanguage}
               roomName={roomId}
               websocketUrl={`${BACKEND_WEBSOCKET_COLLABORATIVE_EDITOR}`}
               userName={auth.user.userName}
@@ -244,7 +248,7 @@ export default function RoomRoute() {
             <MonacoEditor
               questionId={questionId}
               value={editorCode}
-              language='typescript'
+              language={selectedLanguage}
               onChange={(value: string | undefined) =>
                 setEditorCode(value ?? '')
               }
@@ -253,10 +257,10 @@ export default function RoomRoute() {
         </ResizablePanel>
       </ResizablePanelGroup>
 
-      <div className='absolute top-2 left-1/2 -translate-x-1/2 flex gap-2 z-30'>
+      <div className='absolute bottom-8 left-1/2 -translate-x-1/2 flex gap-2 z-30 shadow-md px-4 py-2 rounded-lg border bg-white'>
         <Button
           onClick={handleExecuteCode}
-          variant={'outline'}
+          variant={'ghost'}
           disabled={isExecutingCode}
         >
           {isExecutingCode ? (
@@ -268,9 +272,14 @@ export default function RoomRoute() {
         </Button>
         <SubmitButton questionId={questionId} code={editorCode} />
 
+        <LanguageSelector
+          language={selectedLanguage}
+          onChange={(newLanguage) => setSelectedLanguage(newLanguage)}
+        />
+
         {isConnected && (
-          <Button variant={'outline'} onClick={disconnect}>
-            <LogOutIcon className='w-4 h-4 mr-2' />
+          <Button variant={'ghost'} onClick={disconnect}>
+            <Unplug className='w-4 h-4 mr-2' />
             Disconnect
           </Button>
         )}
@@ -289,12 +298,12 @@ export default function RoomRoute() {
 
         {!isConnected && (
           <Button
-            variant={'outline'}
+            variant={'ghost'}
             onClick={() => {
               window.location.reload();
             }}
           >
-            <LogInIcon className='w-4 h-4 mr-2' />
+            <Plug className='w-4 h-4 mr-2' />
             Connect
           </Button>
         )}

@@ -91,6 +91,7 @@ services:
     environment:
       SPRING_RABBITMQ_HOST: rabbitmq
       SPRING_RABBITMQ_PORT: 5672
+      DEPLOYMENT_ENV: docker
     depends_on:
       - rabbitmq
 

@@ -3,8 +3,9 @@ import DiscussRoute from '@/routes/discuss';
 import ProblemsRoute from '@/routes/problems';
 import QuestionRoute from '@/routes/question';
 import RoomRoute from '@/routes/room';
-import SubmissionsRoute from '@/routes/submissions';
+import RoomLoadingRoute from '@/routes/room-loading';
 import Root from '@/routes/root';
+import SubmissionsRoute from '@/routes/submissions';
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
@@ -32,6 +33,10 @@ const router = createBrowserRouter([
       {
         path: 'rooms/:roomId',
         element: <RoomRoute />,
+      },
+      {
+        path: 'rooms/:roomId/loading',
+        element: <RoomLoadingRoute />,
       },
       {
         path: 'submissions',
