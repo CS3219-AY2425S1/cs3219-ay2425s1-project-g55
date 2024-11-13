@@ -20,10 +20,22 @@ spec:
       labels:
         app: history-service
     spec:
+      initContainers:
+        - name: wait-for-db
+          image: busybox
+          command:
+            [
+              "sh",
+              "-c",
+              "until nc -z historydb 27017; do echo waiting for database; sleep 2; done;",
+            ]
       containers:
         - image: docker_username/history_service:latest
           imagePullPolicy: IfNotPresent
           name: history-service
+          env:
+            - name: SPRING_DATA_MONGODB_URI
+              value: "mongodb://root:example@historydb:27017/history_db?authSource=admin"
           resources:
             requests:
               memory: '1Gi'

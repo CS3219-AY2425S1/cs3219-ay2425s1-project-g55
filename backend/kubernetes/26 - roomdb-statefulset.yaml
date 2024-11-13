@@ -1,18 +1,18 @@
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
-  name: userdb
+  name: roomdb
   namespace: g55
 spec:
-  serviceName: userdb
+  serviceName: roomdb
   replicas: 1
   selector:
     matchLabels:
-      app: userdb
+      app: roomdb
   template:
     metadata:
       labels:
-        app: userdb
+        app: roomdb
     spec:
       containers:
         - name: postgres
@@ -21,7 +21,7 @@ spec:
             - containerPort: 5432
           env:
             - name: POSTGRES_DB
-              value: "user_db"
+              value: "room_db"
             - name: POSTGRES_USER
               value: "postgres"
             - name: POSTGRES_PASSWORD
@@ -29,12 +29,12 @@ spec:
           volumeMounts:
             - name: postgres-data
               mountPath: /var/lib/postgresql/data
-            - name: userdb-seed-volume
+            - name: roomdb-seed-volume
               mountPath: /docker-entrypoint-initdb.d
       volumes:
-        - name: userdb-seed-volume
+        - name: roomdb-seed-volume
           configMap:
-            name: userdb-seed-config
+            name: roomdb-seed-config
   volumeClaimTemplates:
     - metadata:
         name: postgres-data

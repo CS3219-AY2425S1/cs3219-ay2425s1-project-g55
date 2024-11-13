@@ -24,7 +24,7 @@ spec:
             [
               "sh",
               "-c",
-              "until nc -z userdb 5432; do echo waiting for database; sleep 2; done;",
+              "until nc -z roomdb 5432; do echo waiting for database; sleep 2; done;",
             ]
         - name: wait-for-rabbitmq
           image: busybox
@@ -40,7 +40,7 @@ spec:
           name: room-service
           env:
             - name: SPRING_DATASOURCE_URL
-              value: "jdbc:postgresql://userdb.g55.svc.cluster.local:5432/postgres"
+              value: "jdbc:postgresql://roomdb.g55.svc.cluster.local:5432/room_db"
             - name: SPRING_DATASOURCE_USERNAME
               value: "postgres"
             - name: SPRING_DATASOURCE_PASSWORD

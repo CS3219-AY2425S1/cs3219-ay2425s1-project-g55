@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: roomdb
+  namespace: g55
+spec:
+  ports:
+    - port: 5432
+      targetPort: 5432
+  selector:
+    app: roomdb
+  type: ClusterIP
