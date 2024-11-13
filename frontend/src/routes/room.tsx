@@ -251,7 +251,7 @@ export default function RoomRoute() {
         </ResizablePanel>
       </ResizablePanelGroup>
 
-      <div className='absolute top-2 left-1/2 -translate-x-1/2 flex gap-2 z-30'>
+      <div className='absolute bottom-8 left-1/2 -translate-x-1/2 flex gap-2 z-30 shadow-md px-4 py-2 rounded-md border'>
         <Button
           onClick={handleExecuteCode}
           variant={'outline'}
