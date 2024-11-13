@@ -14,7 +14,7 @@ import {
 import { useAuth } from "@/hooks/auth/useAuth";
 import { useUpdateUser, useUsers } from "@/hooks/useUsers";
 import { User, UserUpdateData } from "@/types/user";
-import { Loader2 } from "lucide-react";
+import { Edit, Loader2, TrashIcon } from "lucide-react";
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { toast } from "sonner";
@@ -144,7 +144,7 @@ const AdminUserManagementPage: React.FC = () => {
                         {user.isAdmin ? "Admin" : "User"}
                       </Badge>
                     </TableCell>
-                    <TableCell className="font-medium">
+                    <TableCell className="font-medium flex gap-2">
                       <Button
                         onClick={() => {
                           setSelectedUser({
@@ -153,36 +153,20 @@ const AdminUserManagementPage: React.FC = () => {
                           });
                           setOpen(true);
                         }}
-                        className="p-2 border border-gray-300 rounded text-white"
+                        size="icon"
+                        variant="outline"
                       >
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          className="h-5 w-5"
-                          viewBox="0 0 20 20"
-                          fill="currentColor"
-                        >
-                          <path d="M17.414 2.586a2 2 0 00-2.828 0L7 10.172V13h2.828l7.586-7.586a2 2 0 000-2.828zM4 12v4h4l10-10-4-4L4 12z" />
-                        </svg>
+                        <Edit className="h-4 w-4" />
                       </Button>
                       <Button
                         onClick={() => {
                           setSelectedDeleteUser(user);
                           setIsDeleteAccountDialogOpen(true);
                         }}
-                        className="p-2 m-2 border border-red-500 text-red-500 rounded"
+                        size="icon"
+                        variant="destructive"
                       >
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          className="h-5 w-5"
-                          viewBox="0 0 20 20"
-                          fill="currentColor"
-                        >
-                          <path
-                            fillRule="evenodd"
-                            d="M9 2a1 1 0 00-1 1v1H5a2 2 0 00-2 2v1h14V6a2 2 0 00-2-2h-3V3a1 1 0 00-1-1H9zm6 5H5v9a2 2 0 002 2h6a2 2 0 002-2V7zm-7 3a1 1 0 112 0v5a1 1 0 11-2 0v-5zm4 0a1 1 0 112 0v5a1 1 0 11-2 0v-5z"
-                            clipRule="evenodd"
-                          />
-                        </svg>
+                        <TrashIcon className="h-4 w-4" />
                       </Button>
                     </TableCell>
                   </TableRow>
