@@ -30,7 +30,7 @@ spec:
           name: user-service
           env:
             - name: SPRING_DATASOURCE_URL
-              value: "jdbc:postgresql://userdb.g55.svc.cluster.local:5432/postgres"
+              value: "jdbc:postgresql://userdb.g55.svc.cluster.local:5432/user_db"
             - name: SPRING_DATASOURCE_USERNAME
               value: "postgres"
             - name: SPRING_DATASOURCE_PASSWORD
