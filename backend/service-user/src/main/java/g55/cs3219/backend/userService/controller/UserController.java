@@ -75,7 +75,9 @@ public class UserController {
         try {
             User currentUser = (User) authentication.getPrincipal();
 
-            if (updates.containsKey("isAdmin")) {
+            Boolean isAdminChanged = updates.containsKey("isAdmin")
+                    && ((Boolean) updates.get("isAdmin") != currentUser.isAdmin());
+            if (isAdminChanged) {
                 if (!currentUser.isAdmin()) {
                     return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Access denied. Only admin users can update privileges.");
                 }
