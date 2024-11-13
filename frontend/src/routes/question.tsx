@@ -143,10 +143,10 @@ export default function QuestionRoute() {
           />
         </ResizablePanel>
       </ResizablePanelGroup>
-      <div className='absolute bottom-8 left-1/2 -translate-x-1/2 flex gap-2 z-30 shadow-md px-4 py-2 rounded-md border'>
+      <div className='absolute bottom-8 left-1/2 -translate-x-1/2 flex gap-2 z-30 shadow-md px-4 py-2 rounded-lg border bg-white'>
         <Button
           onClick={handleExecuteCode}
-          variant={'outline'}
+          variant={'ghost'}
           disabled={isExecutingCode}
         >
           {isExecutingCode ? (

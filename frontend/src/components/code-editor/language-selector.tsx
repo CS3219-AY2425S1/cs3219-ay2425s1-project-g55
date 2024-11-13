@@ -25,7 +25,7 @@ const LanguageSelector: React.FC<LanguageSelectorProps> = ({
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant='outline'>
+        <Button variant='ghost'>
           {toTitleCase(language)}
           <ChevronUp className='ml-2 h-4 w-4' />
         </Button>

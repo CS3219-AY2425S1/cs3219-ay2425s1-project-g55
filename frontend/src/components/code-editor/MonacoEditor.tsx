@@ -47,7 +47,7 @@ export function SubmitButton({
 
   return (
     <Button
-      variant={'outline'}
+      variant={'ghost'}
       disabled={createSubmission.isPending}
       onClick={handleSubmit}
     >

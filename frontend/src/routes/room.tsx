@@ -251,10 +251,10 @@ export default function RoomRoute() {
         </ResizablePanel>
       </ResizablePanelGroup>
 
-      <div className='absolute bottom-8 left-1/2 -translate-x-1/2 flex gap-2 z-30 shadow-md px-4 py-2 rounded-md border'>
+      <div className='absolute bottom-8 left-1/2 -translate-x-1/2 flex gap-2 z-30 shadow-md px-4 py-2 rounded-lg border bg-white'>
         <Button
           onClick={handleExecuteCode}
-          variant={'outline'}
+          variant={'ghost'}
           disabled={isExecutingCode}
         >
           {isExecutingCode ? (
@@ -267,7 +267,7 @@ export default function RoomRoute() {
         <SubmitButton questionId={questionId} code={editorCode} />
 
         {isConnected && (
-          <Button variant={'outline'} onClick={disconnect}>
+          <Button variant={'ghost'} onClick={disconnect}>
             <Unplug className='w-4 h-4 mr-2' />
             Disconnect
           </Button>
@@ -287,7 +287,7 @@ export default function RoomRoute() {
 
         {!isConnected && (
           <Button
-            variant={'outline'}
+            variant={'ghost'}
             onClick={() => {
               window.location.reload();
             }}

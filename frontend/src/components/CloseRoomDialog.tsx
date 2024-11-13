@@ -30,7 +30,7 @@ export function CloseRoomDialog({
   return (
     <>
       <Button
-        variant='outline'
+        variant='ghost'
         onClick={() => onOpenChange(true)}
         disabled={isClosingRoom}
       >
