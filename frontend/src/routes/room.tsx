@@ -20,6 +20,7 @@ import MonacoEditor, {
   SubmitButton,
 } from '@/components/code-editor/MonacoEditor';
 import CollaborativeEditor from '@/components/code-editor/collaborative-code-editor';
+import LanguageSelector from '@/components/code-editor/language-selector';
 import { LoginPromptView } from '@/components/discuss/views/LoginPromptView';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -28,6 +29,7 @@ import { useAuth } from '@/hooks/auth/useAuth';
 import useExecuteCode, { CodeExecutionResponse } from '@/hooks/useExecuteCode';
 import { useCloseRoom, useRoom } from '@/hooks/useRoom';
 import { BACKEND_WEBSOCKET_COLLABORATIVE_EDITOR } from '@/lib/common';
+import { BOILERPLATE_CODES } from '@/lib/consts';
 import { Loader2, PlayIcon, Plug, Unplug, VideoIcon } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { toast } from 'sonner';
@@ -41,6 +43,9 @@ export default function RoomRoute() {
   const { isLoading, data, error } = useRoom(roomId);
   const { mutateAsync: closeRoomMutation, isPending: isClosingRoom } =
     useCloseRoom();
+
+  const [selectedLanguage, setSelectedLanguage] =
+    useState<keyof typeof BOILERPLATE_CODES>('typescript');
 
   const room = data;
   const questionId = room?.questionId;
@@ -133,7 +138,7 @@ export default function RoomRoute() {
   const handleExecuteCode = async () => {
     const result = await executeCodeMutation({
       code: editorCode,
-      language: 'typescript',
+      language: selectedLanguage,
     });
     setCodeExecutionResponse(result);
   };
@@ -231,6 +236,7 @@ export default function RoomRoute() {
           {isConnected ? (
             <CollaborativeEditor
               initialValue={editorCode}
+              language={selectedLanguage}
               roomName={roomId}
               websocketUrl={`${BACKEND_WEBSOCKET_COLLABORATIVE_EDITOR}`}
               userName={auth.user.userName}
@@ -242,7 +248,7 @@ export default function RoomRoute() {
             <MonacoEditor
               questionId={questionId}
               value={editorCode}
-              language='typescript'
+              language={selectedLanguage}
               onChange={(value: string | undefined) =>
                 setEditorCode(value ?? '')
               }
@@ -265,6 +271,11 @@ export default function RoomRoute() {
           Run
         </Button>
         <SubmitButton questionId={questionId} code={editorCode} />
+
+        <LanguageSelector
+          language={selectedLanguage}
+          onChange={(newLanguage) => setSelectedLanguage(newLanguage)}
+        />
 
         {isConnected && (
           <Button variant={'ghost'} onClick={disconnect}>
